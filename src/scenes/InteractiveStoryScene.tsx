@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../game/GameContext';
 import { STORY_NODES } from '../data/storyData';
-import { GAME_IMAGES } from '../assets/images';
+import { GAME_IMAGES, FALLBACK_IMAGES } from '../assets/images';
 import { GeoradarMiniGame } from '../components/GeoradarMiniGame';
 import { soundEngine } from '../audio/SoundEngine';
 
@@ -16,9 +16,18 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
 }) => {
   const { activeSceneId, makeChoice, jumpToChapter, spiralState, triggerRealityFracture } = useGame();
   const [obeliskTouched, setObeliskTouched] = useState(false);
+  const [imgLoadError, setImgLoadError] = useState(false);
 
   const currentNode = STORY_NODES[activeSceneId] || STORY_NODES['v1_intro'];
-  const illustrationSrc = currentNode.illustrationKey ? GAME_IMAGES[currentNode.illustrationKey] : null;
+  const illustrationKey = currentNode.illustrationKey;
+  const rawIllustrationSrc = illustrationKey ? GAME_IMAGES[illustrationKey] : null;
+  const fallbackIllustrationSrc = illustrationKey ? FALLBACK_IMAGES[illustrationKey] : null;
+  const currentImgSrc = imgLoadError ? fallbackIllustrationSrc : (rawIllustrationSrc || fallbackIllustrationSrc);
+
+  // Reset load error state when scene changes
+  useEffect(() => {
+    setImgLoadError(false);
+  }, [activeSceneId]);
 
   const handleTouchObelisk = () => {
     setObeliskTouched(true);
@@ -47,12 +56,17 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
       </div>
 
       {/* Cinematic Scene Artwork / Fallback Header */}
-      {illustrationSrc && (
+      {currentImgSrc && (
         <div className="relative w-full h-56 md:h-80 rounded-2xl overflow-hidden mb-8 border border-cyan-500/30 shadow-[0_0_35px_rgba(6,182,212,0.15)] bg-slate-950">
           <img
-            src={illustrationSrc}
+            src={currentImgSrc}
             alt={currentNode.speaker}
             referrerPolicy="no-referrer"
+            onError={() => {
+              if (!imgLoadError && fallbackIllustrationSrc) {
+                setImgLoadError(true);
+              }
+            }}
             className="w-full h-full object-cover object-center filter brightness-90 contrast-110"
           />
           {/* Gradients to merge seamlessly into content */}
@@ -74,7 +88,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
 
       {/* Main Narrative Content Box */}
       <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-sm mb-8 shadow-xl">
-        {!illustrationSrc && (
+        {!currentImgSrc && (
           <div className="mb-4">
             <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
               {currentNode.speakerRole || 'SZEREP'}
