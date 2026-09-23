@@ -1,0 +1,6 @@
+{
+  "name": "A Spirál Lehelete: Δ–82 // The Infinite Archive",
+  "description": "Prémium interaktív pszichológiai sci-fi és meta-narratív játék Csurik Konrád könyve alapján. Időtorzulás, jéglégzés, ARCHÍV-82 és a kilenc őrző rejtélye az Antarktiszon.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
