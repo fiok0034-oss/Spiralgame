@@ -71,6 +71,24 @@ export interface DialogueNode {
   interactiveComponent?: 'georadar' | 'radio' | 'symbol_puzzle' | 'rings_puzzle' | 'guardian_test' | 'infinite_mirror';
 }
 
+export interface StoryLogEntry {
+  id: string;
+  sceneId: string;
+  speaker: string;
+  speakerRole?: string;
+  location?: string;
+  timestamp?: string;
+  text: string;
+  subtext?: string;
+  atmosphere?: string;
+  chosenOption?: {
+    id: string;
+    label: string;
+    reflection?: string;
+  };
+  recordedAt: number;
+}
+
 export interface MemoryFragment {
   id: string;
   title: string;

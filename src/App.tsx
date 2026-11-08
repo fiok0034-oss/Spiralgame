@@ -9,6 +9,7 @@ import { Archive82Modal } from './components/Archive82Modal';
 import { RadioScannerModal } from './components/RadioScannerModal';
 import { SpiralProfileModal } from './components/SpiralProfileModal';
 import { SettingsModal } from './components/SettingsModal';
+import { StoryLog } from './components/StoryLog';
 import { GUARDIANS_LIST } from './data/storyData';
 
 const GameContainer: React.FC = () => {
@@ -19,6 +20,7 @@ const GameContainer: React.FC = () => {
     achievements,
     radioChannels,
     spiralState,
+    storyLog,
     isFractured,
     reducedMotion,
     setReducedMotion,
@@ -30,6 +32,8 @@ const GameContainer: React.FC = () => {
   const [isRadioOpen, setIsRadioOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isStoryLogOpen, setIsStoryLogOpen] = useState(false);
+  const [storyLogMode, setStoryLogMode] = useState<'log' | 'tree'>('log');
 
   // Keyboard navigation shortcuts
   useEffect(() => {
@@ -39,6 +43,12 @@ const GameContainer: React.FC = () => {
         setIsRadioOpen(false);
         setIsProfileOpen(false);
         setIsSettingsOpen(false);
+        setIsStoryLogOpen(false);
+      } else if (
+        (e.key === 'l' || e.key === 'L') &&
+        !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)
+      ) {
+        setIsStoryLogOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -64,8 +74,13 @@ const GameContainer: React.FC = () => {
         onOpenRadio={() => setIsRadioOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenStoryLog={() => {
+          setStoryLogMode('log');
+          setIsStoryLogOpen(true);
+        }}
         unlockedMemoriesCount={unlockedMemories}
         totalMemoriesCount={memories.length}
+        storyLogCount={storyLog.length}
       />
 
       {/* Main View Area */}
@@ -80,11 +95,21 @@ const GameContainer: React.FC = () => {
           <InteractiveStoryScene
             onOpenRadio={() => setIsRadioOpen(true)}
             onOpenArchive={() => setIsArchiveOpen(true)}
+            onOpenStoryLog={(mode = 'log') => {
+              setStoryLogMode(mode);
+              setIsStoryLogOpen(true);
+            }}
           />
         )}
       </main>
 
       {/* Interactive Modals */}
+      <StoryLog
+        isOpen={isStoryLogOpen}
+        onClose={() => setIsStoryLogOpen(false)}
+        initialViewMode={storyLogMode}
+      />
+
       <Archive82Modal
         isOpen={isArchiveOpen}
         onClose={() => setIsArchiveOpen(false)}

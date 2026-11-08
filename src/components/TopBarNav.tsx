@@ -7,8 +7,10 @@ interface TopBarNavProps {
   onOpenRadio: () => void;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
+  onOpenStoryLog?: () => void;
   unlockedMemoriesCount: number;
   totalMemoriesCount: number;
+  storyLogCount?: number;
 }
 
 export const TopBarNav: React.FC<TopBarNavProps> = ({
@@ -16,8 +18,10 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
   onOpenRadio,
   onOpenProfile,
   onOpenSettings,
+  onOpenStoryLog,
   unlockedMemoriesCount,
   totalMemoriesCount,
+  storyLogCount,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-slate-950/80 backdrop-blur-md border-b border-cyan-500/20 px-4 md:px-8 py-3 flex items-center justify-between transition-colors">
@@ -65,12 +69,39 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
         >
           SPIRÁLPROFIL
         </button>
+
+        {onOpenStoryLog && (
+          <button
+            onClick={() => {
+              soundEngine.playUiClick();
+              onOpenStoryLog();
+            }}
+            className="text-slate-300 hover:text-cyan-300 transition-colors cursor-pointer flex items-center gap-1.5"
+            title="Történeti Napló és kulcsdöntések"
+          >
+            <span>NAPLÓ</span>
+            {storyLogCount !== undefined && (
+              <span className="text-[10px] text-cyan-400 font-semibold tabular-nums">
+                ({storyLogCount})
+              </span>
+            )}
+          </button>
+        )}
       </nav>
 
       {/* Zone 3: 1-2 primary actions */}
       <div className="flex items-center gap-3">
         {/* Mobile menu quick buttons */}
         <div className="flex md:hidden items-center gap-2">
+          {onOpenStoryLog && (
+            <button
+              onClick={onOpenStoryLog}
+              className="p-1.5 text-slate-300 hover:text-cyan-300 text-xs font-mono"
+              title="Történeti Napló"
+            >
+              📜
+            </button>
+          )}
           <button
             onClick={onOpenArchive}
             className="p-1.5 text-slate-300 hover:text-cyan-300 text-xs font-mono"

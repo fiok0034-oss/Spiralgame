@@ -7,6 +7,7 @@ import {
   Achievement,
   RadioChannel,
   ChoiceOption,
+  StoryLogEntry,
 } from '../types/game';
 import {
   INITIAL_MEMORIES,
@@ -26,6 +27,7 @@ interface GameContextType {
   relics: Relic[];
   achievements: Achievement[];
   radioChannels: RadioChannel[];
+  storyLog: StoryLogEntry[];
   isFractured: boolean;
   reducedMotion: boolean;
   startNewGame: () => void;
@@ -38,6 +40,7 @@ interface GameContextType {
   discoverRadioChannel: (frequency: number) => void;
   triggerRealityFracture: () => void;
   setReducedMotion: (val: boolean) => void;
+  clearStoryLog: () => void;
 }
 
 const DEFAULT_SPIRAL_STATE: SpiralState = {
@@ -139,6 +142,41 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return INITIAL_RADIO_CHANNELS;
   });
 
+  const buildStoryLogEntry = (
+    sceneId: string,
+    chosenOption?: StoryLogEntry['chosenOption']
+  ): StoryLogEntry => {
+    const node = STORY_NODES[sceneId];
+    return {
+      id: `log_${Date.now()}_${sceneId}_${Math.random().toString(36).substring(2, 7)}`,
+      sceneId,
+      speaker: node?.speaker || 'ISMERETLEN NARRÁCIÓ',
+      speakerRole: node?.speakerRole,
+      location: node?.location,
+      timestamp: node?.timestamp,
+      text: node?.text || '',
+      subtext: node?.subtext,
+      atmosphere: node?.atmosphere,
+      chosenOption,
+      recordedAt: Date.now(),
+    };
+  };
+
+  const [storyLog, setStoryLog] = useState<StoryLogEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.storyLog) && parsed.storyLog.length > 0) {
+          return parsed.storyLog;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return [buildStoryLogEntry('v1_intro')];
+  });
+
   const [isFractured, setIsFractured] = useState<boolean>(false);
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
 
@@ -153,12 +191,27 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           relics,
           achievements,
           radioChannels,
+          storyLog,
         })
       );
     } catch {
       // Safe storage
     }
-  }, [spiralState, memories, relics, achievements, radioChannels]);
+  }, [spiralState, memories, relics, achievements, radioChannels, storyLog]);
+
+  // Ensure activeSceneId is tracked in storyLog
+  useEffect(() => {
+    setStoryLog((prev) => {
+      if (prev.length === 0) {
+        return [buildStoryLogEntry(activeSceneId)];
+      }
+      const last = prev[prev.length - 1];
+      if (last.sceneId === activeSceneId) {
+        return prev;
+      }
+      return [...prev, buildStoryLogEntry(activeSceneId)];
+    });
+  }, [activeSceneId]);
 
   const unlockMemory = (id: string) => {
     setMemories((prev) =>
@@ -201,6 +254,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSpiralState({ ...DEFAULT_SPIRAL_STATE, loopState: spiralState.loopState + 1 });
     setActiveChapter('chapter1_viktor');
     setActiveSceneId('v1_intro');
+    setStoryLog([buildStoryLogEntry('v1_intro')]);
   };
 
   const continueGame = () => {
@@ -208,6 +262,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     soundEngine.startIceBreathing();
     // determine chapter from scene
     setActiveChapter('chapter1_viktor');
+  };
+
+  const clearStoryLog = () => {
+    setStoryLog([buildStoryLogEntry(activeSceneId)]);
   };
 
   const jumpToChapter = (chapter: GameChapterId, sceneId?: string) => {
@@ -220,6 +278,43 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const makeChoice = (choice: ChoiceOption) => {
     soundEngine.playUiClick();
+
+    // Record player's choice in the story log
+    setStoryLog((prev) => {
+      const chosenData = {
+        id: choice.id,
+        label: choice.label,
+        reflection: choice.reflection,
+      };
+
+      if (prev.length === 0) {
+        return [
+          buildStoryLogEntry(activeSceneId, chosenData),
+          buildStoryLogEntry(choice.nextSceneId),
+        ];
+      }
+
+      const updated = [...prev];
+      let targetIdx = -1;
+      for (let i = updated.length - 1; i >= 0; i--) {
+        if (updated[i].sceneId === activeSceneId) {
+          targetIdx = i;
+          break;
+        }
+      }
+      if (targetIdx === -1) {
+        targetIdx = updated.length - 1;
+      }
+
+      updated[targetIdx] = {
+        ...updated[targetIdx],
+        chosenOption: chosenData,
+      };
+
+      // Push next scene narrative entry
+      updated.push(buildStoryLogEntry(choice.nextSceneId));
+      return updated;
+    });
 
     // Apply effects
     if (choice.effect) {
@@ -294,6 +389,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         relics,
         achievements,
         radioChannels,
+        storyLog,
         isFractured,
         reducedMotion,
         startNewGame,
@@ -306,6 +402,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         discoverRadioChannel,
         triggerRealityFracture,
         setReducedMotion,
+        clearStoryLog,
       }}
     >
       {children}

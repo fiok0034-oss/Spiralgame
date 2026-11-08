@@ -3,20 +3,49 @@ import { useGame } from '../game/GameContext';
 import { STORY_NODES } from '../data/storyData';
 import { GAME_IMAGES, FALLBACK_IMAGES } from '../assets/images';
 import { GeoradarMiniGame } from '../components/GeoradarMiniGame';
+import { StoryLog } from '../components/StoryLog';
 import { soundEngine } from '../audio/SoundEngine';
 
 interface InteractiveStorySceneProps {
   onOpenRadio: () => void;
   onOpenArchive: () => void;
+  onOpenStoryLog?: (mode?: 'log' | 'tree') => void;
 }
 
 export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
   onOpenRadio,
   onOpenArchive,
+  onOpenStoryLog,
 }) => {
-  const { activeSceneId, makeChoice, jumpToChapter, spiralState, triggerRealityFracture } = useGame();
+  const { activeSceneId, makeChoice, jumpToChapter, spiralState, triggerRealityFracture, storyLog } = useGame();
   const [obeliskTouched, setObeliskTouched] = useState(false);
   const [imgLoadError, setImgLoadError] = useState(false);
+  const [isLocalStoryLogOpen, setIsLocalStoryLogOpen] = useState(false);
+  const [initialLogView, setInitialLogView] = useState<'log' | 'tree'>('log');
+
+  const handleOpenLog = (mode: 'log' | 'tree' = 'log') => {
+    soundEngine.playUiClick();
+    setInitialLogView(mode);
+    if (onOpenStoryLog) {
+      onOpenStoryLog(mode);
+    } else {
+      setIsLocalStoryLogOpen(true);
+    }
+  };
+
+  // Keyboard shortcut [L] to toggle StoryLog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.key === 'l' || e.key === 'L') &&
+        !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)
+      ) {
+        handleOpenLog('log');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onOpenStoryLog]);
 
   const currentNode = STORY_NODES[activeSceneId] || STORY_NODES['v1_intro'];
   const illustrationKey = currentNode.illustrationKey;
@@ -43,8 +72,31 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
           <span className="text-cyan-400">📍</span>
           <span className="text-slate-200">{currentNode.location || 'Antarktisz, 82°16’S'}</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5">
           <span>{currentNode.timestamp || 'Δ–82 IDŐVONAL'}</span>
+          <span aria-hidden="true" className="text-slate-700">·</span>
+          <button
+            onClick={() => handleOpenLog('log')}
+            className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-cyan-200 transition-colors cursor-pointer text-xs font-mono font-semibold"
+            title="Történeti napló és korábbi döntések megtekintése [Gyorsbillentyű: L]"
+          >
+            <span>📜</span>
+            <span>NAPLÓ</span>
+            <span className="text-[10px] text-cyan-400 font-semibold tabular-nums">
+              ({storyLog.length})
+            </span>
+            <kbd className="hidden sm:inline-block ml-0.5 px-1 py-0.2 text-[9px] bg-slate-950 text-slate-400 border border-slate-700 rounded font-mono">
+              L
+            </kbd>
+          </button>
+          <button
+            onClick={() => handleOpenLog('tree')}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-900/90 hover:bg-slate-800 border border-amber-500/30 hover:border-amber-400 text-amber-300 hover:text-amber-200 transition-colors cursor-pointer text-xs font-mono font-semibold"
+            title="Narratív döntési fa és elágazási térkép"
+          >
+            <span>🌳</span>
+            <span className="hidden sm:inline">DÖNTÉSI FA</span>
+          </button>
           <span aria-hidden="true" className="text-slate-700">·</span>
           <button
             onClick={() => jumpToChapter('menu')}
@@ -187,8 +239,29 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
 
       {/* Choice Decision Panel */}
       <div className="space-y-3">
-        <div className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-2">
-          DÖNTÉSI LEHETŐSÉGEK // A VILÁG EMLÉKSZIK:
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+          <div className="text-xs font-mono uppercase tracking-widest text-slate-400">
+            DÖNTÉSI LEHETŐSÉGEK // A VILÁG EMLÉKSZIK:
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleOpenLog('tree')}
+              className="text-xs font-mono text-amber-300 hover:text-amber-200 underline underline-offset-4 flex items-center gap-1 cursor-pointer font-semibold"
+              title="Narratív elágazási fa és döntési térkép"
+            >
+              <span>🌳</span>
+              <span>Elágazási Fa (Térkép)</span>
+            </button>
+            <span className="text-slate-600">·</span>
+            <button
+              onClick={() => handleOpenLog('log')}
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline underline-offset-4 flex items-center gap-1.5 cursor-pointer"
+              title="Időrendi párbeszéd napló"
+            >
+              <span>📜</span>
+              <span>Előzmények ({storyLog.length})</span>
+            </button>
+          </div>
         </div>
 
         {currentNode.choices.map((choice) => (
@@ -223,8 +296,22 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         >
           ARCHÍV-82
         </button>{' '}
-        dossziéit.
+        dossziéit vagy ellenőrizd a korábbi{' '}
+        <button
+          onClick={() => handleOpenLog('log')}
+          className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 cursor-pointer"
+        >
+          Döntésnaplót
+        </button>
+        .
       </div>
+
+      {/* Embedded StoryLog Modal */}
+      <StoryLog
+        isOpen={isLocalStoryLogOpen}
+        onClose={() => setIsLocalStoryLogOpen(false)}
+        initialViewMode={initialLogView}
+      />
     </div>
   );
 };
