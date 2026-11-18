@@ -446,6 +446,164 @@ class SoundEngine {
     osc.start(t);
     osc.stop(t + 0.2);
   }
+
+  /**
+   * Spatial pointer-driven GeoRadarScanner pulse with stereo panning and strength harmonic
+   */
+  public playScannerPulse(strength = 0.5, pan = 0) {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    const t = this.ctx.currentTime;
+    const clampedStrength = Math.max(0, Math.min(1, strength));
+    const clampedPan = Math.max(-1, Math.min(1, pan));
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    // Base frequency climbs sharply as signal strength approaches 1.0
+    const baseFreq = 220 + clampedStrength * 880;
+    osc.type = clampedStrength > 0.75 ? 'triangle' : 'sine';
+    osc.frequency.setValueAtTime(baseFreq, t);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * (1 + clampedStrength * 0.12), t + 0.09);
+
+    const peakGain = 0.04 + clampedStrength * 0.18;
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(peakGain, t + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+
+    // Optional harmonic overtone when signal is strong
+    if (clampedStrength > 0.65) {
+      const overtone = this.ctx.createOscillator();
+      const overGain = this.ctx.createGain();
+      overtone.type = 'sine';
+      overtone.frequency.setValueAtTime(baseFreq * 1.5, t);
+      overGain.gain.setValueAtTime(0.001, t);
+      overGain.gain.linearRampToValueAtTime(peakGain * 0.4, t + 0.015);
+      overGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      overtone.connect(overGain);
+      overGain.connect(this.sfxGain);
+      overtone.start(t);
+      overtone.stop(t + 0.18);
+    }
+
+    if (typeof this.ctx.createStereoPanner === 'function') {
+      const panner = this.ctx.createStereoPanner();
+      panner.pan.setValueAtTime(clampedPan, t);
+      osc.connect(gain);
+      gain.connect(panner);
+      panner.connect(this.sfxGain);
+    } else {
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+    }
+
+    osc.start(t);
+    osc.stop(t + 0.15);
+  }
+
+  /**
+   * Tactile mechanical tick for rotating/disassembling artifacts and puzzle rings
+   */
+  public playMechanicalTick(pitchOffset = 0) {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(520 + pitchOffset * 45, t);
+    osc.frequency.exponentialRampToValueAtTime(180, t + 0.04);
+
+    gain.gain.setValueAtTime(0.11, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+
+    osc.start(t);
+    osc.stop(t + 0.05);
+  }
+
+  /**
+   * Ability activation / synergy resonance sweep
+   */
+  public playAbilityActivate(tier = 1) {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    const freqs = tier >= 3 ? [264, 396, 528, 792] : tier === 2 ? [330, 495, 660] : [432, 648];
+    freqs.forEach((f, idx) => {
+      if (!this.ctx || !this.sfxGain) return;
+      const t = this.ctx.currentTime + idx * 0.06;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t);
+      osc.frequency.exponentialRampToValueAtTime(f * 1.02, t + 0.5);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.14, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(t);
+      osc.stop(t + 0.75);
+    });
+  }
+
+  /**
+   * Harmonic chord for puzzle completion & crystal tuning
+   */
+  public playHarmonicChord(freqs: number[] = [256, 320, 384, 512]) {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    freqs.forEach((f) => {
+      if (!this.ctx || !this.sfxGain) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t);
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.11, t + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(t);
+      osc.stop(t + 1.9);
+    });
+  }
+
+  /**
+   * Timeline / Reality Editor shift sound
+   */
+  public playTimelineShift() {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(140, t);
+    osc.frequency.exponentialRampToValueAtTime(560, t + 0.35);
+    osc.frequency.exponentialRampToValueAtTime(210, t + 0.75);
+
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.22, t + 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(t);
+    osc.stop(t + 0.85);
+  }
 }
 
 export const soundEngine = new SoundEngine();
+

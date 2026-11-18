@@ -28,3 +28,24 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(6, 182, 212, 0.5);
 }
+
+@keyframes archive-ticker-marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.archive-ticker-track {
+  display: inline-flex;
+  width: max-content;
+  animation: archive-ticker-marquee 42s linear infinite;
+}
+
+.archive-ticker-track:hover,
+.archive-ticker-paused {
+  animation-play-state: paused;
+}
+

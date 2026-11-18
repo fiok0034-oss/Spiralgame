@@ -1,27 +1,78 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Search,
+  Sparkles,
+  Compass,
+  Sliders,
+  Gamepad2,
+  Package,
+  Lock,
+  CheckCircle2,
+  Eye,
+  Volume2,
+  FileText,
+  DoorOpen,
+  Globe,
+} from 'lucide-react';
 import { useGame } from '../game/GameContext';
 import { STORY_NODES } from '../data/storyData';
 import { GAME_IMAGES, FALLBACK_IMAGES } from '../assets/images';
-import { GeoradarMiniGame } from '../components/GeoradarMiniGame';
+import { GeoRadarScanner } from '../components/GeoRadarScanner';
+import { MiniGameRouter, MINI_GAME_CATALOG } from '../components/MiniGameSuite';
 import { StoryLog } from '../components/StoryLog';
+import { QuestBoard } from '../components/QuestBoard';
+import { PersonalityProfile, SceneHotspot, SpiralState } from '../types/game';
 import { soundEngine } from '../audio/SoundEngine';
+
+const PERSONALITY_LABELS: Record<keyof PersonalityProfile, string> = {
+  analytical: 'Elemző',
+  intuitive: 'Intuitív',
+  preserver: 'Emlékőrző',
+  releaser: 'Elengedő',
+  explorer: 'Felfedező',
+  architect: 'Építész',
+};
 
 interface InteractiveStorySceneProps {
   onOpenRadio: () => void;
   onOpenArchive: () => void;
   onOpenStoryLog?: (mode?: 'log' | 'tree') => void;
+  onOpenArtifacts?: () => void;
+  onOpenAbilities?: () => void;
+  onOpenGuardians?: () => void;
+  onOpenRealityEditor?: () => void;
+  onOpenMiniGamesHub?: () => void;
+  onOpenKodvaros?: () => void;
 }
 
 export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
   onOpenRadio,
   onOpenArchive,
   onOpenStoryLog,
+  onOpenArtifacts,
+  onOpenAbilities,
+  onOpenGuardians,
+  onOpenRealityEditor,
+  onOpenMiniGamesHub,
+  onOpenKodvaros,
 }) => {
-  const { activeSceneId, makeChoice, jumpToChapter, spiralState, triggerRealityFracture, storyLog } = useGame();
-  const [obeliskTouched, setObeliskTouched] = useState(false);
+  const {
+    activeSceneId,
+    makeChoice,
+    jumpToChapter,
+    spiralState,
+    storyLog,
+    echoes,
+    abilities,
+    artifacts,
+    inspectHotspot,
+    guardianProgress,
+  } = useGame();
+
   const [imgLoadError, setImgLoadError] = useState(false);
   const [isLocalStoryLogOpen, setIsLocalStoryLogOpen] = useState(false);
   const [initialLogView, setInitialLogView] = useState<'log' | 'tree'>('log');
+  const [hotspotFeedback, setHotspotFeedback] = useState<{ id: string; text: string; ok: boolean } | null>(null);
 
   const handleOpenLog = (mode: 'log' | 'tree' = 'log') => {
     soundEngine.playUiClick();
@@ -33,7 +84,6 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
     }
   };
 
-  // Keyboard shortcut [L] to toggle StoryLog
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -53,52 +103,96 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
   const fallbackIllustrationSrc = illustrationKey ? FALLBACK_IMAGES[illustrationKey] : null;
   const currentImgSrc = imgLoadError ? fallbackIllustrationSrc : (rawIllustrationSrc || fallbackIllustrationSrc);
 
-  // Reset load error state when scene changes
   useEffect(() => {
     setImgLoadError(false);
+    setHotspotFeedback(null);
   }, [activeSceneId]);
 
-  const handleTouchObelisk = () => {
-    setObeliskTouched(true);
-    soundEngine.playCrystalResonance(528);
-    triggerRealityFracture();
+  const sceneEchoes = echoes.filter((e) => e.targetScenes.includes(activeSceneId));
+  const chosenChoiceSet = new Set(Object.values(spiralState.choiceHistory));
+  const activeDynamicVariants = (currentNode.dynamicVariants || []).filter((variant) => {
+    if (variant.requiresChoiceId && !chosenChoiceSet.has(variant.requiresChoiceId)) return false;
+    if (
+      variant.requiresAnyChoiceIds &&
+      !variant.requiresAnyChoiceIds.some((cid) => chosenChoiceSet.has(cid))
+    ) {
+      return false;
+    }
+    if (variant.requiresWorldFlag && !spiralState.worldState[variant.requiresWorldFlag]) {
+      return false;
+    }
+    if (variant.requiresMinPersonality) {
+      const entries = Object.entries(variant.requiresMinPersonality) as [
+        keyof PersonalityProfile,
+        number
+      ][];
+      if (!entries.every(([k, minVal]) => (spiralState.personality[k] || 0) >= (minVal || 0))) {
+        return false;
+      }
+    }
+    return true;
+  });
+  const unlockedAbilitiesCount = abilities.filter((a) => a.level > 0).length;
+  const unlockedArtifactsCount = artifacts.filter((a) => a.isUnlocked).length;
+  const completedGuardiansCount = Object.values(guardianProgress).filter((g) => g.realmCompleted).length;
+
+  const handleHotspotClick = (hs: SceneHotspot) => {
+    const res = inspectHotspot(hs);
+    setHotspotFeedback({ id: hs.id, text: res.message, ok: res.unlocked });
+  };
+
+  const hotspotIcon = (kind: SceneHotspot['kind']) => {
+    switch (kind) {
+      case 'document':
+        return FileText;
+      case 'photo':
+        return Search;
+      case 'audio':
+        return Volume2;
+      case 'secret_door':
+        return DoorOpen;
+      case 'mechanism':
+        return Sliders;
+      default:
+        return Eye;
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 text-slate-100 animate-in fade-in duration-300">
+    <div
+      className={`max-w-4xl mx-auto px-4 py-6 md:py-8 text-slate-100 transition-transform duration-500 ${
+        spiralState.realityWarp.gravityInverted ? 'border-t-2 border-amber-500/30' : ''
+      }`}
+    >
       {/* Location & Time Header Ribbon */}
-      <div className="flex flex-wrap items-center justify-between border-b border-cyan-500/20 pb-3 mb-6 text-xs font-mono text-slate-400 gap-2">
+      <div className="flex flex-wrap items-center justify-between border-b border-cyan-500/20 pb-3 mb-4 text-xs font-mono text-slate-400 gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-cyan-400">📍</span>
-          <span className="text-slate-200">{currentNode.location || 'Antarktisz, 82°16’S'}</span>
+          <span className="text-slate-200 font-semibold">{currentNode.location || 'Antarktisz, 82°16’S'}</span>
+          {spiralState.loopState > 1 && (
+            <span className="text-amber-300 font-semibold">· {spiralState.loopState}. Időhurok</span>
+          )}
         </div>
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <span>{currentNode.timestamp || 'Δ–82 IDŐVONAL'}</span>
           <span aria-hidden="true" className="text-slate-700">·</span>
           <button
+            type="button"
             onClick={() => handleOpenLog('log')}
-            className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-cyan-200 transition-colors cursor-pointer text-xs font-mono font-semibold"
-            title="Történeti napló és korábbi döntések megtekintése [Gyorsbillentyű: L]"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 transition-colors cursor-pointer text-xs font-mono font-semibold"
           >
-            <span>📜</span>
-            <span>NAPLÓ</span>
-            <span className="text-[10px] text-cyan-400 font-semibold tabular-nums">
-              ({storyLog.length})
-            </span>
-            <kbd className="hidden sm:inline-block ml-0.5 px-1 py-0.2 text-[9px] bg-slate-950 text-slate-400 border border-slate-700 rounded font-mono">
-              L
-            </kbd>
+            <span>Napló</span>
+            <span className="text-[11px] text-cyan-400 tabular-nums">({storyLog.length})</span>
           </button>
           <button
+            type="button"
             onClick={() => handleOpenLog('tree')}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-900/90 hover:bg-slate-800 border border-amber-500/30 hover:border-amber-400 text-amber-300 hover:text-amber-200 transition-colors cursor-pointer text-xs font-mono font-semibold"
-            title="Narratív döntési fa és elágazási térkép"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded bg-slate-900/90 hover:bg-slate-800 border border-amber-500/30 hover:border-amber-400 text-amber-300 transition-colors cursor-pointer text-xs font-mono font-semibold"
           >
-            <span>🌳</span>
-            <span className="hidden sm:inline">DÖNTÉSI FA</span>
+            <span>Döntési Fa</span>
           </button>
           <span aria-hidden="true" className="text-slate-700">·</span>
           <button
+            type="button"
             onClick={() => jumpToChapter('menu')}
             className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 cursor-pointer"
           >
@@ -107,24 +201,101 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         </div>
       </div>
 
-      {/* Cinematic Scene Artwork / Fallback Header */}
+      {/* Tactical Explorer Strip (All Expansion Systems in Reach) */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-6 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {onOpenArtifacts && (
+            <button
+              type="button"
+              onClick={() => { soundEngine.playUiClick(); onOpenArtifacts(); }}
+              className="px-3 py-2 min-h-[38px] rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 text-slate-200 inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <Package className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Tárgyak ({unlockedArtifactsCount})</span>
+            </button>
+          )}
+          {onOpenAbilities && (
+            <button
+              type="button"
+              onClick={() => { soundEngine.playUiClick(); onOpenAbilities(); }}
+              className="px-3 py-2 min-h-[38px] rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 text-slate-200 inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Képességek ({unlockedAbilitiesCount}/12)</span>
+            </button>
+          )}
+          {onOpenGuardians && (
+            <button
+              type="button"
+              onClick={() => { soundEngine.playUiClick(); onOpenGuardians(); }}
+              className="px-3 py-2 min-h-[38px] rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 text-slate-200 inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <Compass className="w-3.5 h-3.5 text-emerald-400" />
+              <span>9 Őrző ({completedGuardiansCount}/9)</span>
+            </button>
+          )}
+          {onOpenKodvaros && (
+            <button
+              type="button"
+              onClick={() => { soundEngine.playUiClick(); onOpenKodvaros(); }}
+              className="px-3 py-2 min-h-[38px] rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 text-slate-200 inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Három Kör ({spiralState.worldState.kodvarosRingsCompleted}/3)</span>
+            </button>
+          )}
+          {onOpenRealityEditor && (
+            <button
+              type="button"
+              onClick={() => { soundEngine.playUiClick(); onOpenRealityEditor(); }}
+              className="px-3 py-2 min-h-[38px] rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-purple-400/50 text-slate-200 inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <Sliders className="w-3.5 h-3.5 text-purple-400" />
+              <span>Valóság-szerkesztő</span>
+            </button>
+          )}
+          {onOpenMiniGamesHub && (
+            <button
+              type="button"
+              onClick={() => { soundEngine.playUiClick(); onOpenMiniGamesHub(); }}
+              className="px-3 py-2 min-h-[38px] rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 text-slate-200 inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <Gamepad2 className="w-3.5 h-3.5 text-cyan-300" />
+              <span>Próbák ({spiralState.worldState.completedMiniGames.length}/{MINI_GAME_CATALOG.length})</span>
+            </button>
+          )}
+        </div>
+        <div className="px-2.5 py-1 text-amber-300 font-bold tabular-nums">
+          Rezonancia: {spiralState.resonancePoints}
+        </div>
+      </div>
+
+      {/* Living World Reality Warp Indicator (shown only when modified) */}
+      {(spiralState.realityWarp.gravityInverted ||
+        spiralState.realityWarp.timelineLayer !== '1982' ||
+        spiralState.realityWarp.hiddenDoorsBridged) && (
+        <div className="mb-5 px-4 py-2.5 rounded-xl bg-purple-950/30 border border-purple-500/40 text-xs font-mono text-purple-200 flex flex-wrap items-center gap-3">
+          <span>Aktív Valóság-állapot:</span>
+          <span>Időréteg: {spiralState.realityWarp.timelineLayer}</span>
+          {spiralState.realityWarp.gravityInverted && <span>· Gravitáció megfordítva</span>}
+          {spiralState.realityWarp.hiddenDoorsBridged && <span>· Rejtett átjárók áthidalva</span>}
+        </div>
+      )}
+
+      {/* Scene Artwork */}
       {currentImgSrc && (
-        <div className="relative w-full h-56 md:h-80 rounded-2xl overflow-hidden mb-8 border border-cyan-500/30 shadow-[0_0_35px_rgba(6,182,212,0.15)] bg-slate-950">
+        <div className="relative w-full h-56 md:h-80 rounded-2xl overflow-hidden mb-6 border border-cyan-500/30 bg-slate-950">
           <img
             src={currentImgSrc}
             alt={currentNode.speaker}
-            referrerPolicy="no-referrer"
             onError={() => {
-              if (!imgLoadError && fallbackIllustrationSrc) {
-                setImgLoadError(true);
-              }
+              if (!imgLoadError && fallbackIllustrationSrc) setImgLoadError(true);
             }}
-            className="w-full h-full object-cover object-center filter brightness-90 contrast-110"
+            className={`w-full h-full object-cover object-center filter brightness-90 contrast-110 transition-transform duration-700 ${
+              spiralState.realityWarp.gravityInverted ? 'rotate-180' : ''
+            }`}
           />
-          {/* Gradients to merge seamlessly into content */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-transparent to-black/30 pointer-events-none" />
-
-          {/* Speaker Card Floating on Image */}
           <div className="absolute bottom-4 left-4 md:left-6">
             <div className="bg-slate-950/85 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-xl inline-block">
               <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest">
@@ -138,175 +309,306 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         </div>
       )}
 
-      {/* Main Narrative Content Box */}
-      <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-sm mb-8 shadow-xl">
+      {/* Main Narrative Box */}
+      <div className="bg-slate-900/75 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-sm mb-6 shadow-xl">
         {!currentImgSrc && (
           <div className="mb-4">
             <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
               {currentNode.speakerRole || 'SZEREP'}
             </span>
-            <h2 className="text-xl font-cinzel font-bold text-slate-100 mt-0.5">
-              {currentNode.speaker}
-            </h2>
+            <h2 className="text-xl font-cinzel font-bold text-slate-100 mt-0.5">{currentNode.speaker}</h2>
           </div>
         )}
 
-        <div className="text-base md:text-lg leading-relaxed text-slate-200 font-sans whitespace-pre-line space-y-4">
+        <div className="text-base md:text-lg leading-relaxed text-slate-200 font-sans whitespace-pre-line">
           {currentNode.text}
         </div>
 
+        {/* New Game+ Extra Revelation */}
+        {spiralState.loopState > 1 && currentNode.ngPlusText && (
+          <div className="mt-5 p-4 rounded-xl bg-amber-950/25 border border-amber-500/40 text-xs md:text-sm font-sans text-amber-200">
+            {currentNode.ngPlusText}
+          </div>
+        )}
+
         {currentNode.subtext && (
-          <div className="mt-5 pt-4 border-t border-slate-800/80 text-xs font-mono text-cyan-300/80 italic flex items-center gap-2">
-            <span>ℹ️</span>
-            <span>{currentNode.subtext}</span>
+          <div className="mt-5 pt-4 border-t border-slate-800/80 text-xs font-mono text-cyan-300/80 italic">
+            {currentNode.subtext}
           </div>
         )}
       </div>
 
-      {/* INTERACTIVE COMPONENT INSERTS */}
-      {/* 1. Georadar Minigame */}
-      {currentNode.interactiveComponent === 'georadar' && (
+      {/* Dynamic Narrative Variants (reacting to prior decisions & personality) */}
+      {activeDynamicVariants.length > 0 && (
+        <div className="mb-6 space-y-2.5">
+          {activeDynamicVariants.map((variant) => (
+            <div
+              key={variant.id}
+              className="p-4 rounded-xl bg-amber-950/20 border border-amber-500/35 text-xs md:text-sm"
+            >
+              <div className="font-mono font-bold text-amber-300 uppercase text-[11px] mb-1">
+                Következmény & Személyiség-reakció · {variant.title}
+              </div>
+              <p className="text-slate-200 leading-relaxed font-sans">{variant.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Echo Manifestations in Current Scene */}
+      {sceneEchoes.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {sceneEchoes.slice(0, 2).map((echo) => (
+            <div
+              key={echo.id}
+              className="p-3.5 rounded-xl bg-cyan-950/25 border border-cyan-500/35 text-xs"
+            >
+              <div className="font-mono font-bold text-cyan-300 uppercase">
+                Korábbi Döntés Visszhangja · {echo.title}
+              </div>
+              <p className="text-slate-200 mt-1">{echo.manifestationText}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Interactive Hotspots Panel */}
+      {currentNode.hotspots && currentNode.hotspots.length > 0 && (
+        <div className="mb-8 space-y-3">
+          <h3 className="text-xs font-mono uppercase tracking-widest text-cyan-300">
+            Helyszíni Interakciók & Vizsgálható Részletek
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {currentNode.hotspots.map((hs) => {
+              const Icon = hotspotIcon(hs.kind);
+              const inspected = spiralState.worldState.inspectedHotspots.includes(hs.id);
+              const reqAbility = hs.requiredAbilityId
+                ? abilities.find((a) => a.id === hs.requiredAbilityId)
+                : null;
+              const lockedByAbility = Boolean(reqAbility && reqAbility.level === 0);
+              const lockedByGravity = Boolean(
+                hs.requiredRealityGravityInverted && !spiralState.realityWarp.gravityInverted
+              );
+
+              return (
+                <button
+                  key={hs.id}
+                  type="button"
+                  onClick={() => handleHotspotClick(hs)}
+                  className={`text-left p-4 rounded-xl border transition-colors cursor-pointer ${
+                    inspected
+                      ? 'border-emerald-500/40 bg-emerald-950/15 hover:border-emerald-400/70'
+                      : lockedByAbility || lockedByGravity
+                      ? 'border-slate-800 bg-slate-950/60 hover:border-amber-500/40'
+                      : 'border-cyan-500/30 bg-slate-950/80 hover:border-cyan-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs font-mono mb-1">
+                    <span className="inline-flex items-center gap-1.5 text-cyan-300 font-semibold">
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{hs.label}</span>
+                    </span>
+                    {inspected ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    ) : lockedByAbility || lockedByGravity ? (
+                      <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">{hs.description}</p>
+                </button>
+              );
+            })}
+          </div>
+          {hotspotFeedback && (
+            <div
+              className={`p-3 rounded-xl border text-xs font-mono ${
+                hotspotFeedback.ok
+                  ? 'bg-emerald-950/25 border-emerald-500/40 text-emerald-200'
+                  : 'bg-amber-950/25 border-amber-500/40 text-amber-200'
+              }`}
+            >
+              {hotspotFeedback.text}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Scene Interactive Mini-Game Insert */}
+      {currentNode.interactiveComponent && (
         <div className="mb-8">
-          <GeoradarMiniGame
-            isCompleted={spiralState.worldState.radarAnomalyFound}
-            onAnomalyLocked={() => {
-              // Lock in event handled in choices
-            }}
-          />
+          {currentNode.interactiveComponent === 'georadar' ? (
+            <GeoRadarScanner isCompleted={spiralState.worldState.radarAnomalyFound} />
+          ) : currentNode.interactiveComponent === 'radio' ? (
+            <div className="bg-slate-900/90 border border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="text-xs font-mono text-slate-400 mb-3">
+                A tábori rádió panelje folyamatosan sistereg. Hangold be a 82.0 és 142.8 MHz-es csatornákat!
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playUiClick();
+                  onOpenRadio();
+                }}
+                className="px-6 py-3 min-h-[44px] bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold text-xs tracking-wider uppercase rounded-lg cursor-pointer"
+              >
+                Rádióhangoló Megnyitása
+              </button>
+            </div>
+          ) : (
+            <MiniGameRouter miniGameId={currentNode.interactiveComponent} embedded />
+          )}
         </div>
       )}
 
-      {/* 2. Radio Scanner Button */}
-      {currentNode.interactiveComponent === 'radio' && (
-        <div className="mb-8 bg-slate-900/90 border border-cyan-500/30 rounded-xl p-5 text-center">
-          <div className="text-xs font-mono text-slate-400 mb-3">
-            A tábori rádió panelje folyamatosan sistereg. Hangold be a frekvenciákat!
-          </div>
-          <button
-            onClick={() => {
-              soundEngine.playUiClick();
-              onOpenRadio();
-            }}
-            className="px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold text-xs tracking-wider uppercase rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.4)] cursor-pointer"
-          >
-            📻 Rádióhangoló Megnyitása (82.0 MHz keresése)
-          </button>
-        </div>
-      )}
-
-      {/* 3. Symbol Puzzle on Obelisk */}
-      {currentNode.interactiveComponent === 'symbol_puzzle' && (
-        <div className="mb-8 bg-slate-950 border border-cyan-500/40 rounded-xl p-6 text-center">
-          <h4 className="text-xs font-mono uppercase tracking-widest text-cyan-400 mb-3">
-            AZ OBELISZK HOMOLÓG SPIRÁLJA // Δ–T1
-          </h4>
-          <p className="text-xs text-slate-400 max-w-md mx-auto mb-5">
-            A fekete kő sima, de a vésett spirális barázdák melegek. Érintsd meg a szimbólumot a tudati szinkronizációhoz.
-          </p>
-          <button
-            onClick={handleTouchObelisk}
-            className={`px-8 py-4 rounded-xl border font-cinzel text-sm tracking-widest transition-all cursor-pointer ${
-              obeliskTouched
-                ? 'bg-cyan-950/80 border-cyan-300 text-cyan-200 shadow-[0_0_25px_#22d3ee]'
-                : 'bg-slate-900 hover:bg-slate-800 border-cyan-500/50 text-slate-200'
-            }`}
-          >
-            {obeliskTouched ? '🌀 A JÉGLÉGZÉS FELGYORSULT' : '🖐️ A SPIRÁL MEGEÉRINTÉSE'}
-          </button>
-        </div>
-      )}
-
-      {/* 4. Three Rings in Kódváros */}
-      {currentNode.interactiveComponent === 'rings_puzzle' && (
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="bg-slate-950 p-4 rounded-xl border border-cyan-500/30 text-center">
-            <div className="text-xl mb-1">🧊</div>
-            <div className="text-xs font-mono font-bold text-cyan-300">1. KÖR: A JÉG EMLÉKE</div>
-            <p className="text-[11px] text-slate-400 mt-1">Kilenc fagyott gömb, a múlt rögzített pillanatai.</p>
-          </div>
-          <div className="bg-slate-950 p-4 rounded-xl border border-cyan-500/30 text-center">
-            <div className="text-xl mb-1">🔊</div>
-            <div className="text-xs font-mono font-bold text-indigo-300">2. KÖR: A HANGOK ALAGÚTJA</div>
-            <p className="text-[11px] text-slate-400 mt-1">Visszhangok és szavak szétválasztása a csendtől.</p>
-          </div>
-          <div className="bg-slate-950 p-4 rounded-xl border border-cyan-500/30 text-center">
-            <div className="text-xl mb-1">👁️</div>
-            <div className="text-xs font-mono font-bold text-purple-300">3. KÖR: A VÉGTELEN SZEME</div>
-            <p className="text-[11px] text-slate-400 mt-1">Önmagad tükre az idő és tudat peremén.</p>
-          </div>
-        </div>
+      {/* Kódváros Főtere QuestBoard */}
+      {activeSceneId === 'k1_three_rings' && (
+        <QuestBoard onOpenKodvaros={onOpenKodvaros} />
       )}
 
       {/* Choice Decision Panel */}
       <div className="space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
           <div className="text-xs font-mono uppercase tracking-widest text-slate-400">
-            DÖNTÉSI LEHETŐSÉGEK // A VILÁG EMLÉKSZIK:
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => handleOpenLog('tree')}
-              className="text-xs font-mono text-amber-300 hover:text-amber-200 underline underline-offset-4 flex items-center gap-1 cursor-pointer font-semibold"
-              title="Narratív elágazási fa és döntési térkép"
-            >
-              <span>🌳</span>
-              <span>Elágazási Fa (Térkép)</span>
-            </button>
-            <span className="text-slate-600">·</span>
-            <button
-              onClick={() => handleOpenLog('log')}
-              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline underline-offset-4 flex items-center gap-1.5 cursor-pointer"
-              title="Időrendi párbeszéd napló"
-            >
-              <span>📜</span>
-              <span>Előzmények ({storyLog.length})</span>
-            </button>
+            DÖNTÉSI LEHETŐSÉGEK · A VILÁG EMLÉKSZIK
           </div>
         </div>
 
-        {currentNode.choices.map((choice) => (
-          <button
-            key={choice.id}
-            onClick={() => makeChoice(choice)}
-            className="w-full text-left p-4 bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700/80 hover:border-cyan-400/80 rounded-xl transition-all group cursor-pointer shadow-md hover:shadow-cyan-950/40 hover:translate-x-1"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm md:text-base font-cinzel font-semibold text-slate-100 group-hover:text-cyan-200">
-                {choice.label}
-              </span>
-              <span className="text-xs font-mono text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                Kiválasztás →
-              </span>
-            </div>
-            {choice.reflection && (
-              <p className="text-xs text-slate-400 mt-1 italic font-sans">
-                {choice.reflection}
-              </p>
-            )}
-          </button>
-        ))}
+        {currentNode.choices.map((choice) => {
+          const reqAb = choice.requiresAbilityId
+            ? abilities.find((a) => a.id === choice.requiresAbilityId)
+            : null;
+          const lockedAb = Boolean(reqAb && reqAb.level === 0);
+          const lockedNg = Boolean(choice.requiresNgPlus && spiralState.loopState <= 1);
+          const lockedChoice = Boolean(
+            choice.requiresChoiceIds && !choice.requiresChoiceIds.every((cid) => chosenChoiceSet.has(cid))
+          );
+
+          let missingPersonalityText: string | null = null;
+          if (choice.requiresMinPersonality) {
+            const entries = Object.entries(choice.requiresMinPersonality) as [
+              keyof PersonalityProfile,
+              number
+            ][];
+            const missing = entries.find(([k, minVal]) => (spiralState.personality[k] || 0) < (minVal || 0));
+            if (missing) {
+              missingPersonalityText = `${PERSONALITY_LABELS[missing[0]]} ≥ ${missing[1]} szükséges (${spiralState.personality[missing[0]] || 0})`;
+            }
+          }
+
+          let lockedFlagText: string | null = null;
+          if (choice.requiresWorldFlags) {
+            const flagEntries = Object.entries(choice.requiresWorldFlags) as [
+              keyof SpiralState['worldState'],
+              unknown
+            ][];
+            const unmet = flagEntries.find(([k, expected]) => spiralState.worldState[k] !== expected);
+            if (unmet) {
+              lockedFlagText =
+                unmet[0] === 'leventeChapterCompleted'
+                  ? 'Levente kulcsaktiválása szükséges'
+                  : unmet[0] === 'kodvarosRing1Done' ||
+                    unmet[0] === 'kodvarosRing2Done' ||
+                    unmet[0] === 'kodvarosRing3Done'
+                  ? 'Mindhárom Kör (1–3) teljesítése szükséges'
+                  : 'Előzetes feltétel szükséges';
+            }
+          }
+
+          const lockedMiniGame = Boolean(
+            choice.requiresMiniGameId &&
+              !spiralState.worldState.completedMiniGames.includes(choice.requiresMiniGameId)
+          );
+          const miniGameTitle = lockedMiniGame
+            ? MINI_GAME_CATALOG.find((m) => m.id === choice.requiresMiniGameId)?.title || 'Minijáték'
+            : null;
+
+          const gateLeventeBypass = Boolean(
+            choice.nextSceneId === 'k1_three_rings' &&
+              !spiralState.worldState.leventeChapterCompleted &&
+              !choice.effect?.setWorldFlags?.leventeChapterCompleted
+          );
+
+          const disabled =
+            lockedAb ||
+            lockedNg ||
+            lockedChoice ||
+            Boolean(missingPersonalityText) ||
+            Boolean(lockedFlagText) ||
+            lockedMiniGame ||
+            gateLeventeBypass;
+
+          const ringDoneForEntry =
+            (choice.id === 'c_k1_enter_ring1' && spiralState.worldState.kodvarosRing1Done) ||
+            (choice.id === 'c_k1_enter_ring2' && spiralState.worldState.kodvarosRing2Done) ||
+            (choice.id === 'c_k1_enter_ring3' && spiralState.worldState.kodvarosRing3Done);
+
+          const statusLabel = lockedNg
+            ? '2. Időhurok szükséges'
+            : lockedAb
+            ? `${reqAb?.name} szükséges`
+            : lockedMiniGame
+            ? `Teljesítsd: ${miniGameTitle}`
+            : missingPersonalityText
+            ? missingPersonalityText
+            : lockedFlagText
+            ? lockedFlagText
+            : gateLeventeBypass
+            ? 'Levente fejezete szükséges'
+            : lockedChoice
+            ? 'Korábbi döntés szükséges'
+            : ringDoneForEntry
+            ? '✓ Teljesítve · Újrajátszás →'
+            : 'Kiválasztás →';
+
+          return (
+            <button
+              key={choice.id}
+              type="button"
+              disabled={disabled}
+              onClick={() => makeChoice(choice)}
+              className={`w-full text-left p-4 rounded-xl border transition-all group ${
+                disabled
+                  ? 'bg-slate-950/50 border-slate-800 opacity-55 cursor-not-allowed'
+                  : 'bg-slate-900/90 hover:bg-slate-800/90 border-slate-700/80 hover:border-cyan-400/80 cursor-pointer shadow-md hover:translate-x-1'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm md:text-base font-cinzel font-semibold text-slate-100 group-hover:text-cyan-200">
+                  {choice.label}
+                </span>
+                <span className="text-xs font-mono text-cyan-400 whitespace-nowrap">
+                  {statusLabel}
+                </span>
+              </div>
+              {choice.reflection && (
+                <p className="text-xs text-slate-400 mt-1 italic font-sans">{choice.reflection}</p>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Bottom Dossier Prompt */}
-      <div className="mt-12 text-center text-xs font-mono text-slate-500">
-        Új információkért keresd fel az{' '}
+      <div className="mt-10 text-center text-xs font-mono text-slate-500">
+        Az eddigi felfedezések az{' '}
         <button
+          type="button"
           onClick={onOpenArchive}
           className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 cursor-pointer"
         >
           ARCHÍV-82
         </button>{' '}
-        dossziéit vagy ellenőrizd a korábbi{' '}
+        rendszerben és a{' '}
         <button
+          type="button"
           onClick={() => handleOpenLog('log')}
           className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 cursor-pointer"
         >
-          Döntésnaplót
-        </button>
-        .
+          Történeti Naplóban
+        </button>{' '}
+        bármikor áttekinthetők.
       </div>
 
-      {/* Embedded StoryLog Modal */}
       <StoryLog
         isOpen={isLocalStoryLogOpen}
         onClose={() => setIsLocalStoryLogOpen(false)}
