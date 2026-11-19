@@ -100,7 +100,7 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
             <button
               type="button"
               onClick={onOpenStoryLog}
-              className="px-2 py-1.5 text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded"
+              className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
               title="Történeti Napló"
             >
               NAPLÓ
@@ -109,7 +109,7 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
           <button
             type="button"
             onClick={onOpenArchive}
-            className="px-2 py-1.5 text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded"
+            className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
             title="Archívum"
           >
             ARCHÍV
@@ -117,7 +117,7 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
           <button
             type="button"
             onClick={onOpenRadio}
-            className="px-2 py-1.5 text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded"
+            className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
             title="Rádió"
           >
             RÁDIÓ
@@ -125,7 +125,7 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
           <button
             type="button"
             onClick={onOpenProfile}
-            className="px-2 py-1.5 text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded"
+            className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
             title="Profil"
           >
             PROFIL
@@ -138,7 +138,7 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
             soundEngine.playUiClick();
             onOpenSettings();
           }}
-          className="px-3 py-1.5 text-xs font-mono text-slate-300 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+          className="px-3 py-2 min-h-[40px] text-xs font-mono text-slate-300 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
           title="Beállítások"
         >
           BEÁLLÍTÁSOK

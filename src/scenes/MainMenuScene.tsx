@@ -72,7 +72,7 @@ export const MainMenuScene: React.FC<MainMenuSceneProps> = ({
       id: 'chapter_final',
       sceneId: 'inf_final_encounter',
       title: 'VII. FEJEZET: A VÉGTELEN',
-      subtitle: 'A Spirál Magja · A Három Választás',
+      subtitle: 'A Spirál Magja · A Négy Út & a Titkos Szoba',
     },
   ];
 
@@ -141,7 +141,7 @@ export const MainMenuScene: React.FC<MainMenuSceneProps> = ({
 
         {spiralState.completedEndings.length > 0 && (
           <div className="mt-4 text-xs font-mono text-amber-300/90">
-            Feloldott befejezések: {spiralState.completedEndings.length}/4 · Minden újrajátszás mélyebb rétegeket nyit meg.
+            Feloldott befejezések: {spiralState.completedEndings.length}/5 · Minden újrajátszás mélyebb rétegeket nyit meg.
           </div>
         )}
 

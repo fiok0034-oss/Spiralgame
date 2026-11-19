@@ -442,7 +442,7 @@ export const FINAL_TRIALS: FinalTrialQuestion[] = [
       },
       {
         id: 'opt_ev_wrong2',
-        label: 'Viktor elméje egyedül találta ki az egész várost a oxigénhiány miatt.',
+        label: 'Viktor elméje egyedül találta ki az egész várost az oxigénhiány miatt.',
         explanation: 'Lena 1979-es szalagjai, Áron 1959-es kronométere és Levente 1989-es budapesti EEG-je függetlenül igazolják egymást.',
       },
       {
@@ -790,6 +790,62 @@ export const REVELATION_CINEMATICS: Record<string, CinematicEventData> = {
     ],
     completionText: 'Az Új Világ nyitott maradt minden jövőbeli történetre.',
     rewardResonance: 70,
+  },
+  cin_ending_covenant: {
+    id: 'cin_ending_covenant',
+    title: 'Befejezés · A Tiszta Csend Szövetsége',
+    chapterLabel: '4. Út · A Múlt Békés Elengedése',
+    subtitle: 'Sem bezárt börtön, sem kényszerített emlékezet: az 1959-es és 1982-es nevek békében pihennek meg.',
+    phases: [
+      {
+        title: '1. Fázis: A Fekete Hó Irgalma',
+        narrative:
+          'Ir-Haya fekete hamuja és Sen-Maria parazsa egyszerre öleli át az obeliszket: a régi vészjelzések nem törlődnek ki erőszakkal, hanem megkapják a jogot a csendhez.',
+        promptLabel: 'Engedd el a múlt visszahúzó terhét!',
+        actionLabel: 'Békés Elengedés',
+        frequencyHz: 396,
+        visualMode: 'wave',
+      },
+      {
+        title: '2. Fázis: Szabad Holnap',
+        narrative:
+          'A 82.0 és 142.8 MHz elhalkul, de egyetlen emberi kapcsolat sem szakad el: Viktor, Lena, Mira és Levente tiszta lappal lépnek ki a hóviharból.',
+        promptLabel: 'Pecsételd meg a Tiszta Csend Szövetségét!',
+        actionLabel: 'Szövetség Rögzítése',
+        frequencyHz: 528,
+        visualMode: 'portal',
+      },
+    ],
+    completionText: 'A múlt békére lelt; a jelen többé nem a régi sebek visszhangja.',
+    rewardResonance: 65,
+  },
+  cin_ending_meta_room: {
+    id: 'cin_ending_meta_room',
+    title: 'Titkos Befejezés · A Nyitott Ablakú Szoba',
+    chapterLabel: '5. Titkos Út · OBSERVER_0 Ébredése',
+    subtitle: 'A negyedik fal áttetszővé válik: minden gyűjtött nyom és kilenc Visszhang ugyanarra a székre mutat.',
+    phases: [
+      {
+        title: '1. Fázis: A Negyedik Fal Feloldódása',
+        narrative:
+          'A képernyő sarki fagyán átsüt egy tavaszi ablak meleg fénye. Az Antarktisz, Kódváros és Budapest koordinátái mögött feltárul a csendes faasztal.',
+        promptLabel: 'Lépj át az ablakon túli küszöbön!',
+        actionLabel: 'Küszöb Átlépése',
+        frequencyHz: 639,
+        visualMode: 'convergence',
+      },
+      {
+        title: '2. Fázis: A Papírra Írt Szó',
+        narrative:
+          'Mind a négy főszereplő és A Végtelen hátralép egyet a csendben — az üres lapon egyetlen kézírásos kérdés jelenik meg: „Talán te.”',
+        promptLabel: 'Fogadd el a Szerzői Szoba tanúságát!',
+        actionLabel: 'Könyv Megérintése',
+        frequencyHz: 741,
+        visualMode: 'portal',
+      },
+    ],
+    completionText: 'A Nyitott Ablakú Szoba megnyílt — a történet most már a te kezedben folytatódik.',
+    rewardResonance: 90,
   },
 };
 

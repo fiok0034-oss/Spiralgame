@@ -377,7 +377,7 @@ export interface SpiralState {
     kassarahMemoryHarmonized: boolean;
     irHayaOblivionAccepted: boolean;
     infiniteAcknowledged: boolean;
-    chosenPath: 'close' | 'share' | 'new_world' | 'meta_room' | null;
+    chosenPath: 'close' | 'share' | 'new_world' | 'covenant' | 'meta_room' | null;
     discoveredRadarTargets: string[];
     completedMiniGames: MiniGameId[];
     completedCinematics: string[];

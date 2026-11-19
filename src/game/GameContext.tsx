@@ -94,6 +94,7 @@ interface GameContextType {
   reducedMotion: boolean;
   startNewGame: () => void;
   continueGame: () => void;
+  resetAllProgress: () => void;
   jumpToChapter: (chapter: GameChapterId, sceneId?: string) => void;
   makeChoice: (choice: ChoiceOption) => void;
   unlockMemory: (id: string) => void;
@@ -1929,6 +1930,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       };
     });
+    setGuardianProgress(createInitialGuardianProgress());
+    setEchoes([]);
+    setActiveCinematicId(null);
+    setActiveMiniGameId(null);
+    setActiveArtifactId(null);
+    setIsFractured(false);
     setActiveChapter('chapter1_viktor');
     setActiveSceneId('v1_intro');
     setStoryLog([buildStoryLogEntry('v1_intro')]);
@@ -1941,9 +1948,60 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...DEFAULT_SPIRAL_STATE,
       loopState: prev.loopState > 1 || prev.completedEndings.length > 0 ? prev.loopState + 1 : 1,
       completedEndings: prev.completedEndings,
+      personality:
+        prev.loopState > 1 || prev.completedEndings.length > 0
+          ? prev.personality
+          : DEFAULT_PERSONALITY,
       resonancePoints: 30 + prev.completedEndings.length * 25,
+      worldState: {
+        ...DEFAULT_SPIRAL_STATE.worldState,
+        discoveredSecrets:
+          prev.loopState > 1 || prev.completedEndings.length > 0
+            ? prev.worldState.discoveredSecrets
+            : [],
+        unlockedSynergies:
+          prev.loopState > 1 || prev.completedEndings.length > 0
+            ? prev.worldState.unlockedSynergies
+            : [],
+      },
     }));
+    setGuardianProgress(createInitialGuardianProgress());
+    setEchoes([]);
+    setActiveCinematicId(null);
+    setActiveMiniGameId(null);
+    setActiveArtifactId(null);
+    setIsFractured(false);
     setActiveChapter('chapter1_viktor');
+    setActiveSceneId('v1_intro');
+    setStoryLog([buildStoryLogEntry('v1_intro')]);
+  };
+
+  const resetAllProgress = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // safe fallback
+    }
+    soundEngine.playTimelineShift();
+    setSpiralState(DEFAULT_SPIRAL_STATE);
+    setMemories(INITIAL_MEMORIES);
+    setRelics(INITIAL_RELICS);
+    setAchievements(INITIAL_ACHIEVEMENTS);
+    setRadioChannels(INITIAL_RADIO_CHANNELS);
+    setAbilities(INITIAL_ABILITIES);
+    setArtifacts(INITIAL_ARTIFACTS);
+    setEvidence(INITIAL_EVIDENCE);
+    setDeductions(INITIAL_DEDUCTIONS);
+    setPersonnel(PERSONNEL_DB);
+    setExpeditions(EXPEDITION_DB);
+    setSecrets(INITIAL_SECRETS);
+    setGuardianProgress(createInitialGuardianProgress());
+    setEchoes([]);
+    setActiveCinematicId(null);
+    setActiveMiniGameId(null);
+    setActiveArtifactId(null);
+    setIsFractured(false);
+    setActiveChapter('menu');
     setActiveSceneId('v1_intro');
     setStoryLog([buildStoryLogEntry('v1_intro')]);
   };
@@ -2191,6 +2249,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reducedMotion,
         startNewGame,
         continueGame,
+        resetAllProgress,
         jumpToChapter,
         makeChoice,
         unlockMemory,

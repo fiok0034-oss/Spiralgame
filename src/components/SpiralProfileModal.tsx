@@ -49,7 +49,7 @@ export const SpiralProfileModal: React.FC<SpiralProfileModalProps> = ({
               SPIRÁLPROFIL · TUDATI ÁLLAPOT & VISSZHANGOK
             </h2>
             <div className="text-xs text-slate-400 font-mono mt-0.5 tabular-nums">
-              {spiralState.loopState}. Időhurok · Rezonancia: {spiralState.resonancePoints} · Befejezések: {spiralState.completedEndings.length}/4
+              {spiralState.loopState}. Időhurok · Rezonancia: {spiralState.resonancePoints} · Befejezések: {spiralState.completedEndings.length}/5
             </div>
           </div>
           <button

@@ -773,7 +773,7 @@ export const MetaChecklistPanel: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-xs font-mono text-purple-300 uppercase tracking-wider font-bold flex items-center gap-1.5">
           <KeyRound className="w-4 h-4" />
-          <span>Titkos 4. Út („Talán te”) Elérhetőségi Ellenőrző</span>
+          <span>Titkos Meta-Út („Talán te”) Elérhetőségi Ellenőrző</span>
         </div>
         <span
           className={`text-xs font-mono font-bold ${

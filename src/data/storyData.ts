@@ -2628,6 +2628,19 @@ export const STORY_NODES: Record<string, DialogueNode> = {
         nextSceneId: 'ending_new_world',
       },
       {
+        id: 'c_end_covenant',
+        label: '4. ÚT: A TISZTA CSEND SZÖVETSÉGE — A Múlt Békés Elengedése',
+        reflection: 'Ir-Haya és Sen-Maria irgalmával elengeded az 1959-es és 1982-es fájdalmas visszahúzást, hogy a túlélők szabadon kezdhessenek újra.',
+        personalityBias: { releaser: 2, preserver: 1, intuitive: 1 },
+        effect: {
+          memoryIntegrityDelta: 35,
+          timeStabilityDelta: 45,
+          setWorldFlags: { chosenPath: 'covenant', infiniteEncountersCompleted: 3 },
+          triggerCinematicId: 'cin_ending_covenant',
+        },
+        nextSceneId: 'ending_silent_covenant',
+      },
+      {
         id: 'c_end_meta',
         label: 'TITKOS ÚT: A NYITOTT ABLAKÚ SZOBA („Talán te.”)',
         reflection: 'Csak akkor nyílik meg, ha a 9 Visszhang, a Kamra, a Tanács, a Végső Próbák és a Szerzői Lap mind összeállt.',
@@ -2635,7 +2648,7 @@ export const STORY_NODES: Record<string, DialogueNode> = {
         effect: {
           unlockAchievementId: 'ach_the_writer',
           setWorldFlags: { chosenPath: 'meta_room', infiniteEncountersCompleted: 3 },
-          triggerCinematicId: 'cin_ninth_awakening',
+          triggerCinematicId: 'cin_ending_meta_room',
         },
         nextSceneId: 'ending_meta_room',
       },
@@ -2748,9 +2761,42 @@ export const STORY_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  ending_silent_covenant: {
+    id: 'ending_silent_covenant',
+    speaker: 'EPILÓGUS — A TISZTA CSEND SZÖVETSÉGE',
+    speakerRole: '4. Út · Békés Elengedés · Ir-Haya és Sen-Maria Áldása',
+    location: 'Budapest ⟷ Poláris-59 Hómező',
+    timestamp: 'Tiszta Idővonal',
+    atmosphere: 'silence',
+    text: 'Nem a jégkaput csaptad be félelemből, és nem is az eget írtad át hirtelen fénnyel. Ir-Haya tenyerébe tetted az 1959-es és 1982-es fájdalmas visszhangokat, miközben Sen-Maria parazsa megőrizte a szeretet és az emberi melegség emlékét.\n\nA 82.0 MHz és a 142.8 MHz lassan, megnyugodva elcsendesedett — mintha valaki végre letette volna a fülhallgatót egy hosszú éjszaka után. Lena felnézett a papírjairól, és először nem kísérteteket látott a tükörben; Viktor lezárta a krónikát Áron és Tamás neve mellett egyetlen őszinte mondattal; Mira elengedte a Δ–T0 romjainak bűntudatát; Levente pedig szabadon dönthetett a saját holnapjáról. A Végtelen nem veszített el senkit — csak megtanult békében elengedni.',
+    subtext: 'Befejezés: A Tiszta Csend Szövetsége. (Újrajátszáskor a Második Lélegzet új összefüggéseket nyit meg.)',
+    illustrationKey: 'antarcticOutpost',
+    dynamicVariants: [
+      {
+        id: 'var_esc_irhaya_peace',
+        title: 'Ir-Haya Békés Hamuja',
+        text: 'Mivel korábban is tiszteletben tartottad a csendet, a Poláris-59 és az 1982-es bázis emléke nem felejtésként, hanem megbékélésként zárult le.',
+        requiresAnyChoiceIds: ['c_k1_r2_silence_static', 'trial_r2_accept_mercy', 'c_k1_r1_melt_grief'],
+      },
+      {
+        id: 'var_esc_chamber_witness',
+        title: 'A Kamra Áldozatának Békéje',
+        text: 'Áron és Tamás szelleme a Kamra asztalánál elmosolyodik: pontosan erre a csendre vágytak negyven éven át.',
+        requiresWorldFlag: 'chamberBeyondNinthCompleted',
+      },
+    ],
+    choices: [
+      {
+        id: 'c_back_to_menu_4',
+        label: 'Új Időhurok (New Game+) Indítása // A Második Lélegzet',
+        nextSceneId: 'v1_intro',
+      },
+    ],
+  },
+
   ending_meta_room: {
     id: 'ending_meta_room',
-    speaker: 'A SZERZŐ SZOBÁJA · A NEGVEDIK FALON TÚL',
+    speaker: 'A SZERZŐ SZOBÁJA · A NEGYEDIK FALON TÚL',
     speakerRole: 'Meta-narratíva · OBSERVER_0 Végső Helye',
     location: 'Fa padlós szoba, nyitott ablak',
     timestamp: 'Most',

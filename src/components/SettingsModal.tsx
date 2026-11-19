@@ -20,6 +20,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [ambient, setAmbient] = React.useState(soundEngine.ambientVolume);
   const [sfx, setSfx] = React.useState(soundEngine.sfxVolume);
   const [isMuted, setIsMuted] = React.useState(soundEngine.isMuted);
+  const [confirmingReset, setConfirmingReset] = React.useState(false);
 
   if (!isOpen) return null;
 
@@ -55,8 +56,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </h3>
           </div>
           <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white px-2.5 py-1 text-xs font-mono border border-slate-700 rounded hover:border-slate-500 transition-colors cursor-pointer"
+            type="button"
+            onClick={() => {
+              setConfirmingReset(false);
+              onClose();
+            }}
+            className="text-slate-300 hover:text-white px-3 py-2 min-h-[40px] text-xs font-mono border border-slate-700 rounded-lg hover:border-slate-500 transition-colors cursor-pointer"
           >
             BEZÁRÁS
           </button>
@@ -148,19 +153,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Reset Save Data */}
-          <div className="pt-4 border-t border-slate-800 flex justify-between items-center">
-            <span className="text-slate-500 text-[11px]">Idővonal visszaállítása:</span>
-            <button
-              onClick={() => {
-                if (window.confirm('Biztosan újraindítod a Spirál idővonalát? Minden feloldott emlék alaphelyzetbe áll.')) {
-                  onResetGame();
-                  onClose();
-                }
-              }}
-              className="px-3 py-1.5 bg-rose-950/60 hover:bg-rose-900 border border-rose-500/30 text-rose-300 rounded transition-colors cursor-pointer"
-            >
-              Újraindítás
-            </button>
+          <div className="pt-4 border-t border-slate-800 space-y-3">
+            <div className="flex justify-between items-center gap-2">
+              <span className="text-slate-400 text-[11px]">Teljes idővonal visszaállítása:</span>
+              {!confirmingReset && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playUiClick();
+                    setConfirmingReset(true);
+                  }}
+                  className="px-3.5 py-2 min-h-[40px] bg-rose-950/60 hover:bg-rose-900 border border-rose-500/35 text-rose-200 rounded-lg transition-colors cursor-pointer"
+                >
+                  Újraindítás
+                </button>
+              )}
+            </div>
+            {confirmingReset && (
+              <div className="p-3 rounded-xl border border-rose-500/40 bg-rose-950/30 space-y-2.5">
+                <p className="text-[11px] text-rose-200 leading-relaxed">
+                  Biztosan törlöd a teljes mentést és alaphelyzetbe állítod a Spirál idővonalát? Minden feloldott emlék, birodalom és befejezés törlődik.
+                </p>
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEngine.playUiClick();
+                      setConfirmingReset(false);
+                    }}
+                    className="px-3 py-2 min-h-[40px] bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg cursor-pointer"
+                  >
+                    Mégse
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmingReset(false);
+                      onResetGame();
+                      onClose();
+                    }}
+                    className="px-3 py-2 min-h-[40px] bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg cursor-pointer"
+                  >
+                    Igen, teljes törlés
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

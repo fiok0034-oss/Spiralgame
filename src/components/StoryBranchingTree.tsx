@@ -620,14 +620,14 @@ const GRAPH_NODES: GraphNode[] = [
     tier: 39,
     actName: 'VII. FEJEZET: A VÉGTELEN SZEME',
     title: 'A Végtelen Utolsó Szeme',
-    subtitle: '3. Találkozás & A Négy Végső Út',
+    subtitle: '3. Találkozás · 4 Út + Titkos Meta-út',
     speaker: 'A VÉGTELEN',
     speakerColor: 'text-purple-300 border-purple-500/50 bg-purple-950/40',
     column: 0,
     totalColumnsInTier: 1,
   },
 
-  // TIER 40: ENDINGS (4 COLUMNS)
+  // TIER 40: ENDINGS (5 COLUMNS: 4 NORMAL + 1 SECRET META)
   {
     id: 'ending_close',
     tier: 40,
@@ -637,7 +637,7 @@ const GRAPH_NODES: GraphNode[] = [
     speaker: 'EPILÓGUS',
     speakerColor: 'text-blue-400 border-blue-500/50 bg-blue-950/40',
     column: 0,
-    totalColumnsInTier: 4,
+    totalColumnsInTier: 5,
     isEnding: true,
   },
   {
@@ -649,7 +649,7 @@ const GRAPH_NODES: GraphNode[] = [
     speaker: 'EPILÓGUS',
     speakerColor: 'text-cyan-300 border-cyan-400/50 bg-cyan-950/40',
     column: 1,
-    totalColumnsInTier: 4,
+    totalColumnsInTier: 5,
     isEnding: true,
   },
   {
@@ -661,7 +661,19 @@ const GRAPH_NODES: GraphNode[] = [
     speaker: 'EPILÓGUS',
     speakerColor: 'text-emerald-300 border-emerald-400/50 bg-emerald-950/40',
     column: 2,
-    totalColumnsInTier: 4,
+    totalColumnsInTier: 5,
+    isEnding: true,
+  },
+  {
+    id: 'ending_silent_covenant',
+    tier: 40,
+    actName: 'EPILÓGUS — 4. ÚT',
+    title: 'A Tiszta Csend Szövetsége',
+    subtitle: 'Békés elengedés · Tiszta idővonal',
+    speaker: 'EPILÓGUS',
+    speakerColor: 'text-indigo-300 border-indigo-400/50 bg-indigo-950/40',
+    column: 3,
+    totalColumnsInTier: 5,
     isEnding: true,
   },
   {
@@ -672,8 +684,8 @@ const GRAPH_NODES: GraphNode[] = [
     subtitle: 'A Szerző asztala · „Talán te.”',
     speaker: 'EPILÓGUS META',
     speakerColor: 'text-amber-300 border-amber-400/50 bg-amber-950/40',
-    column: 3,
-    totalColumnsInTier: 4,
+    column: 4,
+    totalColumnsInTier: 5,
     isEnding: true,
   },
 ];
@@ -779,6 +791,7 @@ const GRAPH_EDGES: GraphEdge[] = [
   { from: 'inf_final_encounter', to: 'ending_close', choiceId: 'c_end_close', choiceLabel: '1. Út: Lezárás' },
   { from: 'inf_final_encounter', to: 'ending_share', choiceId: 'c_end_share', choiceLabel: '2. Út: Megosztás' },
   { from: 'inf_final_encounter', to: 'ending_new_world', choiceId: 'c_end_new_world', choiceLabel: '3. Út: Új Világ' },
+  { from: 'inf_final_encounter', to: 'ending_silent_covenant', choiceId: 'c_end_covenant', choiceLabel: '4. Út: Csend Szövetsége' },
   { from: 'inf_final_encounter', to: 'ending_meta_room', choiceId: 'c_end_meta', choiceLabel: 'Titkos Út: A Szoba' },
 ];
 
@@ -909,7 +922,7 @@ export const StoryBranchingTree: React.FC<StoryBranchingTreeProps> = () => {
             <span className="text-cyan-400 font-bold">{totalVisited}/{totalNodes}</span>
             <span className="text-slate-600">|</span>
             <span className="text-slate-400">Befejezések:</span>
-            <span className="text-amber-400 font-bold">{endingsUnlocked}/4</span>
+            <span className="text-amber-400 font-bold">{endingsUnlocked}/5</span>
           </div>
 
           <button
@@ -1016,7 +1029,9 @@ export const StoryBranchingTree: React.FC<StoryBranchingTreeProps> = () => {
                       ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl'
                       : tierNodes.length === 3
                       ? 'grid-cols-1 sm:grid-cols-3 max-w-3xl'
-                      : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl'
+                      : tierNodes.length === 4
+                      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl'
+                      : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 max-w-6xl'
                   }`}
                 >
                   {tierNodes.map((node) => {

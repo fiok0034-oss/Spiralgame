@@ -39,7 +39,7 @@ const GameContainer: React.FC = () => {
     setActiveArtifactId,
     setReducedMotion,
     discoverRadioChannel,
-    startNewGame,
+    resetAllProgress,
   } = useGame();
 
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
@@ -274,7 +274,7 @@ const GameContainer: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         reducedMotion={reducedMotion}
         onToggleReducedMotion={setReducedMotion}
-        onResetGame={startNewGame}
+        onResetGame={resetAllProgress}
       />
     </div>
   );
