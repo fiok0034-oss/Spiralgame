@@ -67,10 +67,45 @@ const buildMissionContext = (sceneId: string, spiralState: SpiralState) => {
     };
   }
   if (sceneId === 'g1_chamber_beyond_ninth') {
+    const stagesCount = spiralState.worldState.chamberStagesCompleted?.length || 0;
     return {
       title: 'Θ–∞–Δ · A Kilencediken Túli Kamra',
       objective:
-        'Mind a Kilenc Visszhang egyesült! Vizsgáld meg a Θ–∞–Δ jelet, és vidd tovább a felismerést a Végtelen Szeme elé.',
+        stagesCount < 7
+          ? `Haladj végig a Kamra 7 egymásra épülő szakaszán (${stagesCount}/7 kész), vállald a választás árát, és nyisd meg a Végső Kaput!`
+          : 'Mind a 7 szakasz teljesítve! Válaszd ki a kamra végső fogadalmát a VII. Fejezetbe lépéshez.',
+    };
+  }
+  if (sceneId === 'inf_guardian_council') {
+    return {
+      title: 'VII. Fejezet · A Kilenc Őrző Végső Tanácsa',
+      objective: !spiralState.worldState.guardianCouncilVerdictDone
+        ? 'Tekintsd át az Őrzők bizalmi ítéletét és rögzítsd a Tanács határozatát a továbblépéshez.'
+        : 'A Tanács ítélete rögzítve! Lépj be a Végső Próbák Csarnokába.',
+    };
+  }
+  if (sceneId === 'inf_final_trials') {
+    const solved = spiralState.worldState.finalTrialsSolved?.length || 0;
+    return {
+      title: 'VII. Fejezet · Logikai & Nyomozói Végső Próbák',
+      objective:
+        solved < 3
+          ? `Oldj meg legalább 3-at a 4 történeti próba közül (${solved}/4 kész), hogy feltárd az Öt Nagy Fordulatot!`
+          : `Végső Próbák igazolva (${solved}/4)! Lépj be A Végtelen Utolsó Szeme elé.`,
+    };
+  }
+  if (sceneId === 'inf_viktor_lena_reckoning' || sceneId === 'inf_mira_levente_reckoning') {
+    return {
+      title: 'VII. Fejezet · A Négy Főszereplő Találkozása',
+      objective:
+        'Kísérd végig Viktor, Lena, Mira és Levente közös számvetését, és alapozd meg a szabad emberi szövetséget.',
+    };
+  }
+  if (sceneId === 'inf_encounter_1' || sceneId === 'inf_encounter_2') {
+    return {
+      title: 'VII. Fejezet · Találkozás A Végtelennel',
+      objective:
+        'Fedd fel A Végtelen ellentmondásos természetét és az 1982-es Fagyás valódi okát, majd lépj az Őrzők Tanácsa elé.',
     };
   }
   if (sceneId.startsWith('g1_realm_') || sceneId === 'g1_guardians_nexus') {
@@ -224,10 +259,22 @@ const synthesizeEchoTip = (
       'Tipp Mira fejezetéhez: a Másik Mira kérdéseire adott válaszod és az Obszervatórium fókuszálása közvetlenül előkészíti Levente kulcsát.';
   } else if (sceneId.startsWith('g1_realm_') || sceneId === 'g1_guardians_nexus') {
     sceneTip =
-      'Tipp a Kilenc Birodalomhoz: a szentélyzónákban emeld ki a Visszhang-magot (9/9 nyitja a Titkos Kamrát), és keresd a különös apró anomáliákat a zónatérképen!';
+      'Tipp a Kilenc Birodalomhoz: a szentélyzónákban emeld ki a Visszhang-magot (9/9 nyitja a Titkos Kamrát), majd a Tárgyvizsgálóban és Rádióban is hallgasd meg az új suttogásokat!';
   } else if (sceneId === 'g1_chamber_beyond_ninth') {
     sceneTip =
-      'Tipp A Kilencediken Túli Kamrához: vizsgáld meg a Θ–∞–Δ szimbólumot, mielőtt továbbindulsz a Végtelen elé.';
+      'Tipp A Kilencediken Túli Kamrához: haladj végig mind a 7 interaktív szakaszon (csend, triádok, 1959/1979/1989 emlékek, lehetetlen találkozás, ár vállalása), mielőtt továbbindulsz.';
+  } else if (sceneId === 'inf_guardian_council') {
+    sceneTip =
+      'Tipp a Végső Tanácshoz: olvasd el az Őrzők bizalmi állásfoglalásait és rögzítsd a Tanács Ítéletét a panel alján!';
+  } else if (sceneId === 'inf_final_trials') {
+    sceneTip =
+      'Tipp a Végső Próbákhoz: keresd ki az ARCHÍV-82 bizonyítékokból az 1959-es nevek, az 1979-es kazetta és az OBSERVER_0 ötödik vezeték adatait!';
+  } else if (sceneId === 'inf_final_encounter') {
+    sceneTip =
+      'Tipp A Végtelen Szeméhez: a 4. Meta-út („Talán te”) megnyitásához ellenőrizd a fenti Meta-ellenőrző 4 feltételét!';
+  } else if (sceneId.startsWith('inf_') || sceneId.startsWith('ending_')) {
+    sceneTip =
+      'Tipp a VII. Fejezethez: minden korábbi fejezet (Viktor, Lena, Mira, Levente, Kódváros és az Őrzők) döntései közvetlenül visszhangoznak ebben a fináléban.';
   }
 
   return {

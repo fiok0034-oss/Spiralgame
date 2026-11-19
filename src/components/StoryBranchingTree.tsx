@@ -536,23 +536,101 @@ const GRAPH_NODES: GraphNode[] = [
     totalColumnsInTier: 1,
   },
 
-  // TIER 33: FINAL ENCOUNTER
+  // TIER 33: ACT 7 INFINITE ENCOUNTER 1
   {
-    id: 'inf_final_encounter',
+    id: 'inf_encounter_1',
     tier: 33,
-    actName: 'VÉGSŐ FEJEZET: A VÉGTELEN',
-    title: 'A Végtelen Szeme',
-    subtitle: 'A Megfigyelő, a Tükör és a Három Út',
+    actName: 'VII. FEJEZET: A VÉGTELEN',
+    title: 'A Külső Perem · 1. Találkozás',
+    subtitle: 'A Végtelen ellentmondásos alakjai',
     speaker: 'A VÉGTELEN',
     speakerColor: 'text-purple-300 border-purple-500/50 bg-purple-950/40',
     column: 0,
     totalColumnsInTier: 1,
   },
 
-  // TIER 34: ENDINGS (4 COLUMNS)
+  // TIER 34: VIKTOR & LENA RECKONING
+  {
+    id: 'inf_viktor_lena_reckoning',
+    tier: 34,
+    actName: 'VII. FEJEZET: NÉGY LÉLEK',
+    title: 'Viktor & Lena Számvetése',
+    subtitle: '1982–1983 pólusainak békéje',
+    speaker: 'VIKTOR & LENA',
+    speakerColor: 'text-cyan-300 border-cyan-500/50 bg-cyan-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 35: MIRA & LEVENTE RECKONING
+  {
+    id: 'inf_mira_levente_reckoning',
+    tier: 35,
+    actName: 'VII. FEJEZET: NÉGY LÉLEK',
+    title: 'Mira & Levente Szövetsége',
+    subtitle: 'A négy főszereplő találkozása',
+    speaker: 'MIRA & LEVENTE',
+    speakerColor: 'text-amber-300 border-amber-500/50 bg-amber-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 36: ACT 7 INFINITE ENCOUNTER 2
+  {
+    id: 'inf_encounter_2',
+    tier: 36,
+    actName: 'VII. FEJEZET: A VÉGTELEN',
+    title: 'Az 1982-es Fagyás · 2. Találkozás',
+    subtitle: 'A vészfék valódi oka',
+    speaker: 'A VÉGTELEN',
+    speakerColor: 'text-purple-300 border-purple-500/50 bg-purple-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 37: FINAL GUARDIAN COUNCIL
+  {
+    id: 'inf_guardian_council',
+    tier: 37,
+    actName: 'VII. FEJEZET: VÉGSŐ TANÁCS',
+    title: 'A Kilenc Őrző Végső Tanácsa',
+    subtitle: 'Dinamikus bizalom & áldozatok',
+    speaker: 'KILENC ŐRZŐ',
+    speakerColor: 'text-emerald-300 border-emerald-500/50 bg-emerald-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 38: FINAL LOGIC & DEDUCTION TRIALS
+  {
+    id: 'inf_final_trials',
+    tier: 38,
+    actName: 'VII. FEJEZET: VÉGSŐ PRÓBÁK',
+    title: 'Végső Próbák & 5 Nagy Fordulat',
+    subtitle: 'Idővonal · Bizonyíték · Polaritás',
+    speaker: 'SZINTÉZIS',
+    speakerColor: 'text-cyan-300 border-cyan-500/50 bg-cyan-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 39: FINAL ENCOUNTER (3RD ENCOUNTER)
+  {
+    id: 'inf_final_encounter',
+    tier: 39,
+    actName: 'VII. FEJEZET: A VÉGTELEN SZEME',
+    title: 'A Végtelen Utolsó Szeme',
+    subtitle: '3. Találkozás & A Négy Végső Út',
+    speaker: 'A VÉGTELEN',
+    speakerColor: 'text-purple-300 border-purple-500/50 bg-purple-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 40: ENDINGS (4 COLUMNS)
   {
     id: 'ending_close',
-    tier: 34,
+    tier: 40,
     actName: 'EPILÓGUS — 1. ÚT',
     title: 'A Spirál Lezárása',
     subtitle: 'A kapuk bezárulnak · Az emberiség megmarad',
@@ -564,7 +642,7 @@ const GRAPH_NODES: GraphNode[] = [
   },
   {
     id: 'ending_share',
-    tier: 34,
+    tier: 40,
     actName: 'EPILÓGUS — 2. ÚT',
     title: 'A Spirál Megosztása',
     subtitle: 'Közös álom · Kollektív emberi tudat',
@@ -576,7 +654,7 @@ const GRAPH_NODES: GraphNode[] = [
   },
   {
     id: 'ending_new_world',
-    tier: 34,
+    tier: 40,
     actName: 'EPILÓGUS — 3. ÚT',
     title: 'Új Világ: Együttélés',
     subtitle: 'Új horizont · Élet a Spirál leheletével',
@@ -588,7 +666,7 @@ const GRAPH_NODES: GraphNode[] = [
   },
   {
     id: 'ending_meta_room',
-    tier: 34,
+    tier: 40,
     actName: 'TITKOS BEFEJEZÉS',
     title: 'A Nyitott Ablakú Szoba',
     subtitle: 'A Szerző asztala · „Talán te.”',
@@ -671,7 +749,7 @@ const GRAPH_EDGES: GraphEdge[] = [
 
   { from: 'k1_nexus_convergence', to: 'g1_guardians_confrontation', choiceId: 'c_k1_converge_to_guardians', choiceLabel: 'Őrzők Tanácsa' },
   { from: 'g1_guardians_confrontation', to: 'g1_guardians_nexus', choiceId: 'c_enter_nine_realms', choiceLabel: 'Belépés a Kilenc Birodalomba' },
-  { from: 'g1_guardians_confrontation', to: 'inf_final_encounter', choiceId: 'c_accept_guardians', choiceLabel: 'Szembenézés a Végtelennel' },
+  { from: 'g1_guardians_confrontation', to: 'inf_encounter_1', choiceId: 'c_accept_guardians', choiceLabel: 'Belépés a VII. Fejezetbe' },
   { from: 'g1_guardians_nexus', to: 'g1_realm_1', choiceId: 'c_nexus_enter_r1', choiceLabel: 'I. Óceán' },
   { from: 'g1_guardians_nexus', to: 'g1_realm_2', choiceId: 'c_nexus_enter_r2', choiceLabel: 'II. Sivatag' },
   { from: 'g1_guardians_nexus', to: 'g1_realm_3', choiceId: 'c_nexus_enter_r3', choiceLabel: 'III. Időtörés' },
@@ -683,9 +761,21 @@ const GRAPH_EDGES: GraphEdge[] = [
   { from: 'g1_guardians_nexus', to: 'g1_realm_9', choiceId: 'c_nexus_enter_r9', choiceLabel: 'IX. Küszöb' },
   { from: 'g1_guardians_nexus', to: 'g1_chamber_beyond_ninth', choiceId: 'c_nexus_chamber_beyond', choiceLabel: 'Θ–∞–Δ Titkos Kamra' },
   { from: 'g1_realm_9', to: 'g1_chamber_beyond_ninth', choiceId: 'c_r9_open_chamber', choiceLabel: 'Kilencediken Túli Kamra' },
-  { from: 'g1_chamber_beyond_ninth', to: 'inf_final_encounter', choiceId: 'c_chamber_carry_mystery', choiceLabel: 'Tovább a Végtelenhez' },
-  { from: 'g1_chamber_beyond_ninth', to: 'inf_final_encounter', choiceId: 'c_chamber_bind_nine_voices', choiceLabel: 'Kilenc Hanggal a Végtelenhez' },
-  { from: 'g1_guardians_nexus', to: 'inf_final_encounter', choiceId: 'c_nexus_to_infinite', choiceLabel: 'Végső Szembesülés' },
+  { from: 'g1_chamber_beyond_ninth', to: 'inf_encounter_1', choiceId: 'c_chamber_carry_mystery', choiceLabel: 'Tovább a VII. Fejezetbe' },
+  { from: 'g1_chamber_beyond_ninth', to: 'inf_encounter_1', choiceId: 'c_chamber_bind_nine_voices', choiceLabel: 'Kilenc Hanggal a VII. Fejezetbe' },
+  { from: 'g1_guardians_nexus', to: 'inf_encounter_1', choiceId: 'c_nexus_to_infinite', choiceLabel: 'Belépés a Végtelen Színpadára' },
+
+  { from: 'inf_encounter_1', to: 'inf_viktor_lena_reckoning', choiceId: 'c_inf1_question_intent', choiceLabel: 'Kérdés a Végtelenhez' },
+  { from: 'inf_encounter_1', to: 'inf_viktor_lena_reckoning', choiceId: 'c_inf1_recognize_loneliness', choiceLabel: 'Magány felismerése' },
+  { from: 'inf_viktor_lena_reckoning', to: 'inf_mira_levente_reckoning', choiceId: 'c_fin_viktor_sacrifice_memory', choiceLabel: 'Viktor & Lena Békéje' },
+  { from: 'inf_viktor_lena_reckoning', to: 'inf_mira_levente_reckoning', choiceId: 'c_fin_viktor_anchor_love', choiceLabel: 'Megőrzött Pólus' },
+  { from: 'inf_mira_levente_reckoning', to: 'inf_encounter_2', choiceId: 'c_fin_levente_forge_new', choiceLabel: 'Négyek Szabad Szövetsége' },
+  { from: 'inf_mira_levente_reckoning', to: 'inf_encounter_2', choiceId: 'c_fin_levente_preserve_line', choiceLabel: 'Nyitott Ablak Horgonya' },
+  { from: 'inf_encounter_2', to: 'inf_guardian_council', choiceId: 'c_inf2_forgive_and_challenge', choiceLabel: 'Határ kijelölése & Tanács' },
+  { from: 'inf_encounter_2', to: 'inf_guardian_council', choiceId: 'c_inf2_demand_truth_trial', choiceLabel: 'Bizonyítékok az Őrzők elé' },
+  { from: 'inf_guardian_council', to: 'inf_final_trials', choiceId: 'c_inf_council_to_trials', choiceLabel: 'Végső Próbák Csarnoka' },
+  { from: 'inf_final_trials', to: 'inf_final_encounter', choiceId: 'c_inf_trials_to_eye', choiceLabel: 'A Végtelen Utolsó Szeme' },
+
   { from: 'inf_final_encounter', to: 'ending_close', choiceId: 'c_end_close', choiceLabel: '1. Út: Lezárás' },
   { from: 'inf_final_encounter', to: 'ending_share', choiceId: 'c_end_share', choiceLabel: '2. Út: Megosztás' },
   { from: 'inf_final_encounter', to: 'ending_new_world', choiceId: 'c_end_new_world', choiceLabel: '3. Út: Új Világ' },
@@ -893,7 +983,8 @@ export const StoryBranchingTree: React.FC<StoryBranchingTreeProps> = () => {
             <option value="LEVENTE">IV. Levente (Álom)</option>
             <option value="KÓDVÁROS">V. Kódváros Gyűrűi</option>
             <option value="ŐRZŐK">VI. Őrzők</option>
-            <option value="VÉGTELEN">Végső & Befejezések</option>
+            <option value="VII. FEJEZET">VII. Végső Kinyilatkoztatás</option>
+            <option value="EPILÓGUS">Epilógusok</option>
           </select>
         </div>
       </div>
@@ -1028,7 +1119,7 @@ export const StoryBranchingTree: React.FC<StoryBranchingTreeProps> = () => {
                 </div>
 
                 {/* CONNECTOR ARROWS DOWN */}
-                {tierNum < 34 && (
+                {tierNum < 40 && (
                   <div className="py-2 flex flex-col items-center text-slate-600 font-mono text-xs select-none">
                     <span className="h-4 w-0.5 bg-gradient-to-b from-slate-700 to-slate-800" />
                     <span>↓</span>

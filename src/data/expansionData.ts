@@ -15,6 +15,11 @@ import {
   REALM_DEDUCTIONS,
   REALM_SECRETS,
 } from './guardianRealmsData';
+import {
+  REVELATION_EVIDENCE_ITEMS,
+  REVELATION_SECRETS,
+  REVELATION_CINEMATICS,
+} from './finalRevelationData';
 
 export const INITIAL_ABILITIES: SpiralAbility[] = [
   {
@@ -638,6 +643,7 @@ export const INITIAL_EVIDENCE: EvidenceItem[] = [
     isAnalyzed: false,
   },
   ...REALM_EVIDENCE_ITEMS,
+  ...REVELATION_EVIDENCE_ITEMS,
 ];
 
 export const INITIAL_DEDUCTIONS: EvidenceDeduction[] = [
@@ -1237,6 +1243,7 @@ export const INITIAL_SECRETS: SecretDiscovery[] = [
     isUnlocked: false,
   },
   ...REALM_SECRETS,
+  ...REVELATION_SECRETS,
 ];
 
 export const CINEMATIC_EVENTS: Record<string, CinematicEventData> = {
@@ -1609,5 +1616,6 @@ export const CINEMATIC_EVENTS: Record<string, CinematicEventData> = {
     completionText: 'A Rejtett Megfigyelő többé nem észrevétlen — de kiléte örökre a csend határán marad.',
     rewardResonance: 55,
   },
+  ...REVELATION_CINEMATICS,
 };
 

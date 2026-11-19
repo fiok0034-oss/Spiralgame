@@ -52,6 +52,11 @@ import {
   GUARDIAN_REALMS,
   REALM_CROSS_EFFECTS,
 } from '../data/guardianRealmsData';
+import {
+  ECHO_CORE_SECRETS,
+  FINAL_TRIALS,
+  evaluateMetaEndingEligibility,
+} from '../data/finalRevelationData';
 import { soundEngine } from '../audio/SoundEngine';
 
 interface RadarDiscoveryReward {
@@ -166,6 +171,22 @@ interface GameContextType {
   completeRealmTrial: (guardianId: number, optionId: string) => void;
   claimRealmReward: (guardianId: number) => { claimed: boolean; message: string };
   triggerObserverConvergence: () => void;
+  // Story Expansion 04: The Final Revelation
+  completeChamberStage: (
+    stage: number,
+    payload?: {
+      costChoiceId?: string;
+      resonanceDelta?: number;
+      unlockEvidenceIds?: string[];
+    }
+  ) => void;
+  markEchoAudioListened: (echoCoreId: string, freqHz: number) => void;
+  confirmGuardianCouncilVerdict: (alliesCount: number) => void;
+  solveFinalTrial: (
+    trialId: string,
+    optionId: string
+  ) => { correct: boolean; explanation: string; revelation?: string };
+  advanceInfiniteEncounter: (step: number) => void;
 }
 
 const DEFAULT_PERSONALITY: PersonalityProfile = {
@@ -230,6 +251,13 @@ const DEFAULT_SPIRAL_STATE: SpiralState = {
     chamberBeyondNinthCompleted: false,
     chamberBeyondChoiceId: null,
     realmCrossEffectsTriggered: [],
+    chamberStagesCompleted: [],
+    chamberCostChoiceId: null,
+    finalTrialsSolved: [],
+    guardianCouncilVerdictDone: false,
+    infiniteEncountersCompleted: 0,
+    revealedTwists: [],
+    echoAudioListenedIds: [],
   },
   personality: DEFAULT_PERSONALITY,
   realityWarp: DEFAULT_REALITY_WARP,
@@ -327,30 +355,64 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           chamberBeyondNinthUnlocked: Boolean(parsed.spiralState.worldState?.chamberBeyondNinthUnlocked),
           chamberBeyondNinthCompleted: Boolean(parsed.spiralState.worldState?.chamberBeyondNinthCompleted),
           chamberBeyondChoiceId: parsed.spiralState.worldState?.chamberBeyondChoiceId || null,
-          realmCrossEffectsTriggered: parsed.spiralState.worldState?.realmCrossEffectsTriggered || [],
+          realmCrossEffectsTriggered: Array.isArray(parsed.spiralState.worldState?.realmCrossEffectsTriggered)
+            ? parsed.spiralState.worldState.realmCrossEffectsTriggered
+            : [],
+          chamberStagesCompleted: Array.isArray(parsed.spiralState.worldState?.chamberStagesCompleted)
+            ? parsed.spiralState.worldState.chamberStagesCompleted
+            : [],
+          chamberCostChoiceId: parsed.spiralState.worldState?.chamberCostChoiceId || null,
+          finalTrialsSolved: Array.isArray(parsed.spiralState.worldState?.finalTrialsSolved)
+            ? parsed.spiralState.worldState.finalTrialsSolved
+            : [],
+          guardianCouncilVerdictDone: Boolean(parsed.spiralState.worldState?.guardianCouncilVerdictDone),
+          infiniteEncountersCompleted:
+            typeof parsed.spiralState.worldState?.infiniteEncountersCompleted === 'number'
+              ? parsed.spiralState.worldState.infiniteEncountersCompleted
+              : 0,
+          revealedTwists: Array.isArray(parsed.spiralState.worldState?.revealedTwists)
+            ? parsed.spiralState.worldState.revealedTwists
+            : [],
+          echoAudioListenedIds: Array.isArray(parsed.spiralState.worldState?.echoAudioListenedIds)
+            ? parsed.spiralState.worldState.echoAudioListenedIds
+            : [],
           kodvarosRing1Done:
             typeof parsed.spiralState.worldState?.kodvarosRing1Done === 'boolean'
               ? parsed.spiralState.worldState.kodvarosRing1Done
-              : ['g1_guardians_confrontation', 'inf_final_encounter', 'ending_close', 'ending_share', 'ending_new_world', 'ending_meta_room'].includes(
-                  parsed?.activeSceneId
+              : Boolean(
+                  parsed?.activeSceneId &&
+                    (parsed.activeSceneId.startsWith('g1_') ||
+                      parsed.activeSceneId.startsWith('inf_') ||
+                      parsed.activeSceneId.startsWith('ending_'))
                 ),
           kodvarosRing2Done:
             typeof parsed.spiralState.worldState?.kodvarosRing2Done === 'boolean'
               ? parsed.spiralState.worldState.kodvarosRing2Done
-              : ['g1_guardians_confrontation', 'inf_final_encounter', 'ending_close', 'ending_share', 'ending_new_world', 'ending_meta_room'].includes(
-                  parsed?.activeSceneId
+              : Boolean(
+                  parsed?.activeSceneId &&
+                    (parsed.activeSceneId.startsWith('g1_') ||
+                      parsed.activeSceneId.startsWith('inf_') ||
+                      parsed.activeSceneId.startsWith('ending_'))
                 ),
           kodvarosRing3Done:
             typeof parsed.spiralState.worldState?.kodvarosRing3Done === 'boolean'
               ? parsed.spiralState.worldState.kodvarosRing3Done
-              : ['g1_guardians_confrontation', 'inf_final_encounter', 'ending_close', 'ending_share', 'ending_new_world', 'ending_meta_room'].includes(
-                  parsed?.activeSceneId
+              : Boolean(
+                  parsed?.activeSceneId &&
+                    (parsed.activeSceneId.startsWith('g1_') ||
+                      parsed.activeSceneId.startsWith('inf_') ||
+                      parsed.activeSceneId.startsWith('ending_'))
                 ),
           leventeChapterCompleted:
             typeof parsed.spiralState.worldState?.leventeChapterCompleted === 'boolean'
               ? parsed.spiralState.worldState.leventeChapterCompleted
-              : ['k1_three_rings', 'g1_guardians_confrontation', 'inf_final_encounter', 'ending_close', 'ending_share', 'ending_new_world', 'ending_meta_room'].includes(
-                  parsed?.activeSceneId
+              : Boolean(
+                  parsed?.activeSceneId &&
+                    (parsed.activeSceneId === 'k1_three_rings' ||
+                      parsed.activeSceneId.startsWith('k1_') ||
+                      parsed.activeSceneId.startsWith('g1_') ||
+                      parsed.activeSceneId.startsWith('inf_') ||
+                      parsed.activeSceneId.startsWith('ending_'))
                 ),
         },
         personality: {
@@ -1319,14 +1381,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     });
 
+    const secretData = ECHO_CORE_SECRETS.find((s) => s.echoCoreId === echoId);
+
     setEchoes((prev) => [
       {
         id: `echo_core_rec_${guardianId}_${Date.now()}`,
         originSceneId: realm.entrySceneId,
         title: `Visszhang-mag (${guardianId}/9): ${realm.echoCoreTitle}`,
-        description: realm.echoCoreLore,
-        manifestationText: realm.echoConnectionHint,
-        targetScenes: ['g1_guardians_nexus', 'g1_chamber_beyond_ninth', 'inf_final_encounter'],
+        description: secretData
+          ? `${realm.echoCoreLore} | VILÁGVÁLTOZÁS: ${secretData.worldMutation.artifactAwakenedNote}`
+          : realm.echoCoreLore,
+        manifestationText: secretData
+          ? `${realm.echoConnectionHint} · ${secretData.spiralNatureHint}`
+          : realm.echoConnectionHint,
+        targetScenes: ['g1_guardians_nexus', 'g1_chamber_beyond_ninth', 'inf_encounter_1', 'inf_final_encounter'],
         createdAt: Date.now(),
         category: 'guardian',
       },
@@ -1336,14 +1404,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (unlockedChamber) {
       unlockAchievement('ach_nine_echoes');
       unlockSecret('sec_chamber_beyond_ninth');
+      setActiveCinematicId('cin_nine_echoes_union');
     }
 
     soundEngine.playHarmonicChord(realm.soundChord);
     return {
       collected: true,
       message: unlockedChamber
-        ? `✓ ${realm.echoCoreTitle} begyűjtve (9/9)! Megnyílt A Kilencediken Túli Kamra!`
-        : `✓ ${realm.echoCoreTitle} begyűjtve (${nextEchoes.length}/9)! ${realm.echoConnectionHint}`,
+        ? `✓ ${realm.echoCoreTitle} begyűjtve (9/9)! Minden Visszhang egyesült — megnyílt A Kilencediken Túli Kamra!`
+        : `✓ ${realm.echoCoreTitle} begyűjtve (${nextEchoes.length}/9)! Új világmutáció aktiválva: ${secretData?.worldMutation.mapConnectionLabel || realm.echoConnectionHint}`,
       chamberUnlocked: unlockedChamber,
     };
   };
@@ -1468,6 +1537,163 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       claimed: true,
       message: `✓ Birodalmi jutalom átvéve: ${realm.rewardSummary}`,
     };
+  };
+
+  // =========================================================================
+  // STORY EXPANSION 04: CHAMBER, COUNCIL, FINAL TRIALS & ENCOUNTERS
+  // =========================================================================
+  const completeChamberStage = (
+    stage: number,
+    payload?: {
+      costChoiceId?: string;
+      resonanceDelta?: number;
+      unlockEvidenceIds?: string[];
+    }
+  ) => {
+    const alreadyDone = spiralState.worldState.chamberStagesCompleted.includes(stage);
+    const reward = alreadyDone ? 0 : (payload?.resonanceDelta ?? 15);
+
+    setSpiralState((prev) => {
+      const nextStages = prev.worldState.chamberStagesCompleted.includes(stage)
+        ? prev.worldState.chamberStagesCompleted
+        : [...prev.worldState.chamberStagesCompleted, stage].sort((a, b) => a - b);
+      const nextTwists =
+        stage === 5 && !prev.worldState.revealedTwists.includes('twist_4_realms_as_cradles')
+          ? [...prev.worldState.revealedTwists, 'twist_4_realms_as_cradles']
+          : prev.worldState.revealedTwists;
+      const stage7Done = stage >= 7 || nextStages.includes(7);
+
+      return {
+        ...prev,
+        resonancePoints: prev.resonancePoints + reward,
+        spiralAwareness: Math.min(100, prev.spiralAwareness + (alreadyDone ? 0 : 3)),
+        worldState: {
+          ...prev.worldState,
+          chamberStagesCompleted: nextStages,
+          chamberCostChoiceId: payload?.costChoiceId ?? prev.worldState.chamberCostChoiceId,
+          chamberBeyondNinthCompleted: prev.worldState.chamberBeyondNinthCompleted || stage7Done,
+          revealedTwists: nextTwists,
+        },
+      };
+    });
+
+    if (payload?.unlockEvidenceIds) {
+      payload.unlockEvidenceIds.forEach((evId) => unlockEvidence(evId));
+    }
+
+    if (stage >= 7) {
+      unlockMemory('mem_rev_nine_unified');
+      unlockMemory('mem_chamber_beyond_ninth');
+      acquireRelic('relic_ninth_key');
+      unlockAchievement('ach_chamber_beyond');
+      unlockSecret('sec_chamber_beyond_ninth');
+    }
+
+    if (stage === 1) {
+      soundEngine.playSilenceDrop();
+    } else if (stage === 2 || stage === 7) {
+      soundEngine.playHarmonicChord([432, 528, 639]);
+    } else {
+      soundEngine.playCrystalResonance(432 + stage * 30);
+    }
+  };
+
+  const markEchoAudioListened = (echoCoreId: string, freqHz: number) => {
+    soundEngine.playEchoSecretTone(freqHz);
+    if (!spiralState.worldState.echoAudioListenedIds.includes(echoCoreId)) {
+      setSpiralState((prev) => ({
+        ...prev,
+        resonancePoints: prev.resonancePoints + 5,
+        worldState: {
+          ...prev.worldState,
+          echoAudioListenedIds: prev.worldState.echoAudioListenedIds.includes(echoCoreId)
+            ? prev.worldState.echoAudioListenedIds
+            : [...prev.worldState.echoAudioListenedIds, echoCoreId],
+        },
+      }));
+    }
+  };
+
+  const confirmGuardianCouncilVerdict = (alliesCount: number) => {
+    const firstTime = !spiralState.worldState.guardianCouncilVerdictDone;
+    setSpiralState((prev) => ({
+      ...prev,
+      resonancePoints: prev.resonancePoints + (firstTime ? 30 : 0),
+      worldState: {
+        ...prev.worldState,
+        guardianCouncilVerdictDone: true,
+      },
+    }));
+    unlockAchievement('ach_council_unity');
+    soundEngine.playCouncilResonance(alliesCount);
+  };
+
+  const solveFinalTrial = (
+    trialId: string,
+    optionId: string
+  ): { correct: boolean; explanation: string; revelation?: string } => {
+    const trial = FINAL_TRIALS.find((t) => t.id === trialId);
+    const opt = trial?.options.find((o) => o.id === optionId);
+    if (!trial || !opt) {
+      return { correct: false, explanation: 'Ismeretlen próba vagy válaszopció.' };
+    }
+
+    if (optionId !== trial.correctOptionId) {
+      soundEngine.playMechanicalTick(-2);
+      return { correct: false, explanation: opt.explanation };
+    }
+
+    const firstSolve = !spiralState.worldState.finalTrialsSolved.includes(trialId);
+    const nextSolved = firstSolve
+      ? [...spiralState.worldState.finalTrialsSolved, trialId]
+      : spiralState.worldState.finalTrialsSolved;
+
+    if (firstSolve) {
+      setSpiralState((prev) => {
+        const solvedList = prev.worldState.finalTrialsSolved.includes(trialId)
+          ? prev.worldState.finalTrialsSolved
+          : [...prev.worldState.finalTrialsSolved, trialId];
+        const nextTwists = new Set(prev.worldState.revealedTwists);
+        if (trial.twistId) nextTwists.add(trial.twistId);
+        // When solving Evidence Synthesis or Echo Pairs, also reveal Mira Δ–T0 Twist #2 if not yet logged
+        if (trialId === 'trial_fin_evidence' || trialId === 'trial_fin_echo_pairs') {
+          nextTwists.add('twist_2_mira_t0');
+        }
+        return {
+          ...prev,
+          resonancePoints: prev.resonancePoints + 30,
+          spiralAwareness: Math.min(100, prev.spiralAwareness + 5),
+          worldState: {
+            ...prev.worldState,
+            finalTrialsSolved: solvedList,
+            revealedTwists: Array.from(nextTwists),
+          },
+        };
+      });
+
+      if (trialId === 'trial_fin_timeline') unlockSecret('sec_rev_truth_of_82_hz');
+      if (trialId === 'trial_fin_four_souls') unlockSecret('sec_rev_infinite_mercy');
+      if (nextSolved.length >= 3) unlockAchievement('ach_final_revelation');
+      soundEngine.playHarmonicChord([432, 528, 741]);
+    } else {
+      soundEngine.playCrystalResonance(528);
+    }
+
+    return {
+      correct: true,
+      explanation: opt.explanation,
+      revelation: trial.revelationText,
+    };
+  };
+
+  const advanceInfiniteEncounter = (step: number) => {
+    setSpiralState((prev) => ({
+      ...prev,
+      worldState: {
+        ...prev.worldState,
+        infiniteEncountersCompleted: Math.max(prev.worldState.infiniteEncountersCompleted, step),
+      },
+    }));
   };
 
   const completeKodvarosQuest = (questId: string) => {
@@ -1815,6 +2041,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    if (choice.id === 'c_inf_trials_to_eye' && spiralState.worldState.finalTrialsSolved.length < 3) {
+      return;
+    }
+
+    if (
+      choice.id === 'c_end_meta' &&
+      !evaluateMetaEndingEligibility(spiralState, evidence, secrets).eligible
+    ) {
+      return;
+    }
+
     // Check if returning from ending into NG+
     if (activeSceneId.startsWith('ending_') && choice.nextSceneId === 'v1_intro') {
       triggerNgPlusLoop(activeSceneId);
@@ -2003,6 +2240,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         completeRealmTrial,
         claimRealmReward,
         triggerObserverConvergence,
+        completeChamberStage,
+        markEchoAudioListened,
+        confirmGuardianCouncilVerdict,
+        solveFinalTrial,
+        advanceInfiniteEncounter,
       }}
     >
       {children}

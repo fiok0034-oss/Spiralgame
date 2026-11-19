@@ -22,6 +22,13 @@ import { MiniGameRouter, MINI_GAME_CATALOG } from '../components/MiniGameSuite';
 import { StoryLog } from '../components/StoryLog';
 import { QuestBoard } from '../components/QuestBoard';
 import { GuardianRealmExplorer } from '../components/GuardianRealmExplorer';
+import {
+  FinalGuardianCouncilPanel,
+  FinalTrialsPanel,
+  MetaChecklistPanel,
+  ReactiveEpilogueMatrix,
+} from '../components/FinalRevelationPanels';
+import { evaluateMetaEndingEligibility } from '../data/finalRevelationData';
 import { PersonalityProfile, SceneHotspot, SpiralState } from '../types/game';
 import { soundEngine } from '../audio/SoundEngine';
 
@@ -68,6 +75,8 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
     artifacts,
     inspectHotspot,
     guardianProgress,
+    evidence,
+    secrets,
   } = useGame();
 
   const [imgLoadError, setImgLoadError] = useState(false);
@@ -466,12 +475,18 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         <QuestBoard onOpenKodvaros={onOpenKodvaros} />
       )}
 
-      {/* A Kilenc Őrző Bejárható Birodalmai */}
+      {/* A Kilenc Őrző Bejárható Birodalmai & A Kamra */}
       {(activeSceneId === 'g1_guardians_nexus' ||
         activeSceneId.startsWith('g1_realm_') ||
         activeSceneId === 'g1_chamber_beyond_ninth') && (
         <GuardianRealmExplorer />
       )}
+
+      {/* VII. Fejezet: Tanács, Végső Próbák, Meta-ellenőrző & Epilógus Mátrix */}
+      {activeSceneId === 'inf_guardian_council' && <FinalGuardianCouncilPanel />}
+      {activeSceneId === 'inf_final_trials' && <FinalTrialsPanel />}
+      {activeSceneId === 'inf_final_encounter' && <MetaChecklistPanel />}
+      {activeSceneId.startsWith('ending_') && <ReactiveEpilogueMatrix />}
 
       {/* Choice Decision Panel */}
       <div className="space-y-3">
@@ -516,6 +531,10 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
                   ? 'Levente kulcsaktiválása szükséges'
                   : unmet[0] === 'chamberBeyondNinthUnlocked'
                   ? 'Mind a 9 Visszhang-mag szükséges'
+                  : unmet[0] === 'chamberBeyondNinthCompleted'
+                  ? 'Teljesítsd a Kamra 7 szakaszát'
+                  : unmet[0] === 'guardianCouncilVerdictDone'
+                  ? 'Rögzítsd A Tanács Ítéletét feljebb'
                   : unmet[0] === 'kodvarosRing1Done' ||
                     unmet[0] === 'kodvarosRing2Done' ||
                     unmet[0] === 'kodvarosRing3Done'
@@ -538,6 +557,14 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
               !choice.effect?.setWorldFlags?.leventeChapterCompleted
           );
 
+          const lockedFinalTrials =
+            choice.id === 'c_inf_trials_to_eye' &&
+            spiralState.worldState.finalTrialsSolved.length < 3;
+
+          const lockedMetaEnding =
+            choice.id === 'c_end_meta' &&
+            !evaluateMetaEndingEligibility(spiralState, evidence, secrets).eligible;
+
           const disabled =
             lockedAb ||
             lockedNg ||
@@ -545,7 +572,9 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
             Boolean(missingPersonalityText) ||
             Boolean(lockedFlagText) ||
             lockedMiniGame ||
-            gateLeventeBypass;
+            gateLeventeBypass ||
+            lockedFinalTrials ||
+            lockedMetaEnding;
 
           const ringDoneForEntry =
             (choice.id === 'c_k1_enter_ring1' && spiralState.worldState.kodvarosRing1Done) ||
@@ -562,6 +591,10 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
             ? missingPersonalityText
             : lockedFlagText
             ? lockedFlagText
+            : lockedFinalTrials
+            ? 'Oldj meg legalább 3/4 Próbát feljebb'
+            : lockedMetaEnding
+            ? 'Meta-feltételek (4/4) szükségesek'
             : gateLeventeBypass
             ? 'Levente fejezete szükséges'
             : lockedChoice

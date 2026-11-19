@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Volume2 } from 'lucide-react';
 import { soundEngine } from '../audio/SoundEngine';
 import { RadioChannel } from '../types/game';
+import { useGame } from '../game/GameContext';
+import { ECHO_CORE_SECRETS } from '../data/finalRevelationData';
 
 interface RadioScannerModalProps {
   isOpen: boolean;
@@ -15,6 +18,7 @@ export const RadioScannerModal: React.FC<RadioScannerModalProps> = ({
   channels,
   onChannelDiscovered,
 }) => {
+  const { spiralState, markEchoAudioListened } = useGame();
   const [currentFreq, setCurrentFreq] = useState<number>(95.4);
   const [activeChannel, setActiveChannel] = useState<RadioChannel | null>(null);
   const [tuningCloseness, setTuningCloseness] = useState<number>(0);
@@ -197,13 +201,51 @@ export const RadioScannerModal: React.FC<RadioScannerModalProps> = ({
             </div>
 
             {activeChannel && tuningCloseness > 0.6 ? (
-              <div className="animate-in fade-in duration-300">
-                <div className="text-xs font-mono text-cyan-400 font-semibold mb-1">
+              <div className="animate-in fade-in duration-300 space-y-2.5">
+                <div className="text-xs font-mono text-cyan-400 font-semibold">
                   [BEJÖVŐ ADÁS] {activeChannel.label}
                 </div>
                 <div className="text-sm text-slate-200 leading-relaxed font-sans italic bg-slate-900/60 p-3 rounded border border-cyan-500/20">
                   {activeChannel.content}
                 </div>
+                {(() => {
+                  const matchingWhispers = ECHO_CORE_SECRETS.filter(
+                    (s) =>
+                      Math.abs(s.worldMutation.radioFreq - activeChannel.frequency) < 0.25 &&
+                      spiralState.worldState.collectedNineEchoIds.includes(s.echoCoreId)
+                  );
+                  if (matchingWhispers.length === 0) return null;
+                  return (
+                    <div className="space-y-2 pt-1">
+                      {matchingWhispers.map((s) => (
+                        <div
+                          key={s.echoCoreId}
+                          className="rounded-lg border border-amber-500/45 bg-amber-950/25 p-3 space-y-1.5"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
+                            <span className="text-amber-300 font-bold uppercase">
+                              Visszhang-mag Suttogás · {s.title}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => markEchoAudioListened(s.echoCoreId, s.audioFreqHz)}
+                              className="px-2.5 py-1 min-h-[32px] rounded bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <Volume2 className="w-3.5 h-3.5" />
+                              <span>{s.audioFreqHz} Hz</span>
+                            </button>
+                          </div>
+                          <p className="text-xs text-slate-100 leading-relaxed">
+                            {s.worldMutation.radioWhisper}
+                          </p>
+                          <p className="text-[11px] font-mono text-amber-200/85 italic">
+                            {s.audioMessageText}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             ) : (
               <div className="text-xs font-mono text-slate-500 italic py-6 text-center">

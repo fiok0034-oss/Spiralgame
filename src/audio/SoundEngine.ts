@@ -674,8 +674,63 @@ class SoundEngine {
     low.stop(t + 1.25);
     high.stop(t + 1.25);
   }
+
+  /**
+   * Descending hush into near-silence for Stage 1 of the Chamber Beyond the Ninth
+   */
+  public playSilenceDrop() {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, t);
+    osc.frequency.exponentialRampToValueAtTime(52, t + 1.4);
+
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.16, t + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(t);
+    osc.stop(t + 1.55);
+  }
+
+  /**
+   * Secret voice-frequency chime for individual Echo Core hidden audio messages
+   */
+  public playEchoSecretTone(freqHz = 432) {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const t = this.ctx.currentTime;
+    [freqHz, freqHz * 1.5].forEach((f, idx) => {
+      if (!this.ctx || !this.sfxGain) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = idx === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(f, t + idx * 0.14);
+      gain.gain.setValueAtTime(0.001, t + idx * 0.14);
+      gain.gain.linearRampToValueAtTime(idx === 0 ? 0.14 : 0.06, t + idx * 0.14 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.14 + 1.6);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(t + idx * 0.14);
+      osc.stop(t + idx * 0.14 + 1.7);
+    });
+  }
+
+  /**
+   * Final Guardian Council chord reflecting ally solidarity
+   */
+  public playCouncilResonance(alliesCount: number) {
+    const base = alliesCount >= 6 ? [216, 324, 432, 528, 648] : alliesCount >= 3 ? [216, 324, 432] : [196, 261.6, 311.1];
+    this.playHarmonicChord(base);
+  }
 }
 
 export const soundEngine = new SoundEngine();
+
 
 

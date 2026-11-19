@@ -97,9 +97,9 @@ export const GUARDIAN_REALM_STORY_NODES: Record<string, DialogueNode> = {
       },
       {
         id: 'c_nexus_to_infinite',
-        label: 'Továbbhaladás A Végtelen Szeme Elé (Végső Fejezet)',
-        reflection: 'Az eddig összegyűjtött visszhangokkal és próbákkal belépsz a Spirál Magjába.',
-        nextSceneId: 'inf_final_encounter',
+        label: 'Belépés A Végtelen Színpadára (VII. Fejezet · Végső Kinyilatkoztatás)',
+        reflection: 'Az eddig összegyűjtött visszhangokkal és próbákkal átlépsz a Végtelennel való első találkozásra.',
+        nextSceneId: 'inf_encounter_1',
       },
     ],
   },
@@ -335,9 +335,9 @@ export const GUARDIAN_REALM_STORY_NODES: Record<string, DialogueNode> = {
       },
       {
         id: 'c_r9_to_infinite',
-        label: 'Továbblépés A Végtelen Elé (VII. Fejezet)',
-        reflection: 'Átlépsz a Végtelen Szeme elé az utolsó nagy döntésre.',
-        nextSceneId: 'inf_final_encounter',
+        label: 'Továbblépés a VII. Fejezetbe (Találkozások A Végtelennel)',
+        reflection: 'Átlépsz a Végtelen és a Négy Főszereplő végső drámájába.',
+        nextSceneId: 'inf_encounter_1',
       },
     ],
   },
@@ -387,8 +387,9 @@ export const GUARDIAN_REALM_STORY_NODES: Record<string, DialogueNode> = {
     choices: [
       {
         id: 'c_chamber_carry_mystery',
-        label: 'Elfogadom a válasz nélküli rejtélyt: a Spirál élő kérdés maradjon',
-        reflection: 'Nem akarsz minden titkot lezárni — hagyod, hogy a kilenc birodalom tovább lélegezzen.',
+        label: 'Elfogadom a válasz nélküli rejtélyt: a Spirál élő kérdés maradjon (VII. Fejezet →)',
+        reflection: 'A 7 kamraszakasz lezárultával nem zárod le a titkot — hagyod, hogy a kilenc birodalom tovább lélegezzen.',
+        requiresWorldFlags: { chamberBeyondNinthCompleted: true },
         personalityBias: { intuitive: 2, explorer: 2, architect: 1 },
         effect: {
           spiralAwarenessDelta: 20,
@@ -403,12 +404,13 @@ export const GUARDIAN_REALM_STORY_NODES: Record<string, DialogueNode> = {
             chamberBeyondChoiceId: 'c_chamber_carry_mystery',
           },
         },
-        nextSceneId: 'inf_final_encounter',
+        nextSceneId: 'inf_encounter_1',
       },
       {
         id: 'c_chamber_bind_nine_voices',
-        label: 'Összekötöm a kilenc hangot a jég alatti emberek emlékezetével',
-        reflection: 'Viktor, Lena, Mira, Levente, Sára, Tamás és Kovács Áron neveit vésed a Θ–∞–Δ közepébe.',
+        label: 'Összekötöm a kilenc hangot a jég alatti emberek emlékezetével (VII. Fejezet →)',
+        reflection: 'A 7 kamraszakasz után Viktor, Lena, Mira, Levente, Sára, Tamás és Áron neveit vésed a Θ–∞–Δ közepébe.',
+        requiresWorldFlags: { chamberBeyondNinthCompleted: true },
         personalityBias: { preserver: 3, analytical: 1 },
         effect: {
           memoryIntegrityDelta: 20,
@@ -423,7 +425,7 @@ export const GUARDIAN_REALM_STORY_NODES: Record<string, DialogueNode> = {
             chamberBeyondChoiceId: 'c_chamber_bind_nine_voices',
           },
         },
-        nextSceneId: 'inf_final_encounter',
+        nextSceneId: 'inf_encounter_1',
       },
       {
         id: 'c_chamber_return_nexus',

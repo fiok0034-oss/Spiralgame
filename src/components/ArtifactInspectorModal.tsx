@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { RotateCw, ZoomIn, ZoomOut, Layers, Sun, Combine, CheckCircle2, X } from 'lucide-react';
+import { RotateCw, ZoomIn, ZoomOut, Layers, Sun, Combine, CheckCircle2, X, Volume2 } from 'lucide-react';
 import { useGame } from '../game/GameContext';
 import { soundEngine } from '../audio/SoundEngine';
+import { ECHO_CORE_SECRETS } from '../data/finalRevelationData';
 
 interface ArtifactInspectorModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export const ArtifactInspectorModal: React.FC<ArtifactInspectorModalProps> = ({ 
     uvScanArtifact,
     combineArtifacts,
     abilities,
+    spiralState,
+    markEchoAudioListened,
   } = useGame();
 
   const [rotationDeg, setRotationDeg] = useState(0);
@@ -284,6 +287,46 @@ export const ArtifactInspectorModal: React.FC<ArtifactInspectorModalProps> = ({ 
                     Spirál-dekódolás ({spiralDecodeLevel}. szint): A véset ({selected.spiralGlyph}) koordináta-megerősítést hordoz a mélykamra felé.
                   </div>
                 )}
+
+                {/* Echo Core World Mutations on this Artifact */}
+                {(() => {
+                  const awakenedCores = ECHO_CORE_SECRETS.filter(
+                    (s) =>
+                      s.worldMutation.artifactId === selected.id &&
+                      spiralState.worldState.collectedNineEchoIds.includes(s.echoCoreId)
+                  );
+                  if (awakenedCores.length === 0) return null;
+                  return (
+                    <div className="space-y-2.5">
+                      {awakenedCores.map((s) => (
+                        <div
+                          key={s.echoCoreId}
+                          className="rounded-xl border border-amber-500/45 bg-amber-950/20 p-3.5 space-y-2"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                            <span className="text-amber-300 font-bold uppercase">
+                              [Visszhang-mag Rezonancia] · {s.title}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => markEchoAudioListened(s.echoCoreId, s.audioFreqHz)}
+                              className="px-3 py-1.5 min-h-[36px] rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Volume2 className="w-3.5 h-3.5" />
+                              <span>{s.audioMessageTitle}</span>
+                            </button>
+                          </div>
+                          <p className="text-xs text-slate-100 leading-relaxed">
+                            {s.worldMutation.artifactAwakenedNote}
+                          </p>
+                          <p className="text-[11px] font-mono text-amber-200/85 italic">
+                            „{s.audioMessageText}”
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 {/* Layered Disassembly Parts */}
                 <div className="space-y-2">

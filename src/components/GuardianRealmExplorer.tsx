@@ -18,6 +18,8 @@ import { useGame } from '../game/GameContext';
 import { GUARDIANS_LIST } from '../data/storyData';
 import { GUARDIAN_DIMENSIONS } from '../data/expansionData';
 import { GUARDIAN_REALMS, REALM_CROSS_EFFECTS } from '../data/guardianRealmsData';
+import { ECHO_CORE_SECRETS } from '../data/finalRevelationData';
+import { ChamberBeyondNinthExperience } from './FinalRevelationPanels';
 import { MiniGameRouter } from './MiniGameSuite';
 import { soundEngine } from '../audio/SoundEngine';
 import { SceneHotspot } from '../types/game';
@@ -36,6 +38,7 @@ export const GuardianRealmExplorer: React.FC = () => {
     completeRealmTrial,
     claimRealmReward,
     triggerObserverConvergence,
+    markEchoAudioListened,
   } = useGame();
 
   const [feedbackBanner, setFeedbackBanner] = useState<{ text: string; ok: boolean } | null>(null);
@@ -57,34 +60,37 @@ export const GuardianRealmExplorer: React.FC = () => {
     const echoesCount = spiralState.worldState.collectedNineEchoIds.length;
     const observerCount = spiralState.worldState.collectedObserverClueIds.length;
     return (
-      <div className="mb-8 rounded-2xl border border-amber-400/45 bg-slate-950/90 p-4 sm:p-5 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-          <span className="text-amber-300 font-bold uppercase tracking-wider">
-            Θ–∞–Δ · A Kilencediken Túli Kamra Aktív
-          </span>
-          <span className="text-emerald-300 tabular-nums">
-            Kilenc Visszhang: {echoesCount}/9 · Megfigyelő nyomai: {observerCount}/9
-          </span>
+      <div className="mb-8 space-y-5">
+        <div className="rounded-2xl border border-amber-400/45 bg-slate-950/90 p-4 sm:p-5 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+            <span className="text-amber-300 font-bold uppercase tracking-wider">
+              Θ–∞–Δ · A Kilencediken Túli Kamra Aktív
+            </span>
+            <span className="text-emerald-300 tabular-nums">
+              Kilenc Visszhang: {echoesCount}/9 · Megfigyelő nyomai: {observerCount}/9
+            </span>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-9 gap-1.5">
+            {GUARDIAN_REALMS.map((r) => {
+              const g = GUARDIANS_LIST.find((item) => item.id === r.guardianId);
+              const hasEcho = spiralState.worldState.collectedNineEchoIds.includes(r.echoCoreId);
+              return (
+                <div
+                  key={r.guardianId}
+                  className={`p-2 rounded-lg border text-center text-[11px] font-mono ${
+                    hasEcho
+                      ? 'border-amber-400/60 bg-amber-950/25 text-amber-200'
+                      : 'border-slate-800 bg-slate-900/60 text-slate-500'
+                  }`}
+                >
+                  <div className="font-bold">{g?.symbol}</div>
+                  <div className="truncate text-[10px]">{g?.name}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-9 gap-1.5">
-          {GUARDIAN_REALMS.map((r) => {
-            const g = GUARDIANS_LIST.find((item) => item.id === r.guardianId);
-            const hasEcho = spiralState.worldState.collectedNineEchoIds.includes(r.echoCoreId);
-            return (
-              <div
-                key={r.guardianId}
-                className={`p-2 rounded-lg border text-center text-[11px] font-mono ${
-                  hasEcho
-                    ? 'border-amber-400/60 bg-amber-950/25 text-amber-200'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-500'
-                }`}
-              >
-                <div className="font-bold">{g?.symbol}</div>
-                <div className="truncate text-[10px]">{g?.name}</div>
-              </div>
-            );
-          })}
-        </div>
+        <ChamberBeyondNinthExperience />
       </div>
     );
   }
@@ -281,6 +287,26 @@ export const GuardianRealmExplorer: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {collectedEchoes > 0 && (
+              <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                <div className="text-[11px] font-mono text-amber-300 font-bold">
+                  Csillagtérképen Felragyogó Új Összefüggések ({collectedEchoes}/9):
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {ECHO_CORE_SECRETS.filter((s) =>
+                    spiralState.worldState.collectedNineEchoIds.includes(s.echoCoreId)
+                  ).map((s) => (
+                    <div
+                      key={s.echoCoreId}
+                      className="px-2.5 py-1.5 rounded-lg border border-amber-500/35 bg-amber-950/15 text-[11px] font-mono text-amber-100"
+                    >
+                      ✦ {s.worldMutation.mapConnectionLabel}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -421,6 +447,35 @@ export const GuardianRealmExplorer: React.FC = () => {
               ))}
             </div>
           )}
+
+          {/* Echo Core Dialogue Shifts Triggered Across the World */}
+          {(() => {
+            const dialogueShifts = ECHO_CORE_SECRETS.filter(
+              (s) =>
+                spiralState.worldState.collectedNineEchoIds.includes(s.echoCoreId) &&
+                (s.guardianId === realm.guardianId ||
+                  s.worldMutation.guardianDialogueShift.includes(guardian.name) ||
+                  s.echoCoreId === 'echo_core_9')
+            );
+            if (dialogueShifts.length === 0) return null;
+            return (
+              <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                {dialogueShifts.map((s) => (
+                  <div
+                    key={`shift_${s.echoCoreId}`}
+                    className="p-3 rounded-xl bg-cyan-950/25 border border-cyan-500/40 text-xs"
+                  >
+                    <div className="font-mono font-bold text-cyan-300 uppercase text-[11px]">
+                      ◈ Őrzői Változás · {s.title}
+                    </div>
+                    <p className="text-slate-100 mt-0.5 leading-relaxed">
+                      {s.worldMutation.guardianDialogueShift}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Spatial Topology Map + Zone Directory */}
@@ -621,36 +676,84 @@ export const GuardianRealmExplorer: React.FC = () => {
             </div>
 
             {/* Echo Core Extraction Action inside Sanctum (or anytime after sanctum visited) */}
-            {(currentZone.zoneType === 'sanctum' || prog.echoCoreCollected) && (
-              <div className="p-3.5 rounded-xl border border-amber-500/45 bg-amber-950/20 space-y-2">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-amber-300 font-bold flex items-center gap-1.5">
-                    <Layers className="w-4 h-4" /> Birodalmi Visszhang-mag
-                  </span>
-                  <span className="text-amber-200 tabular-nums">
-                    {spiralState.worldState.collectedNineEchoIds.length}/9
-                  </span>
+            {(currentZone.zoneType === 'sanctum' || prog.echoCoreCollected) && (() => {
+              const coreSecret = ECHO_CORE_SECRETS.find((s) => s.echoCoreId === realm.echoCoreId);
+              return (
+                <div className="p-3.5 rounded-xl border border-amber-500/45 bg-amber-950/20 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-amber-300 font-bold flex items-center gap-1.5">
+                      <Layers className="w-4 h-4" /> Birodalmi Visszhang-mag
+                    </span>
+                    <span className="text-amber-200 tabular-nums">
+                      {spiralState.worldState.collectedNineEchoIds.length}/9
+                    </span>
+                  </div>
+                  <div className="text-xs font-cinzel font-bold text-slate-100">
+                    {realm.echoCoreTitle}
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">{realm.echoCoreLore}</p>
+                  <button
+                    type="button"
+                    disabled={prog.echoCoreCollected}
+                    onClick={handleCollectEcho}
+                    className={`w-full py-2 min-h-[40px] rounded-lg text-xs font-mono font-bold cursor-pointer ${
+                      prog.echoCoreCollected
+                        ? 'bg-emerald-950/40 border border-emerald-500/45 text-emerald-200 cursor-default'
+                        : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+                    }`}
+                  >
+                    {prog.echoCoreCollected
+                      ? `✓ ${realm.echoCoreTitle} Begyűjtve`
+                      : `Visszhang-mag Befogadása →`}
+                  </button>
+
+                  {prog.echoCoreCollected && coreSecret && (
+                    <div className="pt-2.5 border-t border-amber-500/30 space-y-2 text-[11px]">
+                      <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 space-y-1">
+                        <div className="font-mono font-bold text-cyan-300 uppercase">
+                          1. Rejtett Emléktöredék · {coreSecret.hiddenMemoryTitle}
+                        </div>
+                        <p className="text-slate-200 leading-relaxed">{coreSecret.hiddenMemoryText}</p>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono font-bold text-amber-300 uppercase">
+                            2. Hangüzenet · {coreSecret.audioMessageTitle}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              markEchoAudioListened(coreSecret.echoCoreId, coreSecret.audioFreqHz)
+                            }
+                            className="px-2.5 py-1 min-h-[32px] rounded bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-mono inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                            <span>Lejátszás</span>
+                          </button>
+                        </div>
+                        <p className="text-slate-200 italic">{coreSecret.audioMessageText}</p>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 space-y-1">
+                        <div className="font-mono text-purple-300 font-bold uppercase">
+                          3. Anomália & 4. Nyitott Kérdés
+                        </div>
+                        <p className="text-slate-300">{coreSecret.anomalyDescription}</p>
+                        <p className="text-amber-200 font-medium">Kérdés: {coreSecret.unansweredQuestion}</p>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/35 space-y-1">
+                        <div className="font-mono text-emerald-300 font-bold uppercase">
+                          5. Utalás a Spirál Természetére
+                        </div>
+                        <p className="text-slate-100">{coreSecret.spiralNatureHint}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs font-cinzel font-bold text-slate-100">
-                  {realm.echoCoreTitle}
-                </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">{realm.echoCoreLore}</p>
-                <button
-                  type="button"
-                  disabled={prog.echoCoreCollected}
-                  onClick={handleCollectEcho}
-                  className={`w-full py-2 min-h-[40px] rounded-lg text-xs font-mono font-bold cursor-pointer ${
-                    prog.echoCoreCollected
-                      ? 'bg-emerald-950/40 border border-emerald-500/45 text-emerald-200 cursor-default'
-                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950'
-                  }`}
-                >
-                  {prog.echoCoreCollected
-                    ? `✓ ${realm.echoCoreTitle} Begyűjtve`
-                    : `Visszhang-mag Befogadása →`}
-                </button>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
 

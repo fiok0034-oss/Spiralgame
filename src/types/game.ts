@@ -392,6 +392,14 @@ export interface SpiralState {
     chamberBeyondNinthCompleted: boolean;
     chamberBeyondChoiceId: string | null;
     realmCrossEffectsTriggered: string[];
+    // Story Expansion 04: The Final Revelation
+    chamberStagesCompleted: number[];
+    chamberCostChoiceId: string | null;
+    finalTrialsSolved: string[];
+    guardianCouncilVerdictDone: boolean;
+    infiniteEncountersCompleted: number;
+    revealedTwists: string[];
+    echoAudioListenedIds: string[];
   };
   personality: PersonalityProfile;
   realityWarp: RealityWarpState;
@@ -660,4 +668,75 @@ export interface KodvarosRingData {
   loreEntries: KodvarosLoreEntry[];
   linkedStoryEvents: KodvarosLinkedStoryEvent[];
 }
+
+// Story Expansion 04: Final Revelation types
+export interface EchoCoreSecretData {
+  echoCoreId: string;
+  guardianId: number;
+  title: string;
+  hiddenMemoryTitle: string;
+  hiddenMemoryText: string;
+  audioMessageTitle: string;
+  audioMessageText: string;
+  audioFreqHz: number;
+  anomalyDescription: string;
+  unansweredQuestion: string;
+  spiralNatureHint: string;
+  worldMutation: {
+    artifactId: string;
+    artifactAwakenedNote: string;
+    radioFreq: number;
+    radioWhisper: string;
+    mapConnectionLabel: string;
+    guardianDialogueShift: string;
+  };
+}
+
+export interface ChamberStageData {
+  stage: number;
+  title: string;
+  subtitle: string;
+  narrative: string;
+  atmosphereHint: string;
+  interactivePrompt: string;
+}
+
+export interface NarrativeTwistData {
+  id: string;
+  number: number;
+  title: string;
+  previousAssumption: string;
+  revealedTruth: string;
+  keyEvidenceLabel: string;
+  retroactiveMeaning: string;
+}
+
+export interface FinalTrialOption {
+  id: string;
+  label: string;
+  explanation: string;
+}
+
+export interface FinalTrialQuestion {
+  id: string;
+  index: number;
+  title: string;
+  categoryLabel: string;
+  prompt: string;
+  clueSummary: string;
+  options: FinalTrialOption[];
+  correctOptionId: string;
+  revelationText: string;
+  twistId?: string;
+}
+
+export interface GuardianCouncilEvaluation {
+  guardianId: number;
+  stance: 'ally' | 'challenger' | 'sacrifice' | 'neutral';
+  stanceLabel: string;
+  reasonText: string;
+  secretRevelation?: string;
+  trustScore: number;
+}
+
 

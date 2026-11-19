@@ -1,6 +1,12 @@
 import { DialogueNode, MemoryFragment, Relic, Achievement, RadioChannel, Guardian } from '../types/game';
 import { REALM_MEMORIES, REALM_RELICS, REALM_ACHIEVEMENTS } from './guardianRealmsData';
 import { GUARDIAN_REALM_STORY_NODES } from './guardianRealmNodes';
+import {
+  REVELATION_MEMORIES,
+  REVELATION_RELICS,
+  REVELATION_ACHIEVEMENTS,
+} from './finalRevelationData';
+import { FINAL_REVELATION_NODES } from './finalRevelationNodes';
 
 export const INITIAL_RADIO_CHANNELS: RadioChannel[] = [
   {
@@ -179,6 +185,7 @@ export const INITIAL_MEMORIES: MemoryFragment[] = [
     resonanceLevel: 7,
   },
   ...REALM_MEMORIES,
+  ...REVELATION_MEMORIES,
 ];
 
 export const INITIAL_RELICS: Relic[] = [
@@ -216,6 +223,7 @@ export const INITIAL_RELICS: Relic[] = [
     isAcquired: false,
   },
   ...REALM_RELICS,
+  ...REVELATION_RELICS,
 ];
 
 export const INITIAL_ACHIEVEMENTS: Achievement[] = [
@@ -268,6 +276,7 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
     isUnlocked: false,
   },
   ...REALM_ACHIEVEMENTS,
+  ...REVELATION_ACHIEVEMENTS,
 ];
 
 export const GUARDIANS_LIST: Guardian[] = [
@@ -2510,24 +2519,27 @@ export const STORY_NODES: Record<string, DialogueNode> = {
           unlockAbilityId: 'ab_ninth_gaze',
           triggerCinematicId: 'cin_guardians_manifest',
         },
-        nextSceneId: 'inf_final_encounter',
+        nextSceneId: 'inf_encounter_1',
       },
     ],
   },
 
   ...GUARDIAN_REALM_STORY_NODES,
+  ...FINAL_REVELATION_NODES,
 
-  // CHAPTER FINAL: A VÉGTELEN & A HÁROM ÚT
+  // CHAPTER FINAL: A VÉGTELEN 3. TALÁLKOZÁS & A NÉGY ÚT
   inf_final_encounter: {
     id: 'inf_final_encounter',
-    speaker: 'A VÉGTELEN',
-    speakerRole: 'A Megfigyelő, a Tükör, a Rendszer',
-    location: 'A Spirál Magja // A Végtelen Szeme',
-    timestamp: 'A Mindenség Pulzusa',
+    speaker: 'A VÉGTELEN · HARMADIK TALÁLKOZÁS',
+    speakerRole: 'A Spirál Teljes Igazsága · Θ–∞–Δ',
+    location: 'A Spirál Magja // A Végtelen Utolsó Szeme',
+    timestamp: 'A Mindenség Utolsó Pulzusa',
     atmosphere: 'cosmic',
-    text: 'Nem szörny vagyok. Nem pusztító. Én a Spirál emlékezete vagyok. Én jegyeztem fel minden lépésedet a hóban, minden kimondott és visszatartott szavadat. Most Mira kérdése elérte a középpontot: Mit érdemes létrehozni?\n\nHárom út fekszik előtted. Egyik sem helyes, és egyik sem téves. Te vagy az, aki ír.',
-    ngPlusText: 'Második Lélegzet: A Végtelen elmosolyodik. „Már visszatértél a körben. Most már láthatod a negyedik ajtót is a nyitott ablak felé.”',
-    subtext: 'Válassz felelősséggel. A világ úgy formálódik majd, ahogy te döntesz.',
+    text: 'A Kilenc Őrző tanácskozása után és az Öt Nagy Fordulat feltárásával már nincs lepel közted és **A Végtelen** között. Nem fentről néz le rád — ugyanabban az ötvennyolc ütemű csöndben áll előtted, mellette pedig ott van Viktor, Lena, Mira (a Másik Mira emlékével megbékélve) és Levente.\n\n„Most már mindent tudsz,” mondja A Végtelen szelíden, hangjában egyszerre remeg félelem, kíváncsiság és emberi könyörület. „1959-ben Áron azért törölte a nevét, hogy megkímélje a családokat. 1982-ben én azért fagyasztottam le a 82. szélességi kört, hogy a Projekt Δ–0 túlterhelése ne törje szét az emberiség tudatát. 1989-ben Levente szívverése kötötte vissza a segélykérést az időben. A kilenc birodalom bölcső volt — és a kilencedik üres székben mindig te ültél, az ablak túloldalán.”\n\nViktor bólint, Lena megszorítja Mira kezét, Levente pedig előrelép: „Most már nem a fagy és nem a rendszer dönt. Te írod meg az utolsó sort — mit érdemes létrehozni?”',
+    ngPlusText:
+      'Második Lélegzet: A Végtelen elmosolyodik: „Már végigjártad ezt a kört korábban. Ha minden bizonyíték, kamra és tanú a helyén van, a Negyedik Ajtó — a Nyitott Ablakú Szoba — is feltárulhat előtted.”',
+    subtext:
+      'A 3. Találkozás A Végtelennel: minden korábbi választásod, a Kamra ára, a Tanács szövetségesei és a Próbák eredménye most épül be a befejezésbe.',
     illustrationKey: 'theInfinite',
     interactiveComponent: 'infinite_mirror',
     dynamicVariants: [
@@ -2540,67 +2552,89 @@ export const STORY_NODES: Record<string, DialogueNode> = {
       {
         id: 'var_inf_tamas_tether',
         title: 'Az 1982-es Rádiós Visszhangja',
-        text: 'Tamás és Levente összekötött pulzusa emlékeztet: nem vagy egyedül a sötétben.',
+        text: 'Tamás és Levente összekötött pulzusa emlékeztet: a 82.0 MHz mögött mindig két emberi kéz tartotta egymást.',
         requiresChoiceId: 'c_k1_r2_anchor_tamas',
       },
       {
         id: 'var_inf_chamber_beyond',
         title: 'A Kilencediken Túli Kamra Pecsétje (Θ–∞–Δ)',
-        text: 'A Végtelen tekintete elcsendesedik előtted: „Egyesítetted a Kilenc Visszhangot, és beléptél a Kamrába, amelyet még az Őrzők is csak néma szívvel őriztek. Most már tudod, hogy a kérdés fontosabb minden lezárásnál.”',
+        text: 'A Végtelen tekintete elcsendesedik előtted: „Egyesítetted mind a 9 Visszhangot, és végigjártad a Kamra 7 szakaszát. A vállalt árad ott él mindannyiunk között.”',
         requiresWorldFlag: 'chamberBeyondNinthCompleted',
+      },
+      {
+        id: 'var_inf_viktor_sacrifice_final',
+        title: 'Viktor & Lena Feloldott Feszültsége',
+        text: 'Mivel Viktor elengedte a kizárólagosságot, Lena és ő most már közös hangon tartják az antarktiszi tengelyt.',
+        requiresChoiceId: 'c_fin_viktor_sacrifice_memory',
+      },
+      {
+        id: 'var_inf_viktor_anchor_final',
+        title: 'Az Emlékek Súlyának Közös Vállalása',
+        text: 'Viktor és Lena úgy állnak itt, hogy az 1959-es és 1982-es legmélyebb sebeket is megőrizték.',
+        requiresChoiceId: 'c_fin_viktor_anchor_love',
+      },
+      {
+        id: 'var_inf_levente_forge_final',
+        title: 'Levente Szabad Szövetsége',
+        text: 'Levente szabadon lépett a körbe: az 58 BPM most már nem segélykérés, hanem közös ígéret.',
+        requiresChoiceId: 'c_fin_levente_forge_new',
       },
       {
         id: 'var_inf_hidden_observer',
         title: 'A Rejtett Megfigyelő Jelenléte',
-        text: 'A tükör legkülső szélén egy halk lélegzet mozdul: „Már nem csak én figyellek téged — valaki a könyv túlsó oldaláról is látta mind a kilenc nyomodat.”',
+        text: 'A tükör legkülső szélén egy halk lélegzet mozdul: „Már nem csak én figyellek téged — az ablak túlsó oldalán minden kilenc nyomod összeért.”',
         requiresWorldFlag: 'observerConvergenceTriggered',
       },
     ],
     choices: [
       {
         id: 'c_end_close',
-        label: '1. ÚT: A SPIRÁL LEZÁRÁSA',
-        reflection: 'A világ megmarad. A rendszer bezárja kapuit, az emberiség folytatja földi életét.',
+        label: '1. ÚT: A SPIRÁL LEZÁRÁSA — Az Emberi Föld Megőrzése',
+        reflection: 'A jég alatti vészfék végleg elcsendesedik; a négy túlélő szabad földi életet kap.',
         personalityBias: { preserver: 2, analytical: 2 },
         effect: {
           timeStabilityDelta: 50,
           realityIntegrityDelta: 50,
-          triggerCinematicId: 'cin_infinite_manifest',
+          setWorldFlags: { chosenPath: 'close', infiniteEncountersCompleted: 3 },
+          triggerCinematicId: 'cin_ending_close',
         },
         nextSceneId: 'ending_close',
       },
       {
         id: 'c_end_share',
-        label: '2. ÚT: A SPIRÁL MEGOSZTÁSA',
-        reflection: 'A tudás szétszóródik a világban. Minden ember elérheti a kollektív tudat rétegeit.',
+        label: '2. ÚT: A SPIRÁL MEGOSZTÁSA — A Kollektív Emlékezet Kora',
+        reflection: 'Az 528 Hz-es közös dallam megnyitja az emberiség egét — senki sem marad többé néma a sötétben.',
         personalityBias: { intuitive: 2, explorer: 2 },
         effect: {
           spiralAwarenessDelta: 50,
           consciousnessDepthDelta: 3,
-          triggerCinematicId: 'cin_infinite_manifest',
+          setWorldFlags: { chosenPath: 'share', infiniteEncountersCompleted: 3 },
+          triggerCinematicId: 'cin_ending_share',
         },
         nextSceneId: 'ending_share',
       },
       {
         id: 'c_end_new_world',
-        label: '3. ÚT: ÚJ VILÁG — EGYÜTTÉLÉS',
-        reflection: 'Nem uralom, nem istenként irányítás. Hanem új kezdet a Spirál lélegzetével.',
+        label: '3. ÚT: ÚJ VILÁG — EGYÜTTÉLÉS ÉS SZABAD ALKOTÁS',
+        reflection: 'Sem lezárás, sem kényszer: a Végtelen, az Őrzők, Kódváros és az emberiség együtt írják a holnapot.',
         personalityBias: { architect: 3, releaser: 1 },
         effect: {
           spiralAwarenessDelta: 50,
           realityIntegrityDelta: 50,
           memoryIntegrityDelta: 50,
-          triggerCinematicId: 'cin_infinite_manifest',
+          setWorldFlags: { chosenPath: 'new_world', infiniteEncountersCompleted: 3 },
+          triggerCinematicId: 'cin_ending_new_world',
         },
         nextSceneId: 'ending_new_world',
       },
       {
         id: 'c_end_meta',
-        label: 'TITKOS ÚT: A NYITOTT ABLAKÚ SZOBA (Talán te)',
-        reflection: 'Ha valóban figyeltél minden apró jelre...',
+        label: 'TITKOS ÚT: A NYITOTT ABLAKÚ SZOBA („Talán te.”)',
+        reflection: 'Csak akkor nyílik meg, ha a 9 Visszhang, a Kamra, a Tanács, a Végső Próbák és a Szerzői Lap mind összeállt.',
         personalityBias: { explorer: 2, architect: 2 },
         effect: {
           unlockAchievementId: 'ach_the_writer',
+          setWorldFlags: { chosenPath: 'meta_room', infiniteEncountersCompleted: 3 },
           triggerCinematicId: 'cin_ninth_awakening',
         },
         nextSceneId: 'ending_meta_room',
@@ -2612,13 +2646,33 @@ export const STORY_NODES: Record<string, DialogueNode> = {
   ending_close: {
     id: 'ending_close',
     speaker: 'EPILÓGUS — A SPIRÁL LEZÁRÁSA',
-    speakerRole: 'Krónika',
-    location: 'Antarktisz, ARCHÍV-82',
+    speakerRole: 'Krónika · Viktor, Lena, Mira, Levente & A Kilenc Őrző',
+    location: 'Antarktisz ⟷ Budapest, Tavaszi Reggel',
     timestamp: 'Földi Idő',
     atmosphere: 'calm',
-    text: 'A mélységi barlang bejárata lassan bezárult. A jég újra sima, néma takaróvá dermedt a 82. szélességi körön. Viktor felnézett a hajnali sarki fényekre. A rádiók elcsendesedtek. A titok biztonságban maradt a jég alatt, az emberiség pedig folytatta útját a maga törékeny valóságában.\n\nA Spirál elaludt. De mélyen lenn, a kőzetben még mindig lüktet egy halk dobbanás.',
+    text: 'A mélységi barlang három kilométeres jégkapuja halkan, végleges kattanással záródott be. A 82.0 MHz többé nem sírt át a rövidhullámokon. Viktor kint állt az ARCHÍV-82 állomás lépcsőjén: a kesztyűtlen tenyere már csak a hajnali fagyot érezte, és először negyven év után meglátta, ahogy Lena kilép mellé két gőzölgő csészével — az egyikben még ott volt Tamás 1982-es öröksége.\n\nMira utolsó kőrajza a hóban lassan elolvadt, de a Másik Mira emléke békében maradt benne: az építész többé nem tökéletességet keresett, hanem otthont. Budapesten Levente kinyitotta a VII. kerületi ablakot; a tenyerében lévő utolsó jégkristály vízcseppként hullott a párkány muskátlijára. A Kilenc Őrző és A Végtelen visszaléptek a csendbe — őrizve azt, amit az emberiség szabadon választott.',
     subtext: 'Befejezés: A Spirál Lezárása. (Újrajátszáskor a Második Lélegzet új összefüggéseket nyit meg.)',
     illustrationKey: 'antarcticOutpost',
+    dynamicVariants: [
+      {
+        id: 'var_ec_tamas',
+        title: 'Tamás 1982-es Táviratának Békéje',
+        text: 'Levente megőrizte a családi bádogdobozt — most már tudja, hogy Tamás a bázison nem hiába kapcsolta át a rádiót.',
+        requiresChoiceId: 'c_k1_r2_anchor_tamas',
+      },
+      {
+        id: 'var_ec_viktor_sac',
+        title: 'Viktor és Lena Földi Szövetsége',
+        text: 'Mivel Viktor elengedte a kizárólagosságot, Lena mellett új tudományos és személyes életet kezdett a szárazföldön.',
+        requiresChoiceId: 'c_fin_viktor_sacrifice_memory',
+      },
+      {
+        id: 'var_ec_chamber',
+        title: 'A Θ–∞–Δ Kamra Néma Emléke',
+        text: 'A lezárt jég alatt Kassarah és Sen-Maria őrzik a kilenc egybeforrt nevet — hogy a jövőnek ne kelljen cipelnie a múlt fájdalmát.',
+        requiresWorldFlag: 'chamberBeyondNinthCompleted',
+      },
+    ],
     choices: [
       {
         id: 'c_back_to_menu_1',
@@ -2631,13 +2685,27 @@ export const STORY_NODES: Record<string, DialogueNode> = {
   ending_share: {
     id: 'ending_share',
     speaker: 'EPILÓGUS — A SPIRÁL MEGOSZTÁSA',
-    speakerRole: 'Kollektív Tudat',
-    location: 'Az egész Föld és azon túl',
+    speakerRole: 'Kollektív Tudat · A Hang és a Fény Kora',
+    location: 'Az Egész Föld és Kódváros Égboltja',
     timestamp: 'Az Új Kor',
     atmosphere: 'cosmic',
-    text: 'A jégből felszálló fénypászmák behálózták az egész bolygó légkörét. Aznap éjjel minden ember ugyanazt a különös, békés álmot látta: a Kódváros tornyait, ahol a gondolat azonnal formát ölt. A magány megszűnt, a sebek közös emlékké váltak. A Spirál lehelete most már mindannyiunk tüdejében ott lakik.',
+    text: 'Amikor Nok-Tura 528 Hz-es néma harangja megkondult a póluson, a 82.0 és 142.8 MHz egyszerre tört át minden zárt frekvencián — de nem vészjelzésként, hanem tiszta, szelíd felismerésként. Azon az éjszakán nyolcmilliárd ember látta ugyanazt a fényhidat: nem egy idegen birodalmat, hanem Kódváros Három Körét, amelyben minden elfelejtett búcsú kimondhatóvá vált.\n\nLena a laboratóriumi kazettáját letette a nyitott asztalra, tudva, hogy már mindenki hallja azt a tizennégy másodperc csendet, amit ő 1979-ben őrzött. Viktor és Levente a hó és Budapest közötti határon megfogták egymás kezét; Mira pedig először látta, ahogy más emberek milliói rajzolják tovább Kódváros meg nem épített Negyedik Körét. A Végtelen többé nem egyedül nézte a csillagokat.',
     subtext: 'Befejezés: A Megosztott Tudat. (Újrajátszáskor a Második Lélegzet új összefüggéseket nyit meg.)',
     illustrationKey: 'kodvarosCity',
+    dynamicVariants: [
+      {
+        id: 'var_es_kodvaros_living',
+        title: 'Az Élő Kódváros Gyarapodása',
+        text: 'Mivel Kódvárost élő és szabad várossá formáltad, az emberiség álmaiban nem szobrok, hanem közös terek nyíltak.',
+        requiresAnyChoiceIds: ['c_k1_r3_living_city', 'c_k1_r3_invert_crown'],
+      },
+      {
+        id: 'var_es_four_united',
+        title: 'A Négyek Éneke a Rádióban',
+        text: 'Levente szabadon választott szövetsége minden új álmodó számára biztosítja az 58 BPM-es stabil alapot.',
+        requiresChoiceId: 'c_fin_levente_forge_new',
+      },
+    ],
     choices: [
       {
         id: 'c_back_to_menu_2',
@@ -2649,14 +2717,28 @@ export const STORY_NODES: Record<string, DialogueNode> = {
 
   ending_new_world: {
     id: 'ending_new_world',
-    speaker: 'EPILÓGUS — ÚJ VILÁG',
-    speakerRole: 'Együttélés',
-    location: 'A Teremtett Valóság',
+    speaker: 'EPILÓGUS — ÚJ VILÁG · EGYÜTTÉLÉS',
+    speakerRole: 'Szabad Alkotás · Antarktisz, Kódváros és Budapest Határán',
+    location: 'A Teremtett Közös Horizont',
     timestamp: 'Első Nap',
     atmosphere: 'cosmic',
-    text: 'Mira mosolyogva nézett végig az új horizonton. Nem lettünk istenek. Nem akartuk megváltoztatni az időt. Egyszerűen megtanultunk együtt élni vele. A jég nem ellenség és nem börtön: a jég az emlékezet bölcsője. Az új világ nem tökéletes, de élő, tiszta és nyitott minden eljövendő lélek számára.',
+    text: 'Senki nem zárt le semmit, és senki nem uralkodott senkin. Mira mosolyogva nézett végig a két világ találkozásán: Kódváros obszidián teraszai többé nem lebegtek elérhetetlen magasságban, hanem csendben összeértek az antarktiszi jégmezővel és a pesti éjszaka esőjével.\n\nViktor az 1959-es krónikás Áron sírköve helyére két fáklyát tett; Lena újra felépítette a Δ–0 állomást úgy, hogy ezúttal minden hang egyenrangú párbeszéd maradjon. Levente nem horgony volt többé, hanem építőmester két világ között. És a látóhatár peremén a Kilenc Őrző mellett ott állt **A Végtelen** is — immár nem néma szörnyként vagy hideg lencseként, hanem olyan társként, aki megtanulta az emberi melegség árát.',
     subtext: 'Befejezés: Az Új Világ harmóniája. (Újrajátszáskor a Második Lélegzet új összefüggéseket nyit meg.)',
     illustrationKey: 'theInfinite',
+    dynamicVariants: [
+      {
+        id: 'var_enw_names_carved',
+        title: 'A Közös Kőbe Vésett Nevek',
+        text: 'Sára 1959-es kutatói, Tamás, Áron, Viktor, Lena, Mira és Levente nevei egyetlen közös kapukövön ragyognak.',
+        requiresChoiceId: 'c_k1_r1_preserve_names',
+      },
+      {
+        id: 'var_enw_chamber_done',
+        title: 'A Θ–∞–Δ Új Napkelte',
+        text: 'A Kilencediken Túli Kamra ajtaja nyitva áll — nem titokként többé, hanem emlékeztetőként arra, mit vállaltál fel.',
+        requiresWorldFlag: 'chamberBeyondNinthCompleted',
+      },
+    ],
     choices: [
       {
         id: 'c_back_to_menu_3',
@@ -2668,13 +2750,21 @@ export const STORY_NODES: Record<string, DialogueNode> = {
 
   ending_meta_room: {
     id: 'ending_meta_room',
-    speaker: 'A SZERZŐ SZOBAJA',
-    speakerRole: 'Meta-narratíva',
+    speaker: 'A SZERZŐ SZOBÁJA · A NEGVEDIK FALON TÚL',
+    speakerRole: 'Meta-narratíva · OBSERVER_0 Végső Helye',
     location: 'Fa padlós szoba, nyitott ablak',
     timestamp: 'Most',
     atmosphere: 'silence',
-    text: 'Egyszerű szoba. Fa padló, amely finoman megreccsen a lábunk alatt. Nyitott ablak, amelyen át a tavaszi fák susogása hallatszik. Egy masszív faasztal. Egy szék.\n\nAz asztalon egyetlen könyv fekszik: „A Spirál Lehelete”.\n\nOdalépsz. Megérinted a papírt. A könyv lassan, magától kinyílik. Az utolsó oldal tiszta fehér. Nincsenek nyomtatott betűk.\n\nMajd az üres lap közepén egyetlen halk szó jelenik meg:\n\n„Talán te.”\n\nA szél megmozdítja a függönyt. A képernyő sarkában a spirál lassan, némán forogni kezd.',
-    subtext: 'Befejezés: A Meta-Réteg // Csurik Konrád univerzumának záróakkordja.',
+    text: 'Egyszerű szoba. Fa padló, amely finoman megreccsen a lábad alatt. Nyitott ablak, amelyen át a tavaszi fák susogása — és távolról mintha a 82. szélességi kör hajnali szele — hallatszik be. Egy masszív faasztal. Egy szék. Az ablakpárkányon egyetlen földi tölgyfalevél fekszik.\n\nAz asztalon egyetlen nyitott könyv fekszik: „A Spirál Lehelete”. Mögötte pedig ott állnak mindannyian egy pillanatnyi csendben: Viktor a zseblámpával, Lena a kazettával, Mira a prizmával, Levente a tenyerén olvadó jéggel — és mögöttük A Végtelen, aki most először csak figyel, ahogy te lépsz.\n\nOdalépsz. Megérinted a papírt. A kilenc Visszhang-mag fénye nem a képernyőn marad, hanem átsüt az üres lapon. Nincsenek többé előre nyomtatott mondatok.\n\nMajd az üres lap közepén egyetlen halk, egyértelmű szó jelenik meg:\n\n„Talán te.”\n\nA szél megmozdítja a függönyt. És a világ az ablakon túl várja, mit írsz tovább.',
+    subtext: 'Titkos Meta-Befejezés Teljesítve · Minden rejtély, kamra és próba összeállt.',
+    dynamicVariants: [
+      {
+        id: 'var_meta_all_echoes_and_trials',
+        title: 'A Teljes 9/9 Visszhang + Öt Fordulat Pecsétje',
+        text: 'A könyv margóján mind az öt feltárt fordulat apró arany jegyzete fénylik: 1959 Áronjától Levente 1989-es EEG-jén át a te saját jelenlétedig az OBSERVER_0 székében.',
+        requiresWorldFlag: 'chamberBeyondNinthCompleted',
+      },
+    ],
     choices: [
       {
         id: 'c_back_to_menu_meta',
