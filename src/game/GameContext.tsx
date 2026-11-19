@@ -259,6 +259,8 @@ const DEFAULT_SPIRAL_STATE: SpiralState = {
     infiniteEncountersCompleted: 0,
     revealedTwists: [],
     echoAudioListenedIds: [],
+    playerTheories: [],
+    unlockedSecretEvents: [],
   },
   personality: DEFAULT_PERSONALITY,
   realityWarp: DEFAULT_REALITY_WARP,

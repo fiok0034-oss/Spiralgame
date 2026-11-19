@@ -149,6 +149,31 @@ export interface EvidenceDeduction {
   unlockSecretId?: string;
   unlockMemoryId?: string;
   isSolved: boolean;
+  classification?: 'fact' | 'theory' | 'false' | 'unsolved';
+  isRedHerring?: boolean;
+  contradictionNote?: string;
+  consequenceFlag?: string;
+}
+
+export interface PlayerTheory {
+  id: string;
+  title: string;
+  connectedEvidenceIds: string[];
+  supportingNotes: string;
+  contradictingNotes: string;
+  confidence: 'fact' | 'theory' | 'false' | 'unsolved';
+  isSolved: boolean;
+  createdAt: number;
+}
+
+export interface SecretArchiveEvent {
+  id: string;
+  title: string;
+  triggerDeductionId?: string;
+  triggerEvidenceIds?: string[];
+  message: string;
+  loreRevelation: string;
+  isUnlocked: boolean;
 }
 
 export interface PersonnelFile {
@@ -400,6 +425,8 @@ export interface SpiralState {
     infiniteEncountersCompleted: number;
     revealedTwists: string[];
     echoAudioListenedIds: string[];
+    playerTheories: PlayerTheory[];
+    unlockedSecretEvents: string[];
   };
   personality: PersonalityProfile;
   realityWarp: RealityWarpState;
