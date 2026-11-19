@@ -3,6 +3,7 @@ import { CheckCircle2, Lock, Sparkles, Compass, Play, X } from 'lucide-react';
 import { useGame } from '../game/GameContext';
 import { GUARDIANS_LIST } from '../data/storyData';
 import { GUARDIAN_DIMENSIONS } from '../data/expansionData';
+import { GUARDIAN_REALMS, REALM_CROSS_EFFECTS } from '../data/guardianRealmsData';
 import { MiniGameRouter } from './MiniGameSuite';
 import { soundEngine } from '../audio/SoundEngine';
 
@@ -15,6 +16,8 @@ export const GuardiansHubModal: React.FC<GuardiansHubModalProps> = ({ isOpen, on
   const {
     guardianProgress,
     abilities,
+    spiralState,
+    jumpToChapter,
     completeGuardianQuest,
     completeGuardianMiniGame,
     makeGuardianPhilosophyChoice,
@@ -29,6 +32,10 @@ export const GuardiansHubModal: React.FC<GuardiansHubModalProps> = ({ isOpen, on
 
   const guardian = GUARDIANS_LIST.find((g) => g.id === selectedGuardianId) || GUARDIANS_LIST[0];
   const dim = GUARDIAN_DIMENSIONS.find((d) => d.guardianId === selectedGuardianId) || GUARDIAN_DIMENSIONS[0];
+  const realm = GUARDIAN_REALMS.find((r) => r.guardianId === selectedGuardianId) || GUARDIAN_REALMS[0];
+  const canTravelDirect = spiralState.worldState.leventeChapterCompleted;
+  const echoesCount = spiralState.worldState.collectedNineEchoIds.length;
+  const observerCount = spiralState.worldState.collectedObserverClueIds.length;
   const prog = guardianProgress[selectedGuardianId] || {
     encountered: true,
     completedQuestIds: [],
@@ -51,8 +58,8 @@ export const GuardiansHubModal: React.FC<GuardiansHubModalProps> = ({ isOpen, on
             <h2 className="text-base font-cinzel font-bold tracking-wider text-cyan-300 uppercase">
               A KILENC ŐRZŐ BIRODALMAI · DIMENZIÓ-KAPUK
             </h2>
-            <p className="text-xs font-mono text-slate-400 mt-0.5">
-              Befejezett birodalmak: {completedCount}/9 · Válassz egy Őrzőt a dimenzióba lépéshez
+            <p className="text-xs font-mono text-slate-400 mt-0.5 tabular-nums">
+              Befejezett birodalmak: {completedCount}/9 · Kilenc Visszhang: {echoesCount}/9 · Megfigyelő nyomai: {observerCount}/9
             </p>
           </div>
           <button
@@ -117,19 +124,66 @@ export const GuardiansHubModal: React.FC<GuardiansHubModalProps> = ({ isOpen, on
                     {dim.dimensionName}
                   </h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    setActiveCinematicId(dim.cinematicEventId);
-                  }}
-                  className="px-3.5 py-2 min-h-[40px] rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/50 text-xs font-mono text-purple-200 cursor-pointer inline-flex items-center gap-1.5"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>Birodalmi Esemény Lejátszása</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {canTravelDirect ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundEngine.playRealmSoundscape(selectedGuardianId);
+                        onClose();
+                        jumpToChapter('chapter6_guardians', realm.entrySceneId);
+                      }}
+                      className="px-3.5 py-2 min-h-[40px] rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-mono font-bold cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      <Compass className="w-3.5 h-3.5" />
+                      <span>Belépés a Bejárható Birodalomba →</span>
+                    </button>
+                  ) : (
+                    <span className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-[11px] font-mono text-slate-400 inline-flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Bejárás Levente kulcsa után nyílik</span>
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      setActiveCinematicId(dim.cinematicEventId);
+                    }}
+                    className="px-3.5 py-2 min-h-[40px] rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/50 text-xs font-mono text-purple-200 cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>Esemény</span>
+                  </button>
+                </div>
               </div>
               <p className="text-sm text-slate-300 leading-relaxed mt-3">{dim.storyArc}</p>
+              <div className="mt-2.5 flex flex-wrap items-center gap-3 text-[11px] font-mono text-slate-400 tabular-nums">
+                <span>Bejárt zónák: {(prog.visitedZones || []).length}/6</span>
+                <span>·</span>
+                <span className={prog.echoCoreCollected ? 'text-amber-300' : ''}>
+                  Visszhang-mag ({realm.echoCoreTitle}): {prog.echoCoreCollected ? '✓ Begyűjtve' : 'Hiányzik'}
+                </span>
+                <span>·</span>
+                <span className={prog.observerClueFound ? 'text-purple-300' : ''}>
+                  Megfigyelő nyoma: {prog.observerClueFound ? '✓ Észlelve' : 'Rejtett'}
+                </span>
+              </div>
+              {REALM_CROSS_EFFECTS.filter(
+                (fx) =>
+                  fx.targetGuardianId === selectedGuardianId &&
+                  Boolean(
+                    fx.requiresEchoId &&
+                      spiralState.worldState.collectedNineEchoIds.includes(fx.requiresEchoId)
+                  )
+              ).map((fx) => (
+                <div
+                  key={fx.id}
+                  className="mt-2.5 p-2.5 rounded-lg bg-amber-950/25 border border-amber-500/35 text-xs text-amber-200 font-mono"
+                >
+                  ✦ Aktív birodalomközi hatás: {fx.visualShiftText}
+                </div>
+              ))}
             </div>
 
             {/* 3 Complex Quests */}

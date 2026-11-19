@@ -603,7 +603,79 @@ class SoundEngine {
     osc.start(t);
     osc.stop(t + 0.85);
   }
+
+  /**
+   * Tailored subtle multi-tone soundscape per Guardian Realm (#1..#9)
+   */
+  public playRealmSoundscape(guardianId: number) {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    const chords: Record<number, { freqs: number[]; wave: OscillatorType; duration: number }> = {
+      1: { freqs: [216, 432, 648], wave: 'sine', duration: 2.1 }, // Kassarah Ocean
+      2: { freqs: [142, 285, 427], wave: 'triangle', duration: 2.0 }, // Ir-Haya Desert
+      3: { freqs: [264, 396, 528], wave: 'triangle', duration: 1.8 }, // Thal-Muren Time
+      4: { freqs: [277, 417, 625], wave: 'sine', duration: 2.0 }, // Az-Zahir Mirrors
+      5: { freqs: [264, 432, 528], wave: 'sine', duration: 2.4 }, // Nok-Tura Cathedral
+      6: { freqs: [174, 348, 522], wave: 'sine', duration: 1.7 }, // Var-Elis Soul Machine (58 BPM aura)
+      7: { freqs: [370, 555, 741], wave: 'sine', duration: 2.2 }, // Kor-Vatha Inverted Sky
+      8: { freqs: [256, 384, 528], wave: 'sine', duration: 2.3 }, // Sen-Maria Silent Garden
+      9: { freqs: [216, 324, 528, 741], wave: 'sine', duration: 2.6 }, // The Ninth Threshold
+    };
+
+    const profile = chords[guardianId] || chords[1];
+    profile.freqs.forEach((freq, idx) => {
+      if (!this.ctx || !this.sfxGain) return;
+      const t = this.ctx.currentTime + idx * 0.09;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = profile.wave;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.09, t + 0.14);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + profile.duration);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(t);
+      osc.stop(t + profile.duration + 0.05);
+    });
+  }
+
+  /**
+   * Subtle eerie anomaly sound for A Spirál Rejtett Megfigyelője clues
+   */
+  public playObserverAnomaly() {
+    this.initContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    const t = this.ctx.currentTime;
+    const low = this.ctx.createOscillator();
+    const high = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    low.type = 'sine';
+    low.frequency.setValueAtTime(111, t);
+    low.frequency.linearRampToValueAtTime(98, t + 1.1);
+
+    high.type = 'sine';
+    high.frequency.setValueAtTime(888, t);
+    high.frequency.linearRampToValueAtTime(884, t + 1.1);
+
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.09, t + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+
+    low.connect(gain);
+    high.connect(gain);
+    gain.connect(this.sfxGain);
+
+    low.start(t);
+    high.start(t);
+    low.stop(t + 1.25);
+    high.stop(t + 1.25);
+  }
 }
 
 export const soundEngine = new SoundEngine();
+
 

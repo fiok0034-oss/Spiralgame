@@ -66,11 +66,26 @@ const buildMissionContext = (sceneId: string, spiralState: SpiralState) => {
           : 'Mindhárom kör harmonizálva! Egyesítsd a Három Kört a Központi Tengelyen (k1_three_rings).',
     };
   }
+  if (sceneId === 'g1_chamber_beyond_ninth') {
+    return {
+      title: 'Θ–∞–Δ · A Kilencediken Túli Kamra',
+      objective:
+        'Mind a Kilenc Visszhang egyesült! Vizsgáld meg a Θ–∞–Δ jelet, és vidd tovább a felismerést a Végtelen Szeme elé.',
+    };
+  }
+  if (sceneId.startsWith('g1_realm_') || sceneId === 'g1_guardians_nexus') {
+    const echoes = spiralState.worldState.collectedNineEchoIds.length;
+    const clues = spiralState.worldState.collectedObserverClueIds.length;
+    return {
+      title: 'VI. Fejezet · A Kilenc Őrző Birodalmai',
+      objective: `Járd be nem-lineárisan a 9 birodalom zónáit, oldd meg a próbákat, gyűjtsd össze a Visszhang-magokat (${echoes}/9) és a Rejtett Megfigyelő jeleit (${clues}/9).`,
+    };
+  }
   if (sceneId.startsWith('g1_')) {
     return {
       title: 'VI. Fejezet · A Kilenc Őrző Tanácsa',
       objective:
-        'Használd az emlékeid és az eddigi köreid erejét Kassarah és Ir-Haya egyensúlyának megtalálásához.',
+        'Lépj be a Kilenc Birodalom Csarnokába, és kösd össze az emlékeid erejét az Őrzőkkel.',
     };
   }
   return {
@@ -207,6 +222,12 @@ const synthesizeEchoTip = (
   } else if (sceneId.startsWith('m1_')) {
     sceneTip =
       'Tipp Mira fejezetéhez: a Másik Mira kérdéseire adott válaszod és az Obszervatórium fókuszálása közvetlenül előkészíti Levente kulcsát.';
+  } else if (sceneId.startsWith('g1_realm_') || sceneId === 'g1_guardians_nexus') {
+    sceneTip =
+      'Tipp a Kilenc Birodalomhoz: a szentélyzónákban emeld ki a Visszhang-magot (9/9 nyitja a Titkos Kamrát), és keresd a különös apró anomáliákat a zónatérképen!';
+  } else if (sceneId === 'g1_chamber_beyond_ninth') {
+    sceneTip =
+      'Tipp A Kilencediken Túli Kamrához: vizsgáld meg a Θ–∞–Δ szimbólumot, mielőtt továbbindulsz a Végtelen elé.';
   }
 
   return {

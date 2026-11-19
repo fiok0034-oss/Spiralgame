@@ -1,4 +1,6 @@
 import { DialogueNode, MemoryFragment, Relic, Achievement, RadioChannel, Guardian } from '../types/game';
+import { REALM_MEMORIES, REALM_RELICS, REALM_ACHIEVEMENTS } from './guardianRealmsData';
+import { GUARDIAN_REALM_STORY_NODES } from './guardianRealmNodes';
 
 export const INITIAL_RADIO_CHANNELS: RadioChannel[] = [
   {
@@ -176,6 +178,7 @@ export const INITIAL_MEMORIES: MemoryFragment[] = [
     isUnlocked: false,
     resonanceLevel: 7,
   },
+  ...REALM_MEMORIES,
 ];
 
 export const INITIAL_RELICS: Relic[] = [
@@ -212,6 +215,7 @@ export const INITIAL_RELICS: Relic[] = [
     iconSymbol: '🗝️',
     isAcquired: false,
   },
+  ...REALM_RELICS,
 ];
 
 export const INITIAL_ACHIEVEMENTS: Achievement[] = [
@@ -263,6 +267,7 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
     description: 'Járd be mindhárom Kódváros-kört, beszélj a lakókkal, és egyesítsd a Jég, a Hang és a Tükör pecsétjét.',
     isUnlocked: false,
   },
+  ...REALM_ACHIEVEMENTS,
 ];
 
 export const GUARDIANS_LIST: Guardian[] = [
@@ -2477,8 +2482,22 @@ export const STORY_NODES: Record<string, DialogueNode> = {
     ],
     choices: [
       {
+        id: 'c_enter_nine_realms',
+        label: 'Belépés A Kilenc Őrző Birodalmába (Teljes Dimenzió-felfedezés)',
+        reflection: 'Minden Őrző saját világa, emléke, titkai és a Kilenc Visszhang rejtélye vár rád.',
+        personalityBias: { explorer: 2, intuitive: 1 },
+        effect: {
+          spiralAwarenessDelta: 10,
+          guardianAwarenessDelta: 1,
+          resonancePointsDelta: 25,
+          unlockMemoryId: 'mem_guardians_order',
+          triggerCinematicId: 'cin_guardians_manifest',
+        },
+        nextSceneId: 'g1_guardians_nexus',
+      },
+      {
         id: 'c_accept_guardians',
-        label: 'Elfogadni az Őrzők tanítását és szembesülni a Végtelennel',
+        label: 'Közvetlen továbblépés A Végtelen Elé (Gyors átkelés)',
         reflection: 'A belső harc véget ér. Csak a megértés marad.',
         personalityBias: { preserver: 1, releaser: 1, architect: 1 },
         effect: {
@@ -2495,6 +2514,8 @@ export const STORY_NODES: Record<string, DialogueNode> = {
       },
     ],
   },
+
+  ...GUARDIAN_REALM_STORY_NODES,
 
   // CHAPTER FINAL: A VÉGTELEN & A HÁROM ÚT
   inf_final_encounter: {
@@ -2521,6 +2542,18 @@ export const STORY_NODES: Record<string, DialogueNode> = {
         title: 'Az 1982-es Rádiós Visszhangja',
         text: 'Tamás és Levente összekötött pulzusa emlékeztet: nem vagy egyedül a sötétben.',
         requiresChoiceId: 'c_k1_r2_anchor_tamas',
+      },
+      {
+        id: 'var_inf_chamber_beyond',
+        title: 'A Kilencediken Túli Kamra Pecsétje (Θ–∞–Δ)',
+        text: 'A Végtelen tekintete elcsendesedik előtted: „Egyesítetted a Kilenc Visszhangot, és beléptél a Kamrába, amelyet még az Őrzők is csak néma szívvel őriztek. Most már tudod, hogy a kérdés fontosabb minden lezárásnál.”',
+        requiresWorldFlag: 'chamberBeyondNinthCompleted',
+      },
+      {
+        id: 'var_inf_hidden_observer',
+        title: 'A Rejtett Megfigyelő Jelenléte',
+        text: 'A tükör legkülső szélén egy halk lélegzet mozdul: „Már nem csak én figyellek téged — valaki a könyv túlsó oldaláról is látta mind a kilenc nyomodat.”',
+        requiresWorldFlag: 'observerConvergenceTriggered',
       },
     ],
     choices: [

@@ -35,7 +35,16 @@ export type MiniGameId =
   | 'mirror_paradox'
   | 'neural_key_sync'
   | 'echo_viaduct_tuning'
-  | 'mirror_city_symmetry';
+  | 'mirror_city_symmetry'
+  | 'ocean_memory_dive'
+  | 'desert_trace_reconstruction'
+  | 'time_fracture_paradox'
+  | 'mirror_reflection_labyrinth'
+  | 'cathedral_silence_tuning'
+  | 'soul_machine_circuit'
+  | 'inverted_sky_navigation'
+  | 'silent_garden_symbiosis'
+  | 'infinite_threshold_recognition';
 
 export interface PersonalityProfile {
   analytical: number; // Tudományos, elemző, bizonyíték-alapú
@@ -202,6 +211,110 @@ export interface GuardianProgress {
   philosophyChoiceId: string | null;
   secretUnlocked: boolean;
   realmCompleted: boolean;
+  // Story Expansion 03 fields (safely defaulted in migration)
+  visitedZones?: string[];
+  currentZoneId?: string;
+  inspectedRealmObjects?: string[];
+  decisions?: Record<string, string>;
+  trustLevel?: number;
+  echoCoreCollected?: boolean;
+  observerClueFound?: boolean;
+  unlockedSecrets?: string[];
+  trialOutcomeId?: string | null;
+  rewardClaimed?: boolean;
+}
+
+export interface RealmZoneNode {
+  id: string;
+  guardianId: number;
+  code: string;
+  name: string;
+  subtitle: string;
+  zoneType: 'entry' | 'exploration' | 'mechanism' | 'sanctum' | 'secret';
+  x: number; // SVG topology map 0..340
+  y: number; // SVG topology map 0..200
+  description: string;
+  ambientHint: string;
+  connectedZoneIds: string[];
+  requiresZoneId?: string;
+  requiresAbilityId?: string;
+  requiresCrossEffectId?: string;
+  requiresDeductionId?: string;
+  requiresGravityInverted?: boolean;
+  requiresAllEchoes?: boolean;
+  unlockHint?: string;
+  secretId?: string;
+  hotspots: SceneHotspot[];
+  hasMiniGame?: boolean;
+  hasEchoCore?: boolean;
+  hasObserverClue?: boolean;
+  isTrialZone?: boolean;
+  guardianDialogue?: {
+    prompt: string;
+    response: string;
+  };
+}
+
+export interface RealmCrossEffect {
+  id: string;
+  sourceGuardianId: number;
+  targetGuardianId: number;
+  requiresChoiceId?: string;
+  requiresEchoId?: string;
+  title: string;
+  description: string;
+  visualShiftText: string;
+}
+
+export interface RealmTrialOption {
+  id: string;
+  label: string;
+  nuanceNote: string;
+  trustDelta: number;
+  alignment: keyof PersonalityProfile;
+  consequenceText: string;
+  unlockMemoryId?: string;
+  unlockRelicId?: string;
+}
+
+export interface RealmReactionHook {
+  id: string;
+  title: string;
+  text: string;
+  requiresChoiceId?: string;
+  requiresAnyChoiceIds?: string[];
+  requiresEchoId?: string;
+  requiresMinTrust?: number;
+}
+
+export interface GuardianRealmDefinition {
+  guardianId: number;
+  realmTitle: string;
+  biomeTag: string;
+  entrySceneId: string;
+  accentColor: string;
+  bgToneClass: string;
+  soundProfileLabel: string;
+  soundChord: number[];
+  introNarrative: string;
+  pastConnectionText: string;
+  echoCoreId: string;
+  echoCoreTitle: string;
+  echoCoreLore: string;
+  echoConnectionHint: string;
+  observerClueId: string;
+  observerClueTitle: string;
+  observerClueSummary: string;
+  observerClueDetail: string;
+  trialTitle: string;
+  trialPrompt: string;
+  trialOptions: RealmTrialOption[];
+  reactions: RealmReactionHook[];
+  rewardAbilityUpgradeId?: string;
+  rewardRelicId?: string;
+  rewardMemoryId?: string;
+  rewardSummary: string;
+  zones: RealmZoneNode[];
 }
 
 export interface SecretDiscovery {
@@ -271,6 +384,14 @@ export interface SpiralState {
     unlockedSynergies: string[];
     discoveredSecrets: string[];
     inspectedHotspots: string[];
+    // Story Expansion 03 fields
+    collectedNineEchoIds: string[];
+    collectedObserverClueIds: string[];
+    observerConvergenceTriggered: boolean;
+    chamberBeyondNinthUnlocked: boolean;
+    chamberBeyondNinthCompleted: boolean;
+    chamberBeyondChoiceId: string | null;
+    realmCrossEffectsTriggered: string[];
   };
   personality: PersonalityProfile;
   realityWarp: RealityWarpState;

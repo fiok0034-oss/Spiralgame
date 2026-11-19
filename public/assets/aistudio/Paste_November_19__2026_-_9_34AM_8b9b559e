@@ -1,0 +1,991 @@
+A SPIRÁL LEHELETE
+
+STORY EXPANSION 03 – A KILENC ŐRZŐ TELJES, BEJÁRHATÓ BIRODALMAI
+
+ULTIMATE GUARDIAN REALMS EXPANSION – MASTER DEVELOPMENT SPECIFICATION
+
+A FEJLESZTÉS KÜLDETÉSE
+
+A meglévő „A Spirál Lehelete” interaktív történeti játékot fejleszd tovább egy hatalmas, kilenc különálló, teljesen felfedezhető Őrző-birodalomból álló világkomplexummá.
+
+Ez nem egy új játék készítése.
+
+Ez a meglévő játék egyik legnagyobb történeti és játékmeneti bővítése.
+
+A cél, hogy a Kilenc Őrző ne csupán egy menüből megnyitható karakterlista legyen, hanem kilenc önálló, emlékezetes, titokzatos és részletesen kidolgozott világ ura, akiknek birodalmába a játékos személyesen beléphet.
+
+Minden birodalom legyen egyedi, felismerhető, atmoszférikus és saját játékmenettel rendelkező világ.
+
+A játékos ne egyszerűen küldetéseket teljesítsen. Fedezzen fel, nyomozzon, gondolkodjon, kockáztasson, döntsön, tanuljon, és fokozatosan értse meg a Spirál valódi természetét.
+
+A kilenc birodalom végére a játékosnak éreznie kell, hogy valami sokkal nagyobb dolog részese lett, mint amit az első fejezetekben elképzelt.
+
+---
+
+1. KRITIKUS ALAPSZABÁLY – A MEGLÉVŐ JÁTÉK MEGŐRZÉSE
+
+A jelenlegi játék vizuális megjelenését, atmoszféráját és működő rendszereit teljes egészében őrizd meg.
+
+A jelenlegi látványvilág már kialakult és elfogadott. Nem szeretnék új dizájnt.
+
+TILOS:
+
+- A főmenü újratervezése.
+- A kezelőfelület lecserélése.
+- A jelenlegi színvilág, tipográfia és vizuális stílus megváltoztatása.
+- A meglévő animációk és hangrendszer eltávolítása.
+- A georadar, tárgyvizsgáló, műhely és képességrendszer leegyszerűsítése.
+- A meglévő minijátékok törlése.
+- A Viktor-, Lena-, Mira- és Levente-fejezet átírása.
+- Kódváros és a Három Kör korábbi fejlesztéseinek visszavonása.
+- A meglévő mentési rendszer kompatibilitásának megszüntetése.
+- A korábban elkészült funkciók üres helykitöltőkkel való helyettesítése.
+
+A meglévő komponenseket, állapotkezelést, történeti rendszereket és grafikai elemeket használd tovább.
+
+Az új birodalmaknak úgy kell illeszkedniük a játékba, mintha eredetileg is annak szerves részei lettek volna.
+
+A látványt fejleszd új tartalommal, ne újratervezéssel.
+
+---
+
+2. A KILENC ŐRZŐ – TELJES BIRODALOMRENDSZER
+
+A meglévő projektben található mind a kilenc Őrző adatait, neveit, személyiségét, történetét, képességeit és filozófiai szerepét először vizsgáld meg.
+
+Használd a meglévő Őrzőket, különösen a már szereplő Kassarah és Ir-Haya karaktereket.
+
+Ne változtasd meg a meglévő karakterek nevét vagy alapvető identitását.
+
+Ne találj ki a könyvvel vagy a már meglévő történettel ellentétes eredettörténeteket.
+
+Ha valamelyik Őrző háttere nincs kellően kidolgozva, egészítsd ki a meglévő világ szabályaihoz illeszkedő eredeti történettel, de a meglévő információkat ne írd felül.
+
+Mind a kilenc Őrző kapjon egy teljesen egyedi, felfedezhető birodalmat.
+
+Kötelező tartalmi követelmény minden birodalomhoz
+
+Minden egyes Őrző birodalma tartalmazzon:
+
+1. Egy monumentális, emlékezetes belépési jelenetet.
+2. Egyedi, felfedezhető központi területet.
+3. Legalább 4–6 különálló bejárható helyszínt vagy zónát.
+4. Saját történeti háttérrel rendelkező helyszíneket.
+5. Interaktív környezeti objektumokat.
+6. Titkos átjárókat és rejtett területeket.
+7. Legalább 3 érdemi küldetést.
+8. Legalább 2 valódi döntési pontot.
+9. Egy egyedi, saját mechanikával működő minijátékot vagy összetett rejtvényt.
+10. Egy nagy történeti fordulatot.
+11. Egy filozófiai vagy személyes próbát.
+12. Egy különleges titkos helyszínt.
+13. Egy cinematic eseményt.
+14. Egy fontos emléktöredéket.
+15. Egy olyan jutalmat, amely a későbbi játékmenetben is számít.
+16. Egy összeköttetést a többi Őrző birodalmával.
+
+A birodalmak ne csak szöveges leírásokból álljanak. A játékosnak ténylegesen be kell járnia, meg kell vizsgálnia és interakcióba kell lépnie a környezettel.
+
+---
+
+3. A KILENC BIRODALOM EGYEDI VILÁGTERVEZÉSE
+
+A következő koncepciók fejlesztési irányok. Illeszd őket a projektben található kilenc Őrző tényleges személyiségéhez, meglévő történetéhez és szerepéhez.
+
+Ne rendeld hozzá véletlenszerűen az új világokat a karakterekhez: előbb vizsgáld meg a meglévő karakteradatokat, majd a legjobban illeszkedő birodalmat készítsd el mindegyikhez.
+
+I. BIRODALOM – AZ EMLÉKEK ÓCEÁNJA
+
+<text color="secondary" size="xs">Vizuális irány: végtelen mélység, lebegő emlékek, víz alatti civilizációk.</text>
+
+Egy hatalmas, lehetetlen óceán, amelynek mélyén nem víz, hanem emlékek találhatók.
+
+A felszín fölött lebegő szigetek, víz alatt álló épületek, elfeledett városok és hatalmas, áttetsző emlékkamrák jelenjenek meg.
+
+A játékos képes legyen különböző emlékrétegekbe merülni.
+
+Kötelező elemek:
+
+- Elfeledett emlékváros.
+- Lebegő emlékfragmentumok.
+- Egy víz alatti archívum.
+- Egy elveszett személy emlékének felkutatása.
+- Emlékek összeillesztésére épülő rejtvény.
+- Egy olyan emlék, amely látszólag a játékos saját múltjához tartozik.
+- Egy döntés arról, hogy egy emléket megőrizzen vagy elengedjen.
+
+A nagy titok: az óceán nem minden emléket őriz meg pontosan úgy, ahogyan megtörtént.
+
+II. BIRODALOM – AZ IDŐTÖRÉS KIRÁLYSÁGA
+
+<text color="secondary" size="xs">Vizuális irány: megállt idő, széteső óratornyok, lebegő épületek, több idősík.</text>
+
+Egy olyan világ, ahol különböző időpillanatok egyszerre léteznek.
+
+Egy épület egyik szobájában a múlt, a másikban a jövő, a harmadikban pedig egy soha meg nem történt esemény látható.
+
+Kötelező elemek:
+
+- Megállt órák városa.
+- Visszafelé mozgó folyó.
+- Egymásra csúszó idővonalak.
+- Egy időhurkos épület.
+- Időrétegek közötti átjárás.
+- Egy olyan esemény, amelynek oka csak a jövőből érthető meg.
+- Egy időparadoxon-minijáték.
+
+A játékos döntései változtassanak meg bizonyos környezeti eseményeket.
+
+A nagy titok: nem minden idővonal egyenrangú, és nem minden jövő akar megtörténni.
+
+III. BIRODALOM – A TÜKRÖK DIMENZIÓJA
+
+<text color="secondary" size="xs">Vizuális irány: végtelen tükröződés, alternatív önmagak, szürreális építészet.</text>
+
+Egy olyan világ, amelyben minden tükör egy másik lehetséges valóságot mutat.
+
+A játékos különböző változataival találkozhat.
+
+Kötelező elemek:
+
+- Végtelen tükörfolyosó.
+- Alternatív Kódváros.
+- Egy másik Viktor vagy másik karakter történeti visszhangja.
+- Olyan helyszín, amelynek geometriája a játékos döntéseitől függ.
+- Tükörből nyíló titkos átjárók.
+- Saját árnyékkal való találkozás.
+- Valóság és illúzió elkülönítésére épülő minijáték.
+
+A játékos ne mindig tudja azonnal, melyik valóságban van.
+
+A nagy titok: a tükör nem mindig a játékost másolja. Néha előbb tudja, mit fog tenni.
+
+IV. BIRODALOM – A CSEND KATEDRÁLISA
+
+<text color="secondary" size="xs">Vizuális irány: gigantikus szakrális építészet, hanghullámok, fényből épülő terek.</text>
+
+Egy monumentális, lebegő katedrális, amelynek minden terme más-más hangfrekvencián létezik.
+
+A csendnek saját fizikája van.
+
+Kötelező elemek:
+
+- Hangból épülő folyosók.
+- Láthatatlan hidak.
+- Frekvenciával aktiválható ajtók.
+- Egy elnémult harangtorony.
+- Hangrezonancia-alapú rejtvény.
+- Egy különleges hangarchívum.
+- Egy olyan jelenet, amelyben a teljes csend válik játékmeneti mechanikává.
+
+A nagy titok: egyes hangok nem hangok, hanem elrejtett üzenetek a Spirálból.
+
+V. BIRODALOM – A FELEJTÉS SIVATAGA
+
+<text color="secondary" size="xs">Vizuális irány: hatalmas fekete-arany sivatag, lebegő romok, homokba temetett városok.</text>
+
+Egy végtelen sivatag, amely folyamatosan eltünteti a múlt nyomait.
+
+A játékosnak úgy kell felfedeznie a területet, hogy közben a világ maga is megpróbálja kitörölni a korábbi felfedezéseket.
+
+Kötelező elemek:
+
+- Eltemetett város.
+- Mozgó homoklabirintus.
+- Emlékeket tároló obeliszkek.
+- Egy elveszett civilizáció.
+- Nyomkövetési mechanika.
+- Elfelejtett tárgyakból rekonstruálható történet.
+- Egy olyan döntés, amelyben a játékosnak választania kell az igazság és a felejtés között.
+
+A nagy titok: valaki szándékosan törölte ki a birodalom múltját.
+
+VI. BIRODALOM – A LÉLEK GÉPEZETE
+
+<text color="secondary" size="xs">Vizuális irány: monumentális biomechanikus szerkezetek, organikus gépek, pulzáló fények.</text>
+
+Egy hatalmas, élő gépezet, amely egyszerre hasonlít egy városra és egy idegrendszerre.
+
+A falak lélegeznek, az épületek reagálnak a játékos jelenlétére, a gépek pedig mintha saját tudattal rendelkeznének.
+
+Kötelező elemek:
+
+- Központi rezonanciamag.
+- Élő gépek.
+- Neurális folyosók.
+- Szétszerelhető szerkezetek.
+- Többlépcsős áramköri rejtvény.
+- Egy gépi tudat, amellyel kommunikálni lehet.
+- A játékos korábbi képességeinek kreatív felhasználása.
+
+A nagy titok: a gépezet nem egyszerűen működik. Valamit vagy valakit fenntart.
+
+VII. BIRODALOM – A FORDÍTOTT ÉG
+
+<text color="secondary" size="xs">Vizuális irány: fejjel lefelé álló világ, csillagokból épült városok, gravitációs anomáliák.</text>
+
+Egy olyan birodalom, ahol az ég alatt van a föld, a gravitáció pedig nem állandó.
+
+Lebegő városok, fordított vízesések, csillagfolyosók és hatalmas égi szerkezetek jelenjenek meg.
+
+Kötelező elemek:
+
+- Fordított gravitációjú területek.
+- Lebegő romváros.
+- Csillagtérkép.
+- Gravitációs útvonalak.
+- Térbeli navigációs rejtvény.
+- Egy veszélyes, lebegő átjáró.
+- A gravitáció megváltoztatásával megnyitható titkos területek.
+
+A nagy titok: a birodalom égboltja nem az univerzumot mutatja, hanem egy másik valóság térképét.
+
+VIII. BIRODALOM – A NÉMA KERT
+
+<text color="secondary" size="xs">Vizuális irány: monumentális, álomszerű biolumineszcens kert, ősi növények, élő emlékek.</text>
+
+Egy gyönyörű, mégis nyugtalanító világ, ahol az élet minden formája reagál a játékos gondolataira és döntéseire.
+
+A természet nem díszlet, hanem a történet aktív résztvevője.
+
+Kötelező elemek:
+
+- Emlékfák.
+- Fénylő növények.
+- Élő labirintus.
+- Egy ősi gyökérhálózat.
+- Biológiai rejtvény.
+- Rejtett ösvények, amelyek a játékos korábbi döntéseire reagálnak.
+- Egy különleges élet-halál filozófiai próba.
+
+A nagy titok: a kert mind a kilenc birodalom történetéből őriz valamit.
+
+IX. BIRODALOM – A VÉGTELEN KÜSZÖBE
+
+<text color="secondary" size="xs">Vizuális irány: kozmikus tér, monumentális geometria, fekete-fehér végtelenség, lehetetlen építészet.</text>
+
+Ez legyen a kilenc birodalom legkülönlegesebb és legrejtélyesebb területe.
+
+Nem egyszerűen egy újabb világ.
+
+A játékos fokozatosan megérti, hogy ez a birodalom másképpen működik, mint az előző nyolc.
+
+Kötelező elemek:
+
+- Végtelen geometriai tér.
+- Lehetetlen lépcsők.
+- Változó térbeli szerkezetek.
+- A játékos korábbi döntéseiből létrejövő környezet.
+- Kilenc korábbi emléktöredék egyesítése.
+- Egy olyan próba, amely nem a harcról vagy ügyességről, hanem a felismerésről szól.
+- Egy rendkívüli cinematic esemény.
+- Egy titkos kapu, amely a kilenc birodalom összekapcsolásával nyílik meg.
+
+A nagy titok: a Végtelen nem feltétlenül a kilenc birodalom vége.
+
+Lehet, hogy valami egészen más kezdete.
+
+---
+
+4. A BIRODALMAK TÉNYLEGES BEJÁRHATÓSÁGA
+
+Ez a fejlesztés egyik legfontosabb követelménye.
+
+Ne készíts kilenc újabb szöveges modált.
+
+Ne csak a GuardiansHubModal meglévő ablakát bővítsd.
+
+Minden birodalomnak legyen saját, ténylegesen bejárható felfedezési struktúrája.
+
+A játékos tudjon:
+
+- Elindulni egy központi területről.
+- Kiválasztani a felfedezés irányát.
+- Megvizsgálni tárgyakat.
+- Aktiválni szerkezeteket.
+- Rejtett helyszíneket felfedezni.
+- Visszatérni korábban meglátogatott területekre.
+- Új útvonalakat megnyitni.
+- Különböző sorrendben teljesíteni a mellékküldetéseket.
+- Megtalálni olyan helyeket, amelyeket első alkalommal még nem tudott elérni.
+
+A birodalmak ne legyenek teljesen lineárisak.
+
+Legyen bennük felfedezési szabadság, de a történet fő iránya mindig legyen követhető.
+
+Minden fontosabb terület kapjon:
+
+- Helyszínnevet.
+- Hangulatos leírást.
+- Saját vizuális karaktert.
+- Interaktív objektumokat.
+- Felfedezhető titkokat.
+- Történeti kapcsolatokat.
+- Egyértelmű továbbhaladási lehetőségeket.
+
+---
+
+5. A KILENC ŐRZŐ SZEMÉLYES TÖRTÉNETE
+
+Minden Őrző kapjon valódi karakterfejlődést.
+
+A játékos ne csak egy küldetésadó karaktert lásson bennük.
+
+Minden Őrzőnek legyen:
+
+- Saját múltja.
+- Saját motivációja.
+- Saját félelme.
+- Saját belső konfliktusa.
+- Egy elrejtett titka.
+- Egy olyan emléke, amelyet nem akar felidézni.
+- Egy ellentmondás a saját filozófiájában.
+- Egy olyan igazság, amelyet csak a játékos fedezhet fel.
+
+A párbeszédek legyenek hosszabbak, filmszerűek, személyesek és karakterfüggők.
+
+A kilenc Őrző ne beszéljen azonos stílusban.
+
+Mindegyiknek legyen felismerhető beszédmódja, gondolkodása és érzelmi világa.
+
+A játékos korábbi döntései befolyásolják, hogyan viszonyulnak hozzá.
+
+Legyenek:
+
+- Bizalmi reakciók.
+- Elutasítások.
+- Titkos párbeszédek.
+- Eltérő válaszok.
+- Rejtett információk.
+- Különleges találkozások.
+
+A karakterek ne áruljanak el mindent első találkozáskor.
+
+A bizalom és a felfedezés fokozatosan nyissa meg a történet mélyebb rétegeit.
+
+---
+
+6. KÜLDETÉSEK – NE CSAK KATTINTÁSOK LEGYENEK
+
+A meglévő Őrző-küldetéseket fejleszd tovább valódi, összetett küldetésekké.
+
+Mind a kilenc birodalomban legalább három jelentős küldetés legyen:
+
+A. Felfedező küldetés
+
+A játékosnak meg kell ismernie a birodalom egyik rejtett területét.
+
+Legyen benne:
+
+- Nyomkeresés.
+- Tárgyvizsgálat.
+- Információgyűjtés.
+- Rejtett összefüggés.
+- Valódi felfedezés.
+
+B. Egyedi mechanikára épülő küldetés
+
+A játékosnak a birodalom saját mechanikáját kell megértenie és alkalmaznia.
+
+Például:
+
+- Időréteg-váltás.
+- Hangrezonancia.
+- Tükörvalóság.
+- Gravitációfordítás.
+- Emlékrekonstrukció.
+- Biológiai kapcsolat.
+- Neurális szinkronizáció.
+
+C. Személyes, filozófiai küldetés
+
+Az Őrző saját múltjával, félelmével vagy titkával kapcsolatos.
+
+A játékosnak valódi döntést kell hoznia.
+
+A döntés következménye legyen tartós és mérhető.
+
+Egyes küldetések többféle módon is teljesíthetők legyenek.
+
+Ne minden esetben csak egy helyes megoldás létezzen.
+
+---
+
+7. EGYEDI MINIJÁTÉKOK ÉS REJTVÉNYEK
+
+Mind a kilenc Őrző kapjon legalább egy valóban egyedi minijátékot.
+
+A meglévő 22 minijátékot ne töröld és ne cseréld le.
+
+Az új mechanikák ne csak más színű gombok legyenek.
+
+Legyenek eltérő gondolkodási és interakciós feladatok.
+
+Lehetséges mechanikák:
+
+- Többrétegű idővonalak összeillesztése.
+- Hangfrekvenciák valós idejű hangolása.
+- Tükörszögek és fényutak irányítása.
+- Emlékek sorrendjének rekonstruálása.
+- Gravitációs útvonal megtervezése.
+- Neurális kapcsolatok összekapcsolása.
+- Biológiai mintázatok felismerése.
+- Rejtett szimbólumrendszerek megfejtése.
+- Több birodalomból származó információ egyesítése.
+
+Minden minijáték rendelkezzen:
+
+- Saját szabályrendszerrel.
+- Érthető instrukcióval.
+- Valódi játékosi interakcióval.
+- Ellenőrzött siker- és hibakezeléssel.
+- Érdemi jutalommal.
+- Történeti következménnyel.
+
+A minijátékok ne legyenek lehetetlenek, de ne is legyenek automatikusan teljesíthetők.
+
+A nehézség fokozatosan növekedjen.
+
+---
+
+8. A NAGY PLUSZ – A KILENC BIRODALOM ÉLŐ VISSZHANGRENDSZERE
+
+Ez legyen a teljes fejlesztés egyik legfontosabb újdonsága.
+
+Hozz létre egy új, a meglévő EchoRecord rendszerrel együttműködő mechanikát:
+
+THE NINE ECHOES – A KILENC VISSZHANG
+
+A kilenc birodalom valójában nem kilenc elszigetelt világ.
+
+Mindegyikben található egy-egy ősi rezonanciamag.
+
+Ezek a magok összefüggnek egymással.
+
+A játékos minden birodalomban talál egy különleges visszhangot.
+
+A visszhangok összegyűjtése fokozatosan feltárja a kilenc világ közötti kapcsolatot.
+
+A rendszer működése
+
+Minden birodalomban legyen:
+
+- Egy elsődleges rezonanciamag.
+- Egy rejtett emléktöredék.
+- Egy titkos összefüggés egy másik birodalommal.
+- Egy olyan esemény, amely csak egy korábbi döntés után jelenik meg.
+- Egy olyan nyom, amely a következő birodalomhoz vezet.
+
+A játékos a kilenc visszhangból fokozatosan egy nagyobb történeti képet állít össze.
+
+A visszhangok ne pusztán gyűjthető tárgyak legyenek.
+
+Mindegyik egy történeti információt, egy felismerést vagy egy új lehetőséget hordozzon.
+
+A birodalmak egymásra gyakorolt hatása
+
+Ez a rendszer tegye lehetővé, hogy az egyik világban meghozott döntés egy másik világban is látható következménnyel járjon.
+
+Például:
+
+- Az Emlékek Óceánjában megőrzött emlék megváltoztathat egy későbbi tükörjelenetet.
+- Az Időtörésben helyreállított időréteg megnyithat egy új helyszínt.
+- A Tükrök Dimenziójában meghozott döntés megváltoztathatja egy másik Őrző párbeszédét.
+- A Csend Katedrálisában megszerzett hangrezonancia aktiválhat egy rejtett átjárót.
+- A Felejtés Sivatagában megőrzött bizonyíték felfedhet egy korábban ismeretlen történeti eseményt.
+
+Ezek ténylegesen működő következmények legyenek.
+
+Ne csak a naplóban jelenjenek meg.
+
+A kilenc visszhang egyesítése
+
+Ha a játékos mind a kilenc rezonanciamagot megtalálja, feloldódjon egy új, különleges történeti esemény.
+
+A játékos előtt megjelenik egy olyan helyszín, amely korábban egyik birodalomban sem volt látható.
+
+Ez legyen:
+
+A KILENCEDIKEN TÚLI KAMRA
+
+A helyszín csak a kilenc visszhang egyesítésével váljon elérhetővé.
+
+A kamrában:
+
+- Egy különleges cinematic esemény.
+- Kilenc egymással összekapcsolódó emlék.
+- Egy korábban nem látott szimbólum.
+- Egy új történeti rejtély.
+- Egy titkos üzenet, amely új megvilágításba helyezi a Spirál egészét.
+- Egy különleges döntés.
+
+Ne hozz létre önkényesen tizedik Őrzőt.
+
+A titok maradjon összhangban a már meglévő Végtelen-mitológia és a történet világával.
+
+A helyszín egy új felismerést adjon, ne magyarázzon meg mindent.
+
+A játékos érezze, hogy valami nagyobb titok kapujához ért.
+
+---
+
+9. A MÁSODIK NAGY PLUSZ – A BIRODALMAK EMLÉKEZNEK A JÁTÉKOSRA
+
+Hozz létre egy dinamikus világállapot-rendszert, amely a játékos korábbi cselekedeteire reagál.
+
+A birodalmak ne legyenek teljesen statikusak.
+
+A játékos tetteinek legyen látható következménye.
+
+Például:
+
+- Egy megmentett karakter később visszatérhet.
+- Egy aktivált szerkezet egy másik területet is megváltoztathat.
+- Egy megőrzött emlék új párbeszédet nyithat meg.
+- Egy elpusztított vagy lezárt átjáró később alternatív útvonalat eredményezhet.
+- Egy Őrző bizalmatlanabbá válhat.
+- Egy másik Őrző titkos információt oszthat meg.
+- Egy birodalom környezete láthatóan megváltozhat.
+
+A rendszer ne büntesse indokolatlanul a játékost.
+
+Legyenek különböző, de értelmes következmények.
+
+A döntéseknek ne csak jó és rossz kimenetele legyen.
+
+Legyenek erkölcsileg összetett helyzetek.
+
+A játékos sokszor csak később értse meg, milyen következménnyel járt egy korábbi döntése.
+
+---
+
+10. HARMADIK PLUSZ – A SPIRÁL REJTETT MEGFIGYELŐJE
+
+A teljes játék egyik legkülönlegesebb titka legyen egy visszatérő, nehezen felismerhető jelenség.
+
+Minden birodalomban legyen egy nagyon apró, elsőre jelentéktelen anomália.
+
+Ez lehet:
+
+- Egy furcsa szimbólum.
+- Egy ismeretlen árnyék.
+- Egy rövid hangfelvétel.
+- Egy tárgy, amely nem illik a helyszínhez.
+- Egy olyan mondat, amelyet több különböző karakter is kimond.
+- Egy pillanatra megjelenő alak.
+
+A jelenség mind a kilenc birodalomban más formában jelenjen meg.
+
+Ne legyen azonnal felismerhető.
+
+A játékos gyűjthesse össze a hozzá kapcsolódó bizonyítékokat.
+
+Ha mind a kilenc nyomot megtalálta, egy titkos esemény induljon el.
+
+A játékos rájöhet, hogy a birodalmak eseményeit valami vagy valaki összefüggésben figyeli.
+
+Ne nevezd meg rögtön, hogy mi ez.
+
+Ne magyarázd túl.
+
+A titok legyen nyugtalanító, intelligens és emlékezetes.
+
+A végén jelenjen meg egyetlen rövid mondat, amely a játékos korábbi döntéseire utal.
+
+A titkos megfigyelő ne vegye át az Őrzők szerepét, és ne változtassa meg önkényesen a könyv alapvető mitológiáját.
+
+---
+
+11. A KILENC ŐRZŐ PRÓBÁI – VALÓDI JÁTÉKOSI VIZSGÁK
+
+Minden birodalom végén legyen egy egyedi próba.
+
+A próba ne kizárólag egy minijáték legyen.
+
+A teljes birodalomban megszerzett információkat, emlékeket, döntéseket és képességeket használja fel.
+
+A játékosnak bizonyítania kell, hogy megértette az adott Őrző világát.
+
+Lehetséges próbatípusok:
+
+- Egy emlék igazságának felismerése.
+- Két ellentmondó történet közötti döntés.
+- Egy időparadoxon megoldása.
+- Egy saját korábbi döntés következményének elfogadása.
+- Egy másik karakter emlékének megértése.
+- Egy olyan helyzet megoldása, ahol nincs tökéletes választás.
+
+A próba eredménye változtassa meg az Őrző reakcióját és a játékos által megszerezhető jutalmat.
+
+Ne minden esetben egyetlen helyes válasz legyen.
+
+---
+
+12. JUTALMAK ÉS A SPIRÁL KÉPESSÉGEI
+
+A kilenc birodalom teljesítése adjon valódi játékmeneti jutalmakat.
+
+Használd a meglévő 12 Spirál-képességet és azok fejlesztési rendszerét.
+
+Ne hozz létre indokolatlanul párhuzamos képességrendszert.
+
+A birodalmakban megszerezhető jutalmak lehetnek:
+
+- Új képességfejlesztési lehetőségek.
+- Rezonanciafragmentumok.
+- Ritka ereklyék.
+- Új georadar-érzékelési lehetőségek.
+- Új tárgyvizsgálati módok.
+- Új műhely-kombinációk.
+- Titkos történeti információk.
+- Új párbeszédlehetőségek.
+- Rejtett helyszínekhez vezető kulcsok.
+
+A jutalmaknak ténylegesen működniük kell.
+
+A megszerzett tárgyak és képességek kerüljenek be a meglévő mentési rendszerbe.
+
+---
+
+13. CINEMATIC ESEMÉNYEK ÉS WOW FAKTOR
+
+Minden birodalomnak legyen legalább egy igazán emlékezetes cinematic pillanata.
+
+A játékos ne csak olvassa, hogy valami rendkívüli történik.
+
+Lássa, hallja és élje át.
+
+Lehetséges jelenetek:
+
+- Egy teljes város emelkedik ki az emlékek óceánjából.
+- Egy épület több idővonalra szakad szét.
+- A játékos tükörképe önálló életre kel.
+- Egy egész katedrális megszólal.
+- Egy sivatagi város visszatér a homok alól.
+- Egy élő gépezet reagál a játékos jelenlétére.
+- Egy bolygó méretű gravitációs szerkezet megfordul.
+- Egy erdő egyszerre kezd emlékezni mind a kilenc birodalomra.
+- A Végtelen Küszöbén a tér teljesen új geometriai alakot vesz fel.
+
+A cinematic események használják a meglévő hang-, animációs és vizuális rendszereket.
+
+Legyenek:
+
+- Környezeti hangok.
+- Térbeli hanghatások, ahol támogatott.
+- Fény- és részecskeeffektek.
+- Kameraátmenetek, ahol a jelenlegi architektúra ezt lehetővé teszi.
+- Jól időzített történeti szövegek.
+- Érzelmi csúcspontok.
+
+Ne legyen minden jelenet túl hosszú.
+
+A látványos pillanatok között maradjon hely a felfedezésnek és a csendnek is.
+
+A legnagyobb wow faktor sokszor egy váratlan felismerésből szülessen, ne csak egy nagy robbanásból.
+
+---
+
+14. HANGVILÁG ÉS ATMOSZFÉRA
+
+Minden birodalom kapjon saját hangulati hangprofilt.
+
+A meglévő hangrendszert használd.
+
+Lehetséges hangok:
+
+- Távoli visszhangok.
+- Ismeretlen rádiójelek.
+- Mély rezonanciák.
+- Suttogások.
+- Fémes rezgések.
+- Szél- és környezeti hangok.
+- Torzult emlékhangok.
+- Frekvenciaalapú rejtett üzenetek.
+
+A hangok ne legyenek puszta háttérdíszek.
+
+Néhány esetben a játékosnak hallás alapján kelljen felismernie egy titkot vagy megoldania egy feladatot.
+
+A hangalapú rejtvényekhez mindig legyen vizuális segítség is, hogy a játék csendben vagy hang nélkül játszók számára se váljon teljesíthetetlenné.
+
+---
+
+15. TÖRTÉNETI KAPCSOLAT A KORÁBBI FEJEZETEKKEL
+
+A kilenc Őrző birodalma szervesen kapcsolódjon az eddigi történethez.
+
+Használd fel:
+
+- Viktor antarktiszi eseményeit.
+- Lena 1979-es Projekt Δ–0 történetét.
+- Mira alternatív idővonalait.
+- Levente Élő Kulcsát.
+- Kódváros három körét.
+- Az ARCHÍV-82 bizonyítékait.
+- A korábbi emlékeket és visszhangokat.
+
+A játékos találjon olyan nyomokat a birodalmakban, amelyek visszautalnak a korábbi fejezetekre.
+
+Egyes Őrzők ismerhetik Viktor, Lena, Mira vagy Levente múltjának olyan részleteit, amelyeket maguk a szereplők sem tudnak.
+
+Ezek az információk fokozatosan kerüljenek elő.
+
+A történet ne váljon egymástól független epizódok sorozatává.
+
+A kilenc birodalom egyetlen nagy történeti ívet alkosson.
+
+---
+
+16. AZ ARCHÍV-82 ÚJ SZEREPE
+
+Bővítsd az ARCHÍV-82 rendszert úgy, hogy a kilenc birodalom felfedezése közben is hasznos legyen.
+
+A játékos:
+
+- Gyűjthessen új bizonyítékokat.
+- Kapcsolhasson össze különböző birodalmakból származó nyomokat.
+- Készíthessen új dedukciókat.
+- Felismerhesse az ismétlődő szimbólumokat.
+- Összehasonlíthassa az Őrzők történeti állításait.
+- Felfedezhesse az ellentmondásokat.
+
+Legalább 18 új, valóban használható bizonyítékot tervezz a kilenc birodalomhoz kapcsolódóan.
+
+Legalább 9 új dedukció készüljön.
+
+A dedukciók ne csak egy szöveges üzenetet adjanak, hanem ahol indokolt, nyissanak meg új párbeszédet, területet vagy történeti lehetőséget.
+
+---
+
+17. TÖRTÉNETI ÉS VILÁGÁLLAPOT-KEZELÉS
+
+A meglévő EchoRecord, StoryLog, StoryBranchingTree, SpiralState és GameContext rendszereket bővítsd.
+
+Ne készíts külön, párhuzamos mentési és döntési rendszert.
+
+Minden birodalom állapotát követni kell.
+
+Tárolandó például:
+
+- A birodalom meglátogatása.
+- A felfedezett helyszínek.
+- A teljesített küldetések.
+- A megszerzett visszhang.
+- A megtalált titkok.
+- A meghozott döntések.
+- Az Őrző bizalmi állapota.
+- A teljesített próba.
+- A megszerzett jutalmak.
+- A többi birodalomra gyakorolt következmények.
+
+A rendszer támogassa a régi mentések betöltését.
+
+A meglévő mentéseket migráld biztonságosan, ha új állapotmezők szükségesek.
+
+A régi játékos ne veszítse el korábbi előrehaladását.
+
+---
+
+18. SZABAD FELFEDEZÉS ÉS TÖRTÉNETI HALADÁS
+
+A kilenc birodalom felfedezése ne legyen teljesen kötött sorrendű.
+
+A játékos kapjon lehetőséget arra, hogy a történeti feltételek teljesítése után több birodalom közül választhasson.
+
+Ugyanakkor legyenek olyan titkok és átjárók, amelyekhez más birodalomból származó képesség vagy emléktöredék szükséges.
+
+Így vissza kelljen térnie korábban meglátogatott helyszínekre.
+
+A játékos érezze, hogy a világ folyamatosan kitárul előtte.
+
+A fő történeti útvonal azonban maradjon követhető.
+
+A játék mindig adjon érthető információt arról, hogy milyen fő feladat vagy történeti cél következik.
+
+---
+
+19. TITKOS HELYSZÍNEK ÉS REJTETT TARTALMAK
+
+Minden birodalomban legyen legalább két titkos helyszín.
+
+Ezek ne legyenek egyszerűen egy gombnyomásra elérhető szövegdobozok.
+
+A játékosnak fel kelljen fedeznie vagy ki kelljen érdemelnie őket.
+
+Például:
+
+- Egy rejtett frekvencia követése.
+- Egy korábbi emlék rekonstruálása.
+- Egy tárgy kombinálása.
+- Egy szimbólum felismerése.
+- Egy különleges képesség használata.
+- Egy korábbi döntés következménye.
+
+A titkos helyszínek tartalmazzanak új történeti információkat.
+
+Néhány titok csak a kilenc birodalom közötti kapcsolatok megértésével legyen megfejthető.
+
+A titkos tartalomnak legyen valódi jutalma.
+
+---
+
+20. MOBIL ÉS ASZTALI JÁTÉKÉLMÉNY
+
+Minden új funkció működjön asztali számítógépen és mobilon.
+
+Kötelező:
+
+- Érintésvezérlés.
+- Reszponzív helyszínnézetek.
+- Kényelmes hotspotméretek.
+- Mobilon is kezelhető minijátékok.
+- Olvasható történeti szövegek.
+- Stabil modálablakok.
+- Megfelelő görgetés.
+- Ne lógjanak ki a fontos elemek a képernyőről.
+
+Ne legyen olyan küldetés, amely kizárólag egérrel teljesíthető.
+
+---
+
+21. A FEJLESZTÉS MÓDJA – NE EGYSZERŰSÍTSD LE
+
+Mielőtt módosítasz, vizsgáld meg a teljes meglévő projektet.
+
+Különösen:
+
+- GuardianHubModal.
+- A kilenc Őrző adatstruktúrája.
+- Guardian quest rendszerek.
+- MiniGameSuite.
+- StoryData.
+- ExpansionData.
+- GameContext.
+- SpiralState.
+- EchoRecord.
+- StoryLog.
+- StoryBranchingTree.
+- Mentési és betöltési mechanizmus.
+- Cinematic események.
+- Hangrendszer.
+- ARCHÍV-82.
+
+A meglévő funkciókat bővítsd.
+
+Ne készíts felesleges másolatokat.
+
+Ne törölj működő rendszert csak azért, mert egyszerűbb lenne újraírni.
+
+A fejlesztés legyen moduláris és karbantartható.
+
+Ha a teljes fejlesztés egyszerre túl nagy lenne, bontsd belső megvalósítási szakaszokra, de a teljes specifikáció minden követelményét őrizd meg.
+
+Ne hagyj üres helykitöltőket, és ne jelents késznek olyan részt, amely csak egy látványos felületet kapott, de nincs mögötte működő játékmenet.
+
+---
+
+22. KÖTELEZŐ MINŐSÉGI ELLENŐRZÉS
+
+A fejlesztés után minden birodalmat külön ellenőrizz.
+
+Történeti tesztek
+
+- Mind a kilenc Őrző elérhető.
+- Mindegyiknek van saját birodalma.
+- Minden fő történeti útvonal működik.
+- Minden fontos döntés rögzül.
+- A döntések későbbi következményei megjelennek.
+- A titkos helyszínek a megfelelő feltételekkel nyílnak meg.
+
+Játékmeneti tesztek
+
+- Minden birodalom bejárható.
+- Minden hotspot működik.
+- Minden küldetés teljesíthető.
+- Minden minijáték megoldható.
+- A jutalmak ténylegesen feloldódnak.
+- A kilenc visszhang rendszere működik.
+- A kilencediken túli kamra csak a megfelelő feltételekkel érhető el.
+
+Technikai tesztek
+
+- TypeScript ellenőrzés.
+- Vite build.
+- Hiányzó történeti hivatkozások ellenőrzése.
+- Minijáték-azonosítók ellenőrzése.
+- Mentés és betöltés tesztelése.
+- Régi mentések migrációjának ellenőrzése.
+- Mobil és asztali kezelhetőség ellenőrzése.
+
+Ahol lehetséges, automatizált teszteket is készíts.
+
+A statikus gráfellenőrzés nem helyettesíti a tényleges játékmenet tesztelését.
+
+Ha a böngészős tesztelés nem végezhető el, ezt őszintén jelezd.
+
+---
+
+23. A FEJLESZTÉS VÉGÉN KÉREK RÉSZLETES JELENTÉST
+
+A befejezés után készíts részletes fejlesztési jelentést az alábbiakról:
+
+1. Hány új történeti jelenet készült.
+2. Milyen lett mind a kilenc birodalom.
+3. Hány új bejárható helyszín készült.
+4. Hány új küldetés készült.
+5. Hány új minijáték készült.
+6. Milyen új bizonyítékok és dedukciók készültek.
+7. Hogyan működik a kilenc visszhang rendszere.
+8. Hogyan hatnak egymásra a birodalmak.
+9. Milyen új titkos helyszínek készültek.
+10. Milyen új cinematic események készültek.
+11. Milyen új jutalmak és képességfejlesztések készültek.
+12. Milyen fájlokat módosítottál.
+13. Milyen teszteket futtattál.
+14. Milyen hibák maradtak.
+15. Mely funkciókat ellenőrizted ténylegesen a böngészőben.
+
+Ne használj általános, ellenőrizhetetlen kijelentéseket.
+
+Minden elkészült funkciót konkrétan sorolj fel.
+
+---
+
+24. A VÉGSŐ ALKOTÓI CÉL
+
+A kilenc Őrző birodalma legyen a játék egyik legnagyobb élménye.
+
+A játékos minden birodalomban érezzen valami újat.
+
+Legyen, ahol félni fog.
+Legyen, ahol elgondolkodik.
+Legyen, ahol elcsodálkozik.
+Legyen, ahol megkérdőjelezi az addigi igazságokat.
+És legyen olyan pillanat, amikor rájön, hogy egy korábbi apró döntése sokkal nagyobb jelentőségű volt, mint gondolta.
+
+A világ legyen gyönyörű, de ne mindig biztonságos.
+
+Legyen titokzatos, de ne érthetetlen.
+
+Legyen összetett, de ne zavaros.
+
+Legyen látványos, de ne csak a látványra épüljön.
+
+A játékos ne csak kilenc Őrzővel találkozzon.
+
+Ismerje meg a világukat, értse meg a félelmeiket, fedezze fel a múltjukat, és döntsön arról, hogy mit kezd az általuk őrzött igazságokkal.
+
+A KILENC BIRODALOM NE KILENC KÜLÖNÁLLÓ PÁLYA LEGYEN. LEGYEN EGYETLEN HATALMAS, ÖSSZEFÜGGŐ REJTÉLY, AMELYNEK A MEGOLDÁSÁHOZ A JÁTÉKOSNAK MIND A KILENC VILÁGOT MEG KELL ISMERNIE.
+
+A fejlesztés végső célja, hogy a játékos a kilencedik birodalom után se legyen biztos abban, hogy valóban megértette a Spirál természetét.
+
+Mert lehet, hogy a legnagyobb titok nem az, amit a kilenc Őrző őriz.
+
+Hanem az, ami összeköti őket.
+
+A SPIRÁL LEHELETE – A KILENC ŐRZŐ BIRODALMAI
+
+Kilenc világ. Kilenc emlék. Kilenc igazság. És egyetlen kérdés, amelyre talán egyik Őrző sem tudja a választ.
+
+Kezdd meg a meglévő projekt részletes felmérését, majd valósítsd meg ezt a teljes bővítést a meglévő játék megőrzésével.

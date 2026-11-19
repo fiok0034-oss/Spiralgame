@@ -22,6 +22,7 @@ import {
   SceneHotspot,
   RealityWarpState,
   PersonalityProfile,
+  RealmZoneNode,
 } from '../types/game';
 import {
   INITIAL_MEMORIES,
@@ -47,6 +48,10 @@ import {
   KODVAROS_QUESTS,
   KODVAROS_SIDE_QUESTS,
 } from '../data/kodvarosData';
+import {
+  GUARDIAN_REALMS,
+  REALM_CROSS_EFFECTS,
+} from '../data/guardianRealmsData';
 import { soundEngine } from '../audio/SoundEngine';
 
 interface RadarDiscoveryReward {
@@ -144,6 +149,23 @@ interface GameContextType {
   exploreKodvarosLandmark: (landmarkId: string) => void;
   claimKodvarosSideQuest: (questId: string) => { success: boolean; message: string };
   syncEchoTip: (echoId: string) => { syncedNow: boolean };
+  // Story Expansion 03: Nine Guardian Realms
+  isRealmZoneUnlocked: (zone: RealmZoneNode) => boolean;
+  enterRealmZone: (
+    guardianId: number,
+    zoneId: string
+  ) => { entered: boolean; message: string; unlockedSecretId?: string };
+  inspectRealmHotspot: (
+    guardianId: number,
+    hotspot: SceneHotspot,
+    isObserverZone?: boolean
+  ) => { unlocked: boolean; message: string; observerFound?: boolean };
+  collectRealmEchoCore: (
+    guardianId: number
+  ) => { collected: boolean; message: string; chamberUnlocked: boolean };
+  completeRealmTrial: (guardianId: number, optionId: string) => void;
+  claimRealmReward: (guardianId: number) => { claimed: boolean; message: string };
+  triggerObserverConvergence: () => void;
 }
 
 const DEFAULT_PERSONALITY: PersonalityProfile = {
@@ -201,6 +223,13 @@ const DEFAULT_SPIRAL_STATE: SpiralState = {
     unlockedSynergies: [],
     discoveredSecrets: [],
     inspectedHotspots: [],
+    collectedNineEchoIds: [],
+    collectedObserverClueIds: [],
+    observerConvergenceTriggered: false,
+    chamberBeyondNinthUnlocked: false,
+    chamberBeyondNinthCompleted: false,
+    chamberBeyondChoiceId: null,
+    realmCrossEffectsTriggered: [],
   },
   personality: DEFAULT_PERSONALITY,
   realityWarp: DEFAULT_REALITY_WARP,
@@ -212,6 +241,8 @@ const DEFAULT_SPIRAL_STATE: SpiralState = {
 const createInitialGuardianProgress = (): Record<number, GuardianProgress> => {
   const map: Record<number, GuardianProgress> = {};
   GUARDIANS_LIST.forEach((g) => {
+    const realm = GUARDIAN_REALMS.find((r) => r.guardianId === g.id);
+    const entryZoneId = realm?.zones[0]?.id;
     map[g.id] = {
       encountered: g.id === 1 || g.id === 2,
       completedQuestIds: [],
@@ -219,6 +250,16 @@ const createInitialGuardianProgress = (): Record<number, GuardianProgress> => {
       philosophyChoiceId: null,
       secretUnlocked: false,
       realmCompleted: false,
+      visitedZones: entryZoneId ? [entryZoneId] : [],
+      currentZoneId: entryZoneId,
+      inspectedRealmObjects: [],
+      decisions: {},
+      trustLevel: 0,
+      echoCoreCollected: false,
+      observerClueFound: false,
+      unlockedSecrets: [],
+      trialOutcomeId: null,
+      rewardClaimed: false,
     };
   });
   return map;
@@ -280,6 +321,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           kodvarosExploredLandmarks: parsed.spiralState.worldState?.kodvarosExploredLandmarks || [],
           kodvarosSolvedSideQuests: parsed.spiralState.worldState?.kodvarosSolvedSideQuests || [],
           syncedEchoIds: parsed.spiralState.worldState?.syncedEchoIds || [],
+          collectedNineEchoIds: parsed.spiralState.worldState?.collectedNineEchoIds || [],
+          collectedObserverClueIds: parsed.spiralState.worldState?.collectedObserverClueIds || [],
+          observerConvergenceTriggered: Boolean(parsed.spiralState.worldState?.observerConvergenceTriggered),
+          chamberBeyondNinthUnlocked: Boolean(parsed.spiralState.worldState?.chamberBeyondNinthUnlocked),
+          chamberBeyondNinthCompleted: Boolean(parsed.spiralState.worldState?.chamberBeyondNinthCompleted),
+          chamberBeyondChoiceId: parsed.spiralState.worldState?.chamberBeyondChoiceId || null,
+          realmCrossEffectsTriggered: parsed.spiralState.worldState?.realmCrossEffectsTriggered || [],
           kodvarosRing1Done:
             typeof parsed.spiralState.worldState?.kodvarosRing1Done === 'boolean'
               ? parsed.spiralState.worldState.kodvarosRing1Done
@@ -386,7 +434,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       Object.keys(base).forEach((k) => {
         const num = Number(k);
         if (parsed.guardianProgress[num]) {
-          base[num] = { ...base[num], ...parsed.guardianProgress[num] };
+          const savedPg = parsed.guardianProgress[num];
+          base[num] = {
+            ...base[num],
+            ...savedPg,
+            visitedZones: Array.isArray(savedPg.visitedZones) && savedPg.visitedZones.length > 0
+              ? savedPg.visitedZones
+              : base[num].visitedZones,
+            inspectedRealmObjects: Array.isArray(savedPg.inspectedRealmObjects)
+              ? savedPg.inspectedRealmObjects
+              : [],
+            decisions: savedPg.decisions || {},
+            trustLevel: typeof savedPg.trustLevel === 'number' ? savedPg.trustLevel : 0,
+            unlockedSecrets: Array.isArray(savedPg.unlockedSecrets) ? savedPg.unlockedSecrets : [],
+          };
         }
       });
     }
@@ -1002,8 +1063,411 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (id === 'coordinate_triangulation') unlockEvidence('ev_crystal_vein');
       if (id === 'echo_viaduct_tuning') completeKodvarosQuest('kq_r2_viaduct');
       if (id === 'mirror_city_symmetry') completeKodvarosQuest('kq_r3_symmetry');
+      const matchedDim = GUARDIAN_DIMENSIONS.find((d) => d.miniGameId === id);
+      if (matchedDim) {
+        completeGuardianMiniGame(matchedDim.guardianId);
+      }
       soundEngine.playHarmonicChord([432, 528, 639]);
+    } else {
+      const matchedDim = GUARDIAN_DIMENSIONS.find((d) => d.miniGameId === id);
+      if (matchedDim) {
+        completeGuardianMiniGame(matchedDim.guardianId);
+      }
     }
+  };
+
+  // =========================================================================
+  // STORY EXPANSION 03: NINE GUARDIAN REALMS ACTIONS
+  // =========================================================================
+  const isRealmZoneUnlocked = (zone: RealmZoneNode): boolean => {
+    if (zone.requiresAllEchoes) {
+      return spiralState.worldState.collectedNineEchoIds.length >= 9;
+    }
+    const hasRequirements = Boolean(
+      zone.requiresAbilityId ||
+        zone.requiresCrossEffectId ||
+        zone.requiresDeductionId ||
+        zone.requiresGravityInverted
+    );
+    if (!hasRequirements) return true;
+
+    const abilityOk = Boolean(
+      zone.requiresAbilityId && abilities.some((a) => a.id === zone.requiresAbilityId && a.level > 0)
+    );
+    const crossOk = Boolean(
+      zone.requiresCrossEffectId &&
+        spiralState.worldState.realmCrossEffectsTriggered.includes(zone.requiresCrossEffectId)
+    );
+    const deductionOk = Boolean(
+      zone.requiresDeductionId && deductions.some((d) => d.id === zone.requiresDeductionId && d.isSolved)
+    );
+    const gravityOk = Boolean(
+      zone.requiresGravityInverted && spiralState.realityWarp.gravityInverted
+    );
+
+    return abilityOk || crossOk || deductionOk || gravityOk;
+  };
+
+  const enterRealmZone = (
+    guardianId: number,
+    zoneId: string
+  ): { entered: boolean; message: string; unlockedSecretId?: string } => {
+    const realm = GUARDIAN_REALMS.find((r) => r.guardianId === guardianId);
+    const zone = realm?.zones.find((z) => z.id === zoneId);
+    if (!realm || !zone) return { entered: false, message: 'Ismeretlen zóna.' };
+
+    if (!isRealmZoneUnlocked(zone)) {
+      soundEngine.playMechanicalTick(-2);
+      return {
+        entered: false,
+        message: zone.unlockHint || 'Ez a titkos átjáró még zárva van.',
+      };
+    }
+
+    const currProg = guardianProgress[guardianId];
+    const firstVisit = !(currProg?.visitedZones || []).includes(zoneId);
+    const newVisited = firstVisit
+      ? [...(currProg?.visitedZones || []), zoneId]
+      : currProg?.visitedZones || [zoneId];
+
+    setGuardianProgress((prev) => {
+      const c = prev[guardianId] || createInitialGuardianProgress()[guardianId];
+      const visitedZones = c.visitedZones?.includes(zoneId)
+        ? c.visitedZones
+        : [...(c.visitedZones || []), zoneId];
+      const unlockedSecrets =
+        zone.secretId && !(c.unlockedSecrets || []).includes(zone.secretId)
+          ? [...(c.unlockedSecrets || []), zone.secretId]
+          : c.unlockedSecrets || [];
+
+      const updated: GuardianProgress = {
+        ...c,
+        encountered: true,
+        visitedZones,
+        currentZoneId: zoneId,
+        secretUnlocked: c.secretUnlocked || zone.zoneType === 'secret',
+        unlockedSecrets,
+      };
+      updated.realmCompleted = checkRealmCompleted(updated);
+      return { ...prev, [guardianId]: updated };
+    });
+
+    if (firstVisit) {
+      addResonance(zone.zoneType === 'secret' ? 20 : 10);
+      soundEngine.playRealmSoundscape(guardianId);
+    } else {
+      soundEngine.playUiClick();
+    }
+
+    if (zone.secretId) {
+      unlockSecret(zone.secretId);
+    }
+
+    // Visiting 2+ zones also fulfills the realm's exploration/interact quest smoothly
+    if (newVisited.length >= 2) {
+      const dim = GUARDIAN_DIMENSIONS.find((d) => d.guardianId === guardianId);
+      const interactQ = dim?.quests.find((q) => q.objectiveType === 'interact');
+      if (interactQ && !(currProg?.completedQuestIds || []).includes(interactQ.id)) {
+        completeGuardianQuest(guardianId, interactQ.id);
+      }
+    }
+
+    return {
+      entered: true,
+      message: `${zone.name} felfedezve.`,
+      unlockedSecretId: zone.secretId,
+    };
+  };
+
+  const inspectRealmHotspot = (
+    guardianId: number,
+    hotspot: SceneHotspot,
+    isObserverZone = false
+  ): { unlocked: boolean; message: string; observerFound?: boolean } => {
+    const realm = GUARDIAN_REALMS.find((r) => r.guardianId === guardianId);
+    const res = inspectHotspot(hotspot);
+    if (!res.unlocked) return res;
+
+    const isObserverClue = Boolean(isObserverZone || hotspot.id.includes('_observer_'));
+    let observerClueCount = spiralState.worldState.collectedObserverClueIds.length;
+
+    setGuardianProgress((prev) => {
+      const c = prev[guardianId] || createInitialGuardianProgress()[guardianId];
+      const inspectedRealmObjects = c.inspectedRealmObjects?.includes(hotspot.id)
+        ? c.inspectedRealmObjects
+        : [...(c.inspectedRealmObjects || []), hotspot.id];
+      return {
+        ...prev,
+        [guardianId]: {
+          ...c,
+          encountered: true,
+          inspectedRealmObjects,
+          observerClueFound: c.observerClueFound || isObserverClue,
+        },
+      };
+    });
+
+    const dim = GUARDIAN_DIMENSIONS.find((d) => d.guardianId === guardianId);
+    const interactQ = dim?.quests.find((q) => q.objectiveType === 'interact');
+    if (interactQ) {
+      completeGuardianQuest(guardianId, interactQ.id);
+    }
+
+    if (isObserverClue && realm) {
+      const clueId = realm.observerClueId;
+      const alreadyFound = spiralState.worldState.collectedObserverClueIds.includes(clueId);
+      if (!alreadyFound) {
+        soundEngine.playObserverAnomaly();
+        const updatedClues = [...spiralState.worldState.collectedObserverClueIds, clueId];
+        observerClueCount = updatedClues.length;
+        const allNineObserver = observerClueCount >= 9;
+
+        setSpiralState((prev) => {
+          const nextClues = prev.worldState.collectedObserverClueIds.includes(clueId)
+            ? prev.worldState.collectedObserverClueIds
+            : [...prev.worldState.collectedObserverClueIds, clueId];
+          return {
+            ...prev,
+            resonancePoints: prev.resonancePoints + (nextClues.length >= 9 ? 40 : 15),
+            spiralAwareness: Math.min(100, prev.spiralAwareness + 3),
+            worldState: {
+              ...prev.worldState,
+              collectedObserverClueIds: nextClues,
+            },
+          };
+        });
+
+        if (allNineObserver) {
+          unlockAchievement('ach_hidden_observer');
+          unlockSecret('sec_hidden_observer_truth');
+        }
+      }
+    }
+
+    return {
+      ...res,
+      observerFound: isObserverClue,
+    };
+  };
+
+  const triggerObserverConvergence = () => {
+    if (spiralState.worldState.collectedObserverClueIds.length < 9) return;
+    setSpiralState((prev) => ({
+      ...prev,
+      worldState: {
+        ...prev.worldState,
+        observerConvergenceTriggered: true,
+      },
+    }));
+    unlockAchievement('ach_hidden_observer');
+    unlockSecret('sec_hidden_observer_truth');
+    setActiveCinematicId('cin_observer_convergence');
+  };
+
+  const collectRealmEchoCore = (
+    guardianId: number
+  ): { collected: boolean; message: string; chamberUnlocked: boolean } => {
+    const realm = GUARDIAN_REALMS.find((r) => r.guardianId === guardianId);
+    if (!realm) return { collected: false, message: 'Ismeretlen birodalom.', chamberUnlocked: false };
+
+    const echoId = realm.echoCoreId;
+    const already = spiralState.worldState.collectedNineEchoIds.includes(echoId);
+    if (already) {
+      return {
+        collected: true,
+        message: `${realm.echoCoreTitle} már a birtokodban van.`,
+        chamberUnlocked: spiralState.worldState.chamberBeyondNinthUnlocked,
+      };
+    }
+
+    const nextEchoes = [...spiralState.worldState.collectedNineEchoIds, echoId];
+    const nextCrossEffects = REALM_CROSS_EFFECTS.filter((fx) =>
+      Boolean(fx.requiresEchoId && nextEchoes.includes(fx.requiresEchoId))
+    ).map((fx) => fx.id);
+    const unlockedChamber = nextEchoes.length >= 9;
+
+    setGuardianProgress((prev) => {
+      const c = prev[guardianId] || createInitialGuardianProgress()[guardianId];
+      return {
+        ...prev,
+        [guardianId]: {
+          ...c,
+          encountered: true,
+          echoCoreCollected: true,
+        },
+      };
+    });
+
+    setSpiralState((prev) => {
+      const mergedEchoes = prev.worldState.collectedNineEchoIds.includes(echoId)
+        ? prev.worldState.collectedNineEchoIds
+        : [...prev.worldState.collectedNineEchoIds, echoId];
+      const mergedCross = REALM_CROSS_EFFECTS.filter((fx) =>
+        Boolean(fx.requiresEchoId && mergedEchoes.includes(fx.requiresEchoId))
+      ).map((fx) => fx.id);
+      const chamberOpen = prev.worldState.chamberBeyondNinthUnlocked || mergedEchoes.length >= 9;
+      return {
+        ...prev,
+        resonancePoints: prev.resonancePoints + (chamberOpen ? 45 : 25),
+        spiralAwareness: Math.min(100, prev.spiralAwareness + 4),
+        worldState: {
+          ...prev.worldState,
+          collectedNineEchoIds: mergedEchoes,
+          realmCrossEffectsTriggered: mergedCross,
+          chamberBeyondNinthUnlocked: chamberOpen,
+        },
+      };
+    });
+
+    setEchoes((prev) => [
+      {
+        id: `echo_core_rec_${guardianId}_${Date.now()}`,
+        originSceneId: realm.entrySceneId,
+        title: `Visszhang-mag (${guardianId}/9): ${realm.echoCoreTitle}`,
+        description: realm.echoCoreLore,
+        manifestationText: realm.echoConnectionHint,
+        targetScenes: ['g1_guardians_nexus', 'g1_chamber_beyond_ninth', 'inf_final_encounter'],
+        createdAt: Date.now(),
+        category: 'guardian',
+      },
+      ...prev.slice(0, 24),
+    ]);
+
+    if (unlockedChamber) {
+      unlockAchievement('ach_nine_echoes');
+      unlockSecret('sec_chamber_beyond_ninth');
+    }
+
+    soundEngine.playHarmonicChord(realm.soundChord);
+    return {
+      collected: true,
+      message: unlockedChamber
+        ? `✓ ${realm.echoCoreTitle} begyűjtve (9/9)! Megnyílt A Kilencediken Túli Kamra!`
+        : `✓ ${realm.echoCoreTitle} begyűjtve (${nextEchoes.length}/9)! ${realm.echoConnectionHint}`,
+      chamberUnlocked: unlockedChamber,
+    };
+  };
+
+  const completeRealmTrial = (guardianId: number, optionId: string) => {
+    const realm = GUARDIAN_REALMS.find((r) => r.guardianId === guardianId);
+    const dim = GUARDIAN_DIMENSIONS.find((d) => d.guardianId === guardianId);
+    const option = realm?.trialOptions.find((o) => o.id === optionId);
+    if (!realm || !option) return;
+
+    const questPhil = dim?.quests.find((q) => q.objectiveType === 'philosophy');
+    let isFirstTrial = false;
+    let allNineComplete = false;
+
+    setGuardianProgress((prev) => {
+      const c = prev[guardianId] || createInitialGuardianProgress()[guardianId];
+      isFirstTrial = c.trialOutcomeId === null;
+      const questIds =
+        questPhil && !c.completedQuestIds.includes(questPhil.id)
+          ? [...c.completedQuestIds, questPhil.id]
+          : c.completedQuestIds;
+      const updated: GuardianProgress = {
+        ...c,
+        encountered: true,
+        trialOutcomeId: optionId,
+        philosophyChoiceId: c.philosophyChoiceId || optionId,
+        decisions: { ...(c.decisions || {}), realm_trial: optionId },
+        trustLevel: (c.trustLevel || 0) + (isFirstTrial ? option.trustDelta : 0),
+        completedQuestIds: questIds,
+      };
+      updated.realmCompleted = checkRealmCompleted(updated);
+      const nextMap = { ...prev, [guardianId]: updated };
+      allNineComplete = GUARDIANS_LIST.every((g) => nextMap[g.id]?.realmCompleted);
+      return nextMap;
+    });
+
+    setSpiralState((prev) => ({
+      ...prev,
+      resonancePoints: prev.resonancePoints + (isFirstTrial ? 30 : 0),
+      guardianAwareness: isFirstTrial
+        ? Math.min(9, prev.guardianAwareness + 1)
+        : prev.guardianAwareness,
+      choiceHistory: { ...prev.choiceHistory, [`trial_r${guardianId}`]: optionId },
+      personality: isFirstTrial
+        ? {
+            ...prev.personality,
+            [option.alignment]: prev.personality[option.alignment] + 2,
+          }
+        : prev.personality,
+      worldState: {
+        ...prev.worldState,
+        kassarahMemoryHarmonized:
+          prev.worldState.kassarahMemoryHarmonized ||
+          (guardianId === 1 && (optionId === 'trial_r1_raw_truth' || optionId === 'trial_r1_mercy_wave')),
+        irHayaOblivionAccepted:
+          prev.worldState.irHayaOblivionAccepted || guardianId === 2,
+        infiniteAcknowledged:
+          prev.worldState.infiniteAcknowledged || guardianId === 9,
+      },
+    }));
+
+    if (option.unlockMemoryId) unlockMemory(option.unlockMemoryId);
+    if (allNineComplete) unlockAchievement('ach_realms_walker');
+
+    setEchoes((prev) => [
+      {
+        id: `echo_trial_${guardianId}_${Date.now()}`,
+        originSceneId: realm.entrySceneId,
+        title: `${realm.trialTitle}`,
+        description: option.label,
+        manifestationText: option.consequenceText,
+        targetScenes: ['g1_guardians_nexus', 'g1_chamber_beyond_ninth', 'inf_final_encounter'],
+        createdAt: Date.now(),
+        category: 'guardian',
+      },
+      ...prev.slice(0, 24),
+    ]);
+
+    soundEngine.playHarmonicChord(realm.soundChord);
+  };
+
+  const claimRealmReward = (guardianId: number): { claimed: boolean; message: string } => {
+    const realm = GUARDIAN_REALMS.find((r) => r.guardianId === guardianId);
+    const prog = guardianProgress[guardianId];
+    if (!realm || !prog) return { claimed: false, message: 'Birodalom nem található.' };
+    if (prog.rewardClaimed) {
+      return { claimed: true, message: `Jutalom már átvéve: ${realm.rewardSummary}` };
+    }
+    if (!prog.realmCompleted) {
+      soundEngine.playMechanicalTick(-2);
+      return {
+        claimed: false,
+        message: 'Teljesítsd előbb a zónabejárást, a minijátékot és a Birodalom Próbáját!',
+      };
+    }
+
+    // Upgrade target Spiral ability (or unlock at lvl 1 if still lvl 0)
+    if (realm.rewardAbilityUpgradeId) {
+      setAbilities((prev) =>
+        prev.map((ab) =>
+          ab.id === realm.rewardAbilityUpgradeId
+            ? { ...ab, level: Math.min(ab.maxLevel, ab.level + 1) }
+            : ab
+        )
+      );
+    }
+    if (realm.rewardRelicId) acquireRelic(realm.rewardRelicId);
+    if (realm.rewardMemoryId) unlockMemory(realm.rewardMemoryId);
+    addResonance(40);
+
+    setGuardianProgress((prev) => ({
+      ...prev,
+      [guardianId]: { ...prev[guardianId], rewardClaimed: true },
+    }));
+
+    if (GUARDIANS_LIST.every((g) => guardianProgress[g.id]?.realmCompleted)) {
+      unlockAchievement('ach_realms_walker');
+    }
+
+    soundEngine.playAbilityActivate(3);
+    return {
+      claimed: true,
+      message: `✓ Birodalmi jutalom átvéve: ${realm.rewardSummary}`,
+    };
   };
 
   const completeKodvarosQuest = (questId: string) => {
@@ -1288,6 +1752,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    if (sceneId === 'g1_chamber_beyond_ninth' && !spiralState.worldState.chamberBeyondNinthUnlocked) {
+      soundEngine.playMechanicalTick(-2);
+      return;
+    }
+
     soundEngine.playUiClick();
     setActiveChapter(chapter);
     if (sceneId) {
@@ -1527,6 +1996,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         exploreKodvarosLandmark,
         claimKodvarosSideQuest,
         syncEchoTip,
+        isRealmZoneUnlocked,
+        enterRealmZone,
+        inspectRealmHotspot,
+        collectRealmEchoCore,
+        completeRealmTrial,
+        claimRealmReward,
+        triggerObserverConvergence,
       }}
     >
       {children}

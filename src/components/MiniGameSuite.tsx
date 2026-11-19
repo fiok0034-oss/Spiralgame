@@ -16,6 +16,17 @@ import { useGame } from '../game/GameContext';
 import { soundEngine } from '../audio/SoundEngine';
 import { GeoRadarScanner } from './GeoRadarScanner';
 import { GUARDIANS_LIST } from '../data/storyData';
+import {
+  OceanMemoryDiveGame,
+  DesertTraceReconstructionGame,
+  TimeFractureParadoxGame,
+  MirrorReflectionLabyrinthGame,
+  CathedralSilenceTuningGame,
+  SoulMachineCircuitGame,
+  InvertedSkyNavigationGame,
+  SilentGardenSymbiosisGame,
+  InfiniteThresholdRecognitionGame,
+} from './GuardianMiniGames';
 
 export interface MiniGameMeta {
   id: MiniGameId;
@@ -48,6 +59,15 @@ export const MINI_GAME_CATALOG: MiniGameMeta[] = [
   { id: 'neural_key_sync', title: 'Szinkronkulcs Áramkör', subtitle: 'Viktor, Lena, Mira és Levente tudati pólusainak kötése', chapterTag: 'IV. Levente', reward: 35 },
   { id: 'echo_viaduct_tuning', title: 'Visszhang-híd Hangolása', subtitle: 'Három rézhúr-szakasz összekapcsolása Tamás és Veszta szavai között', chapterTag: 'V. Kódváros · 2. Kör', reward: 30 },
   { id: 'mirror_city_symmetry', title: 'Tükörváros Szimmetria-zár', subtitle: 'A Három Kör és a Korona tengelyeinek összehangolása', chapterTag: 'V. Kódváros · 3. Kör', reward: 35 },
+  { id: 'ocean_memory_dive', title: 'Mélyvízi Emlékszonár', subtitle: 'Valódi és hamisított emlékrétegek szétválasztása', chapterTag: 'VI. Őrző #1 · Kassarah', reward: 35 },
+  { id: 'desert_trace_reconstruction', title: 'Eltűnő Hamulabirintus', subtitle: 'A Felejtés Sivatagának halványuló jeleinek követése', chapterTag: 'VI. Őrző #2 · Ir-Haya', reward: 35 },
+  { id: 'time_fracture_paradox', title: 'Oksági Időparadoxon', subtitle: 'A Jövő határozza meg 1959 és 1982 számlapjait', chapterTag: 'VI. Őrző #3 · Thal-Muren', reward: 35 },
+  { id: 'mirror_reflection_labyrinth', title: 'Prizma-fénytörés Labirintus', subtitle: 'Smaragd kvarctükrök beállítása a hamis oszlopok között', chapterTag: 'VI. Őrző #4 · Az-Zahir', reward: 35 },
+  { id: 'cathedral_silence_tuning', title: 'Néma Harang Hangolás', subtitle: 'Jégsípok hangolása a Csendkapu ritmusa mellett', chapterTag: 'VI. Őrző #5 · Nok-Tura', reward: 40 },
+  { id: 'soul_machine_circuit', title: 'Biomechanikus Szinapszis', subtitle: 'Budapest és Antarktisz 58 BPM-es egyensúlyozása', chapterTag: 'VI. Őrző #6 · Var-Elis', reward: 40 },
+  { id: 'inverted_sky_navigation', title: '4-Irányú Égpálya', subtitle: 'Fénymag vezetése gravitációváltással a fordított égen', chapterTag: 'VI. Őrző #7 · Kor-Vatha', reward: 40 },
+  { id: 'silent_garden_symbiosis', title: 'Biolumineszcens Gyökérszimbiózis', subtitle: 'A Kilenc Birodalmat tápláló gyökerek összekötése', chapterTag: 'VI. Őrző #8 · Sen-Maria', reward: 40 },
+  { id: 'infinite_threshold_recognition', title: 'A Kilencedik Felismerési Mátrix', subtitle: 'Mind a kilenc birodalom legfőbb igazságának összeillesztése', chapterTag: 'VI. Őrző #9 · A Kilencedik', reward: 45 },
 ];
 
 interface GameProps {
@@ -1918,6 +1938,15 @@ export const MiniGameRouter: React.FC<MiniGameRouterProps> = ({
       {miniGameId === 'neural_key_sync' && <NeuralKeySyncGame onWin={handleWin} />}
       {miniGameId === 'echo_viaduct_tuning' && <EchoViaductTuningGame onWin={handleWin} />}
       {miniGameId === 'mirror_city_symmetry' && <MirrorCitySymmetryGame onWin={handleWin} />}
+      {miniGameId === 'ocean_memory_dive' && <OceanMemoryDiveGame onWin={handleWin} />}
+      {miniGameId === 'desert_trace_reconstruction' && <DesertTraceReconstructionGame onWin={handleWin} />}
+      {miniGameId === 'time_fracture_paradox' && <TimeFractureParadoxGame onWin={handleWin} />}
+      {miniGameId === 'mirror_reflection_labyrinth' && <MirrorReflectionLabyrinthGame onWin={handleWin} />}
+      {miniGameId === 'cathedral_silence_tuning' && <CathedralSilenceTuningGame onWin={handleWin} />}
+      {miniGameId === 'soul_machine_circuit' && <SoulMachineCircuitGame onWin={handleWin} />}
+      {miniGameId === 'inverted_sky_navigation' && <InvertedSkyNavigationGame onWin={handleWin} />}
+      {miniGameId === 'silent_garden_symbiosis' && <SilentGardenSymbiosisGame onWin={handleWin} />}
+      {miniGameId === 'infinite_threshold_recognition' && <InfiniteThresholdRecognitionGame onWin={handleWin} />}
       {(miniGameId === 'rings_puzzle' ||
         miniGameId === 'infinite_mirror' ||
         miniGameId === 'guardian_test' ||

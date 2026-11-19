@@ -21,6 +21,7 @@ import { GeoRadarScanner } from '../components/GeoRadarScanner';
 import { MiniGameRouter, MINI_GAME_CATALOG } from '../components/MiniGameSuite';
 import { StoryLog } from '../components/StoryLog';
 import { QuestBoard } from '../components/QuestBoard';
+import { GuardianRealmExplorer } from '../components/GuardianRealmExplorer';
 import { PersonalityProfile, SceneHotspot, SpiralState } from '../types/game';
 import { soundEngine } from '../audio/SoundEngine';
 
@@ -465,6 +466,13 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         <QuestBoard onOpenKodvaros={onOpenKodvaros} />
       )}
 
+      {/* A Kilenc Őrző Bejárható Birodalmai */}
+      {(activeSceneId === 'g1_guardians_nexus' ||
+        activeSceneId.startsWith('g1_realm_') ||
+        activeSceneId === 'g1_chamber_beyond_ninth') && (
+        <GuardianRealmExplorer />
+      )}
+
       {/* Choice Decision Panel */}
       <div className="space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
@@ -506,6 +514,8 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
               lockedFlagText =
                 unmet[0] === 'leventeChapterCompleted'
                   ? 'Levente kulcsaktiválása szükséges'
+                  : unmet[0] === 'chamberBeyondNinthUnlocked'
+                  ? 'Mind a 9 Visszhang-mag szükséges'
                   : unmet[0] === 'kodvarosRing1Done' ||
                     unmet[0] === 'kodvarosRing2Done' ||
                     unmet[0] === 'kodvarosRing3Done'

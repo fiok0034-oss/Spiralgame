@@ -392,7 +392,7 @@ const GRAPH_NODES: GraphNode[] = [
     totalColumnsInTier: 1,
   },
 
-  // TIER 27: ACT 6 GUARDIANS
+  // TIER 27: ACT 6 GUARDIANS COUNCIL
   {
     id: 'g1_guardians_confrontation',
     tier: 27,
@@ -405,10 +405,141 @@ const GRAPH_NODES: GraphNode[] = [
     totalColumnsInTier: 1,
   },
 
-  // TIER 28: FINAL ENCOUNTER
+  // TIER 28: NINE REALMS NEXUS
+  {
+    id: 'g1_guardians_nexus',
+    tier: 28,
+    actName: 'VI. FEJEZET: KILENC BIRODALOM',
+    title: 'A Kilenc Birodalom Csarnoka',
+    subtitle: 'Nem-lineáris kapuk · Kilenc Visszhang · Rejtett Megfigyelő',
+    speaker: 'KILENC BIRODALOM',
+    speakerColor: 'text-cyan-300 border-cyan-500/50 bg-cyan-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 29: REALMS 1–3
+  {
+    id: 'g1_realm_1',
+    tier: 29,
+    actName: 'VI. FEJEZET: I–III. BIRODALOM',
+    title: 'I. Kassarah · Emlékek Óceánja',
+    subtitle: 'Folyékony emléktenger & Szonár-rekonstrukció',
+    speaker: 'KASSARAH',
+    speakerColor: 'text-sky-300 border-sky-500/50 bg-sky-950/40',
+    column: 0,
+    totalColumnsInTier: 3,
+  },
+  {
+    id: 'g1_realm_2',
+    tier: 29,
+    actName: 'VI. FEJEZET: I–III. BIRODALOM',
+    title: 'II. Ir-Haya · Felejtés Sivataga',
+    subtitle: 'Hamu-dűnék & Törölt város nyomai',
+    speaker: 'IR-HAYA',
+    speakerColor: 'text-slate-300 border-slate-500/50 bg-slate-900/60',
+    column: 1,
+    totalColumnsInTier: 3,
+  },
+  {
+    id: 'g1_realm_3',
+    tier: 29,
+    actName: 'VI. FEJEZET: I–III. BIRODALOM',
+    title: 'III. Thal-Muren · Időtörés',
+    subtitle: '1959 ⟷ 1982 ⟷ Jövő paradoxon',
+    speaker: 'THAL-MUREN',
+    speakerColor: 'text-amber-300 border-amber-500/50 bg-amber-950/40',
+    column: 2,
+    totalColumnsInTier: 3,
+  },
+
+  // TIER 30: REALMS 4–6
+  {
+    id: 'g1_realm_4',
+    tier: 30,
+    actName: 'VI. FEJEZET: IV–VI. BIRODALOM',
+    title: 'IV. Az-Zahir · Tükrök Dimenziója',
+    subtitle: 'Tükör-Kódváros & Prizma fénytörés',
+    speaker: 'AZ-ZAHIR',
+    speakerColor: 'text-emerald-300 border-emerald-500/50 bg-emerald-950/40',
+    column: 0,
+    totalColumnsInTier: 3,
+  },
+  {
+    id: 'g1_realm_5',
+    tier: 30,
+    actName: 'VI. FEJEZET: IV–VI. BIRODALOM',
+    title: 'V. Nok-Tura · Csend Katedrálisa',
+    subtitle: '528 Hz boltívek & Csendkapu',
+    speaker: 'NOK-TURA',
+    speakerColor: 'text-yellow-300 border-yellow-500/50 bg-yellow-950/40',
+    column: 1,
+    totalColumnsInTier: 3,
+  },
+  {
+    id: 'g1_realm_6',
+    tier: 30,
+    actName: 'VI. FEJEZET: IV–VI. BIRODALOM',
+    title: 'VI. Var-Elis · Lélek Gépezete',
+    subtitle: '58 BPM híd Budapest és Antarktisz között',
+    speaker: 'VAR-ELIS',
+    speakerColor: 'text-rose-300 border-rose-500/50 bg-rose-950/40',
+    column: 2,
+    totalColumnsInTier: 3,
+  },
+
+  // TIER 31: REALMS 7–9
+  {
+    id: 'g1_realm_7',
+    tier: 31,
+    actName: 'VI. FEJEZET: VII–IX. BIRODALOM',
+    title: 'VII. Kor-Vatha · Fordított Ég',
+    subtitle: 'Csillagok a mélységben & Gravitációváltás',
+    speaker: 'KOR-VATHA',
+    speakerColor: 'text-violet-300 border-violet-500/50 bg-violet-950/40',
+    column: 0,
+    totalColumnsInTier: 3,
+  },
+  {
+    id: 'g1_realm_8',
+    tier: 31,
+    actName: 'VI. FEJEZET: VII–IX. BIRODALOM',
+    title: 'VIII. Sen-Maria · Néma Kert',
+    subtitle: '36.6°C vörös por & Kilenc Gyökér',
+    speaker: 'SEN-MARIA',
+    speakerColor: 'text-orange-300 border-orange-500/50 bg-orange-950/40',
+    column: 1,
+    totalColumnsInTier: 3,
+  },
+  {
+    id: 'g1_realm_9',
+    tier: 31,
+    actName: 'VI. FEJEZET: VII–IX. BIRODALOM',
+    title: 'IX. A Kilencedik · Végtelen Küszöbe',
+    subtitle: 'Döntések lépcsői & Felismerési Mátrix',
+    speaker: 'A KILENCEDIK',
+    speakerColor: 'text-cyan-200 border-cyan-400/50 bg-cyan-950/40',
+    column: 2,
+    totalColumnsInTier: 3,
+  },
+
+  // TIER 32: CHAMBER BEYOND THE NINTH
+  {
+    id: 'g1_chamber_beyond_ninth',
+    tier: 32,
+    actName: 'VI. FEJEZET: Θ–∞–Δ KAMRA',
+    title: 'A Kilencediken Túli Kamra',
+    subtitle: 'Mind a 9 Visszhang egyesítése · Titkos közös szív',
+    speaker: 'Θ–∞–Δ KAMRA',
+    speakerColor: 'text-amber-300 border-amber-400/50 bg-amber-950/40',
+    column: 0,
+    totalColumnsInTier: 1,
+  },
+
+  // TIER 33: FINAL ENCOUNTER
   {
     id: 'inf_final_encounter',
-    tier: 28,
+    tier: 33,
     actName: 'VÉGSŐ FEJEZET: A VÉGTELEN',
     title: 'A Végtelen Szeme',
     subtitle: 'A Megfigyelő, a Tükör és a Három Út',
@@ -418,10 +549,10 @@ const GRAPH_NODES: GraphNode[] = [
     totalColumnsInTier: 1,
   },
 
-  // TIER 29: ENDINGS (4 COLUMNS)
+  // TIER 34: ENDINGS (4 COLUMNS)
   {
     id: 'ending_close',
-    tier: 29,
+    tier: 34,
     actName: 'EPILÓGUS — 1. ÚT',
     title: 'A Spirál Lezárása',
     subtitle: 'A kapuk bezárulnak · Az emberiség megmarad',
@@ -433,7 +564,7 @@ const GRAPH_NODES: GraphNode[] = [
   },
   {
     id: 'ending_share',
-    tier: 29,
+    tier: 34,
     actName: 'EPILÓGUS — 2. ÚT',
     title: 'A Spirál Megosztása',
     subtitle: 'Közös álom · Kollektív emberi tudat',
@@ -445,7 +576,7 @@ const GRAPH_NODES: GraphNode[] = [
   },
   {
     id: 'ending_new_world',
-    tier: 29,
+    tier: 34,
     actName: 'EPILÓGUS — 3. ÚT',
     title: 'Új Világ: Együttélés',
     subtitle: 'Új horizont · Élet a Spirál leheletével',
@@ -457,7 +588,7 @@ const GRAPH_NODES: GraphNode[] = [
   },
   {
     id: 'ending_meta_room',
-    tier: 29,
+    tier: 34,
     actName: 'TITKOS BEFEJEZÉS',
     title: 'A Nyitott Ablakú Szoba',
     subtitle: 'A Szerző asztala · „Talán te.”',
@@ -539,7 +670,22 @@ const GRAPH_EDGES: GraphEdge[] = [
   { from: 'k1_ring3_crown', to: 'k1_three_rings', choiceId: 'c_k1_r3_invert_crown', choiceLabel: 'Megfordított Korona' },
 
   { from: 'k1_nexus_convergence', to: 'g1_guardians_confrontation', choiceId: 'c_k1_converge_to_guardians', choiceLabel: 'Őrzők Tanácsa' },
+  { from: 'g1_guardians_confrontation', to: 'g1_guardians_nexus', choiceId: 'c_enter_nine_realms', choiceLabel: 'Belépés a Kilenc Birodalomba' },
   { from: 'g1_guardians_confrontation', to: 'inf_final_encounter', choiceId: 'c_accept_guardians', choiceLabel: 'Szembenézés a Végtelennel' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_1', choiceId: 'c_nexus_enter_r1', choiceLabel: 'I. Óceán' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_2', choiceId: 'c_nexus_enter_r2', choiceLabel: 'II. Sivatag' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_3', choiceId: 'c_nexus_enter_r3', choiceLabel: 'III. Időtörés' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_4', choiceId: 'c_nexus_enter_r4', choiceLabel: 'IV. Tükrök' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_5', choiceId: 'c_nexus_enter_r5', choiceLabel: 'V. Katedrális' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_6', choiceId: 'c_nexus_enter_r6', choiceLabel: 'VI. Gépezet' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_7', choiceId: 'c_nexus_enter_r7', choiceLabel: 'VII. Fordított Ég' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_8', choiceId: 'c_nexus_enter_r8', choiceLabel: 'VIII. Néma Kert' },
+  { from: 'g1_guardians_nexus', to: 'g1_realm_9', choiceId: 'c_nexus_enter_r9', choiceLabel: 'IX. Küszöb' },
+  { from: 'g1_guardians_nexus', to: 'g1_chamber_beyond_ninth', choiceId: 'c_nexus_chamber_beyond', choiceLabel: 'Θ–∞–Δ Titkos Kamra' },
+  { from: 'g1_realm_9', to: 'g1_chamber_beyond_ninth', choiceId: 'c_r9_open_chamber', choiceLabel: 'Kilencediken Túli Kamra' },
+  { from: 'g1_chamber_beyond_ninth', to: 'inf_final_encounter', choiceId: 'c_chamber_carry_mystery', choiceLabel: 'Tovább a Végtelenhez' },
+  { from: 'g1_chamber_beyond_ninth', to: 'inf_final_encounter', choiceId: 'c_chamber_bind_nine_voices', choiceLabel: 'Kilenc Hanggal a Végtelenhez' },
+  { from: 'g1_guardians_nexus', to: 'inf_final_encounter', choiceId: 'c_nexus_to_infinite', choiceLabel: 'Végső Szembesülés' },
   { from: 'inf_final_encounter', to: 'ending_close', choiceId: 'c_end_close', choiceLabel: '1. Út: Lezárás' },
   { from: 'inf_final_encounter', to: 'ending_share', choiceId: 'c_end_share', choiceLabel: '2. Út: Megosztás' },
   { from: 'inf_final_encounter', to: 'ending_new_world', choiceId: 'c_end_new_world', choiceLabel: '3. Út: Új Világ' },
@@ -882,7 +1028,7 @@ export const StoryBranchingTree: React.FC<StoryBranchingTreeProps> = () => {
                 </div>
 
                 {/* CONNECTOR ARROWS DOWN */}
-                {tierNum < 29 && (
+                {tierNum < 34 && (
                   <div className="py-2 flex flex-col items-center text-slate-600 font-mono text-xs select-none">
                     <span className="h-4 w-0.5 bg-gradient-to-b from-slate-700 to-slate-800" />
                     <span>↓</span>
