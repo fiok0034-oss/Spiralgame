@@ -135,7 +135,7 @@ async function fetchDailyArchiveNews(
 
   const ai = getGeminiClient();
   const response = await ai.models.generateContent({
-    model: 'gemini-4-hydrogen',
+    model: 'gemini-2.5-flash',
     contents: buildSearchPrompt(category, editionDate),
     config: {
       tools: [{ googleSearch: {} }],
