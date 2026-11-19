@@ -42,6 +42,7 @@
   display: inline-flex;
   width: max-content;
   animation: archive-ticker-marquee 42s linear infinite;
+  will-change: transform;
 }
 
 .archive-ticker-track:hover,
