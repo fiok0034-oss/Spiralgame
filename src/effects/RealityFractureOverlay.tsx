@@ -32,7 +32,7 @@ export const RealityFractureOverlay: React.FC<RealityFractureOverlayProps> = ({
       className="pointer-events-none fixed inset-0 z-50 overflow-hidden mix-blend-screen"
     >
       {/* Glitch shift layer: Red Channel */}
-      <div className="absolute inset-0 bg-transparent translate-x-1.5 opacity-40 shadow-[inset_0_0_80px_rgba(239,68,68,0.3)] animate-pulse" />
+      <div className="absolute inset-0 bg-transparent translate-x-1.5 opacity-40 shadow-[inset_0_0_80px_rgba(239,68,68,0.3)]" />
       
       {/* Glitch shift layer: Cyan Channel */}
       <div className="absolute inset-0 bg-transparent -translate-x-1.5 opacity-40 shadow-[inset_0_0_80px_rgba(6,182,212,0.3)]" />
@@ -47,7 +47,7 @@ export const RealityFractureOverlay: React.FC<RealityFractureOverlayProps> = ({
       </svg>
 
       {/* Temporal distortion flash */}
-      <div className="absolute inset-0 bg-cyan-400/10 backdrop-invert-15 animate-ping duration-300" />
+      <div className="absolute inset-0 bg-cyan-400/10" />
     </div>
   );
 };

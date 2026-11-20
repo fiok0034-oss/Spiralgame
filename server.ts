@@ -211,9 +211,196 @@ async function fetchDailyArchiveNews(
   return payload;
 }
 
+type VoicePersonaId = 'narrator' | 'lena' | 'infinite' | 'viktor' | 'mira' | 'levente';
+
+interface TtsCacheEntry {
+  audioBase64: string;
+  mimeType: string;
+  model: string;
+  persona: VoicePersonaId;
+  createdAt: string;
+}
+
+const ttsAudioCache = new Map<string, TtsCacheEntry>();
+const MAX_TTS_CACHE_ENTRIES = 64;
+
+const VOICE_PERSONA_CONFIG: Record<
+  VoicePersonaId,
+  { voiceName: 'Puck' | 'Charon' | 'Kore' | 'Fenrir' | 'Zephyr'; style: string; preferredModel: string }
+> = {
+  narrator: {
+    voiceName: 'Charon',
+    style:
+      'Mély, visszafogott, feszült magyar irodalmi narrátor. Lassú, filmszerű tempó, tiszta magyar kiejtés, lélegzetvételnyi szünetekkel a súlyos mondatok között.',
+    preferredModel: 'gemini-3.8-flash-tts',
+  },
+  lena: {
+    voiceName: 'Kore',
+    style:
+      'Tiszta, érzelmes, kissé kimerült és sürgető magyar kutatónői hang egy 1983-as sarkvidéki expedíciós mikrofonon keresztül. Valódi aggodalom és melegség.',
+    preferredModel: 'gemini-3.8-flash-tts',
+  },
+  infinite: {
+    voiceName: 'Fenrir',
+    style:
+      'Mélyről zengő, időtlen, rendkívül nyugodt és hipnotikus magyar hang. Nem emberi sietséggel beszél, hanem végtelen türelemmel és súllyal.',
+    preferredModel: 'gemini-3.8-flash-tts',
+  },
+  viktor: {
+    voiceName: 'Charon',
+    style:
+      'Határozott, tapasztalt magyar geofizikus kutató hangja a hidegben, enyhe feszültséggel és koncentrációval.',
+    preferredModel: 'gemini-3.8-flash-lite-tts',
+  },
+  mira: {
+    voiceName: 'Zephyr',
+    style:
+      'Kifinomult, tiszta, építészi pontosságú és kissé rejtélyes magyar női hang.',
+    preferredModel: 'gemini-3.8-flash-lite-tts',
+  },
+  levente: {
+    voiceName: 'Puck',
+    style:
+      'Álomszerű, töprengő, fiatalabb magyar férfihang, mintha éber álomból emlékezne.',
+    preferredModel: 'gemini-3.8-flash-lite-tts',
+  },
+};
+
+function makeTtsCacheKey(persona: VoicePersonaId, model: string, text: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${persona}:${model}:${(hash >>> 0).toString(16)}:${text.length}`;
+}
+
+async function generateHungarianTtsAudio(
+  text: string,
+  persona: VoicePersonaId,
+  modelOverride?: string
+): Promise<TtsCacheEntry & { cached: boolean }> {
+  const profile = VOICE_PERSONA_CONFIG[persona] || VOICE_PERSONA_CONFIG.narrator;
+  const model =
+    modelOverride === 'gemini-3.8-flash-lite-tts' || modelOverride === 'gemini-3.8-flash-tts'
+      ? modelOverride
+      : profile.preferredModel;
+
+  const cacheKey = makeTtsCacheKey(persona, model, text);
+  const cached = ttsAudioCache.get(cacheKey);
+  if (cached) {
+    return { ...cached, cached: true };
+  }
+
+  const ai = getGeminiClient();
+  const response = await ai.models.generateContent({
+    model,
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          {
+            text,
+            speechMetadata: {
+              speaker: persona,
+              style: profile.style,
+            },
+          },
+        ],
+      },
+    ],
+    config: {
+      responseModalities: ['AUDIO'],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: {
+            voiceName: profile.voiceName,
+          },
+        },
+      },
+    },
+  });
+
+  const inlineAudio = response.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data)?.inlineData;
+  const base64Audio = inlineAudio?.data;
+  if (!base64Audio) {
+    throw Object.assign(
+      new Error('A Gemini hanggeneráló szolgáltatás nem adott vissza hangadatot.'),
+      { statusCode: 502 }
+    );
+  }
+
+  const entry: TtsCacheEntry = {
+    audioBase64: base64Audio,
+    mimeType: inlineAudio?.mimeType || 'audio/wav',
+    model,
+    persona,
+    createdAt: new Date().toISOString(),
+  };
+
+  if (ttsAudioCache.size >= MAX_TTS_CACHE_ENTRIES) {
+    const oldestKey = ttsAudioCache.keys().next().value;
+    if (oldestKey) ttsAudioCache.delete(oldestKey);
+  }
+  ttsAudioCache.set(cacheKey, entry);
+
+  return { ...entry, cached: false };
+}
+
 async function startServer() {
   const app = express();
-  app.use(express.json());
+  app.use(express.json({ limit: '1mb' }));
+
+  app.post('/api/audio/tts', async (req: Request, res: Response) => {
+    const rawText = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
+    const rawPersona = String(req.body?.persona || 'narrator');
+    const persona: VoicePersonaId =
+      rawPersona === 'lena' ||
+      rawPersona === 'infinite' ||
+      rawPersona === 'viktor' ||
+      rawPersona === 'mira' ||
+      rawPersona === 'levente'
+        ? rawPersona
+        : 'narrator';
+    const modelOverride = typeof req.body?.model === 'string' ? req.body.model : undefined;
+
+    if (!rawText || rawText.length > 1500) {
+      res.status(400).json({
+        error: 'Érvénytelen vagy túl hosszú szöveg érkezett a hanggeneráláshoz (1–1500 karakter engedélyezett).',
+      });
+      return;
+    }
+
+    try {
+      const result = await generateHungarianTtsAudio(rawText, persona, modelOverride);
+      res.json(result);
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; status?: number; message?: string };
+      const status = err.statusCode || err.status || 500;
+      const rawMessage = err.message || '';
+
+      let friendlyMessage = rawMessage || 'Ismeretlen hiba történt az AI hanggenerálás közben.';
+      if (status === 429 || rawMessage.includes('RESOURCE_EXHAUSTED')) {
+        friendlyMessage =
+          'A Gemini TTS kvóta átmenetileg kimerült (429). A rendszer feliratos módban folytatja.';
+      } else if (
+        status === 403 ||
+        status === 400 ||
+        rawMessage.includes('PERMISSION_DENIED') ||
+        rawMessage.includes('API_KEY_INVALID')
+      ) {
+        friendlyMessage =
+          'A Gemini API-kulcs érvénytelen vagy hiányzik. Ellenőrizd a Settings > Secrets panelt.';
+      } else if (status === 404 || rawMessage.includes('NOT_FOUND')) {
+        friendlyMessage = 'A kért Gemini TTS modell jelenleg nem érhető el (404).';
+      }
+
+      console.error('[api/audio/tts] Error:', status, rawMessage);
+      res.status(status >= 400 && status < 600 ? status : 500).json({
+        error: friendlyMessage,
+      });
+    }
+  });
 
   app.get('/api/archive-news', async (req: Request, res: Response) => {
     const rawCat = String(req.query.category || 'all');

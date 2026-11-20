@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
-import { RotateCw, ZoomIn, ZoomOut, Layers, Sun, Combine, CheckCircle2, X, Volume2 } from 'lucide-react';
+import React, { useState, Suspense, lazy } from 'react';
+import { Layers, Sun, Combine, CheckCircle2, X, Volume2 } from 'lucide-react';
 import { useGame } from '../game/GameContext';
 import { soundEngine } from '../audio/SoundEngine';
+import { aiVoiceService } from '../audio/aiVoiceService';
 import { ECHO_CORE_SECRETS } from '../data/finalRevelationData';
+
+const Artifact3DViewport = lazy(() =>
+  import('./Artifact3DViewport').then((m) => ({ default: m.Artifact3DViewport }))
+);
 
 interface ArtifactInspectorModalProps {
   isOpen: boolean;
@@ -21,10 +26,9 @@ export const ArtifactInspectorModal: React.FC<ArtifactInspectorModalProps> = ({ 
     abilities,
     spiralState,
     markEchoAudioListened,
+    reducedMotion,
   } = useGame();
 
-  const [rotationDeg, setRotationDeg] = useState(0);
-  const [zoom, setZoom] = useState(1);
   const [slotA, setSlotA] = useState<string | null>(null);
   const [slotB, setSlotB] = useState<string | null>(null);
   const [combineFeedback, setCombineFeedback] = useState<string | null>(null);
@@ -84,8 +88,6 @@ export const ArtifactInspectorModal: React.FC<ArtifactInspectorModalProps> = ({ 
                     disabled={!art.isUnlocked}
                     onClick={() => {
                       setActiveArtifactId(art.id);
-                      setRotationDeg(0);
-                      setZoom(1);
                       soundEngine.playUiClick();
                     }}
                     className={`w-full text-left p-3 rounded-xl border transition-colors ${
@@ -190,92 +192,24 @@ export const ArtifactInspectorModal: React.FC<ArtifactInspectorModalProps> = ({ 
                   </div>
                 </div>
 
-                {/* Interactive Rotatable & Zoomable Visualizer */}
-                <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4">
-                  <div className="h-56 flex items-center justify-center relative overflow-hidden">
-                    <div
-                      className="transition-transform duration-200 flex items-center justify-center"
-                      style={{
-                        transform: `rotate(${rotationDeg}deg) scale(${zoom})`,
-                      }}
-                    >
-                      <svg viewBox="0 0 220 220" className="w-44 h-44">
-                        <circle
-                          cx="110"
-                          cy="110"
-                          r={selected.isDisassembled ? 92 : 76}
-                          fill="none"
-                          stroke={selected.isUvScanned ? '#c084fc' : '#22d3ee'}
-                          strokeWidth="1.5"
-                          strokeDasharray="8 4"
-                          className="transition-all duration-300"
-                        />
-                        <polygon
-                          points="110,25 182,70 182,150 110,195 38,150 38,70"
-                          fill="rgba(6, 182, 212, 0.08)"
-                          stroke={selected.isUvScanned ? '#e879f9' : '#38bdf8'}
-                          strokeWidth="2"
-                        />
-                        <circle
-                          cx="110"
-                          cy="110"
-                          r={selected.isDisassembled ? 48 : 34}
-                          fill="rgba(15, 23, 42, 0.9)"
-                          stroke="#34d399"
-                          strokeWidth="1.5"
-                        />
-                        <text x="110" y="106" textAnchor="middle" fill="#e2e8f0" fontSize="28">
-                          {selected.symbol}
-                        </text>
-                        <text x="110" y="128" textAnchor="middle" fill="#22d3ee" fontSize="10" fontFamily="monospace">
-                          {selected.spiralGlyph}
-                        </text>
-                      </svg>
+                {/* True Three.js 3D Interactive Visualizer */}
+                <Suspense
+                  fallback={
+                    <div className="h-64 sm:h-72 bg-slate-950 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-xs font-mono text-cyan-300">
+                      3D vizsgálóasztal inicializálása...
                     </div>
-
-                    {selected.isUvScanned && (
-                      <div className="absolute bottom-2 inset-x-3 bg-purple-950/90 border border-purple-400/50 rounded-lg px-3 py-2 text-xs font-mono text-purple-200 text-center">
-                        {selected.uvHiddenText}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Rotation & Zoom Controls */}
-                  <div className="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
-                    <label className="flex items-center gap-2 flex-1 min-w-[180px]">
-                      <RotateCw className="w-4 h-4 text-cyan-400 shrink-0" />
-                      <span className="text-slate-400">Forgatás:</span>
-                      <input
-                        type="range"
-                        min="0"
-                        max="360"
-                        value={rotationDeg}
-                        onChange={(e) => setRotationDeg(Number(e.target.value))}
-                        className="flex-1 accent-cyan-400 cursor-pointer"
-                      />
-                      <span className="text-cyan-300 tabular-nums w-10">{rotationDeg}°</span>
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setZoom((z) => Math.max(0.8, Number((z - 0.2).toFixed(1))))}
-                        className="p-2 bg-slate-900 border border-slate-700 rounded hover:border-cyan-400 cursor-pointer"
-                        title="Kicsinyítés"
-                      >
-                        <ZoomOut className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="tabular-nums text-cyan-300 w-10 text-center">{zoom}x</span>
-                      <button
-                        type="button"
-                        onClick={() => setZoom((z) => Math.min(2.2, Number((z + 0.2).toFixed(1))))}
-                        className="p-2 bg-slate-900 border border-slate-700 rounded hover:border-cyan-400 cursor-pointer"
-                        title="Nagyítás"
-                      >
-                        <ZoomIn className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  }
+                >
+                  <Artifact3DViewport
+                    artifactName={selected.name}
+                    symbol={selected.symbol}
+                    spiralGlyph={selected.spiralGlyph}
+                    isDisassembled={selected.isDisassembled}
+                    isUvScanned={selected.isUvScanned}
+                    uvHiddenText={selected.uvHiddenText}
+                    reducedMotion={reducedMotion}
+                  />
+                </Suspense>
 
                 {/* Description */}
                 <p className="text-sm text-slate-300 leading-relaxed bg-slate-900/60 border border-slate-800 rounded-xl p-4">
@@ -309,11 +243,21 @@ export const ArtifactInspectorModal: React.FC<ArtifactInspectorModalProps> = ({ 
                             </span>
                             <button
                               type="button"
-                              onClick={() => markEchoAudioListened(s.echoCoreId, s.audioFreqHz)}
+                              onClick={() => {
+                                markEchoAudioListened(s.echoCoreId, s.audioFreqHz);
+                                void aiVoiceService.playLine({
+                                  lineId: `art_echo_${s.echoCoreId}`,
+                                  speakerLabel: `${selected.name} · ${s.audioFreqHz} Hz`,
+                                  persona: 'infinite',
+                                  channel: 'dialogue',
+                                  fxMode: 'infinite_resonance',
+                                  text: `${s.worldMutation.artifactAwakenedNote} ${s.audioMessageText}`,
+                                });
+                              }}
                               className="px-3 py-1.5 min-h-[36px] rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 inline-flex items-center gap-1.5 cursor-pointer"
                             >
                               <Volume2 className="w-3.5 h-3.5" />
-                              <span>{s.audioMessageTitle}</span>
+                              <span>{s.audioMessageTitle} (AI)</span>
                             </button>
                           </div>
                           <p className="text-xs text-slate-100 leading-relaxed">

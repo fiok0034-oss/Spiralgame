@@ -7,6 +7,7 @@
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  private ambientDuckGain: GainNode | null = null;
   private ambientGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
   
@@ -14,6 +15,7 @@ class SoundEngine {
   private droneOsc1: OscillatorNode | null = null;
   private droneOsc2: OscillatorNode | null = null;
   private droneFilter: BiquadFilterNode | null = null;
+  private droneGain: GainNode | null = null;
   private isDroneActive = false;
 
   // Radio static nodes
@@ -39,20 +41,47 @@ class SoundEngine {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.ctx = new AudioCtx();
       this.masterGain = this.ctx.createGain();
+      this.ambientDuckGain = this.ctx.createGain();
       this.ambientGain = this.ctx.createGain();
       this.sfxGain = this.ctx.createGain();
 
       this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : this.masterVolume, this.ctx.currentTime);
+      this.ambientDuckGain.gain.setValueAtTime(1.0, this.ctx.currentTime);
       this.ambientGain.gain.setValueAtTime(this.ambientVolume, this.ctx.currentTime);
       this.sfxGain.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
 
-      this.ambientGain.connect(this.masterGain);
+      this.ambientGain.connect(this.ambientDuckGain);
+      this.ambientDuckGain.connect(this.masterGain);
       this.sfxGain.connect(this.masterGain);
       this.masterGain.connect(this.ctx.destination);
     }
 
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
+    }
+  }
+
+  public setAmbientDucking(active: boolean) {
+    if (!this.ctx || !this.ambientDuckGain) return;
+    const target = active ? 0.25 : 1.0;
+    this.ambientDuckGain.gain.setTargetAtTime(target, this.ctx.currentTime, active ? 0.14 : 0.45);
+  }
+
+  public setAtmosphereProfile(atmosphere?: string) {
+    if (!this.ctx || !this.droneFilter || !this.droneGain) return;
+    const t = this.ctx.currentTime;
+    if (atmosphere === 'silence') {
+      this.droneGain.gain.setTargetAtTime(0.02, t, 0.5);
+      this.droneFilter.frequency.setTargetAtTime(85, t, 0.4);
+    } else if (atmosphere === 'storm' || atmosphere === 'tension' || atmosphere === 'fracture') {
+      this.droneGain.gain.setTargetAtTime(0.45, t, 0.5);
+      this.droneFilter.frequency.setTargetAtTime(210, t, 0.4);
+    } else if (atmosphere === 'cosmic' || atmosphere === 'discovery') {
+      this.droneGain.gain.setTargetAtTime(0.32, t, 0.6);
+      this.droneFilter.frequency.setTargetAtTime(175, t, 0.5);
+    } else {
+      this.droneGain.gain.setTargetAtTime(0.28, t, 0.6);
+      this.droneFilter.frequency.setTargetAtTime(145, t, 0.5);
     }
   }
 
@@ -98,7 +127,8 @@ class SoundEngine {
 
       const droneGain = this.ctx.createGain();
       droneGain.gain.setValueAtTime(0.01, this.ctx.currentTime);
-      droneGain.gain.exponentialRampToValueAtTime(0.4, this.ctx.currentTime + 3);
+      droneGain.gain.exponentialRampToValueAtTime(0.36, this.ctx.currentTime + 3);
+      this.droneGain = droneGain;
 
       this.droneOsc1.connect(this.droneFilter);
       this.droneOsc2.connect(this.droneFilter);
@@ -123,6 +153,7 @@ class SoundEngine {
       } catch {
         // Safe disconnect
       }
+      this.droneGain = null;
       this.isDroneActive = false;
     }
   }

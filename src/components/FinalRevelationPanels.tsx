@@ -24,6 +24,7 @@ import {
   evaluateMetaEndingEligibility,
 } from '../data/finalRevelationData';
 import { soundEngine } from '../audio/SoundEngine';
+import { aiVoiceService } from '../audio/aiVoiceService';
 
 const COST_CHOICE_LABELS: Record<string, { title: string; summary: string }> = {
   c_cost_preserve_pain: {
@@ -98,8 +99,27 @@ export const ChamberBeyondNinthExperience: React.FC = () => {
           </h3>
           <p className="text-xs font-mono text-slate-400">{stageData.subtitle}</p>
         </div>
-        <div className="text-xs font-mono text-emerald-300 tabular-nums font-bold">
-          Haladás: {completedStages.length}/7 szakasz
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              void aiVoiceService.playLine({
+                lineId: `chamber_stage_${stageData.stage}`,
+                speakerLabel: `KILENCEDIKEN TÚLI KAMRA · ${stageData.stage}. SZAKASZ`,
+                persona: 'infinite',
+                channel: 'narration',
+                fxMode: 'infinite_resonance',
+                text: `${stageData.title}. ${stageData.narrative}`,
+              });
+            }}
+            className="px-3 py-1.5 min-h-[36px] rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-400/40 text-xs font-mono text-amber-200 inline-flex items-center gap-1.5 cursor-pointer"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+            <span>Szakasz felolvasása (AI Hang)</span>
+          </button>
+          <div className="text-xs font-mono text-emerald-300 tabular-nums font-bold">
+            Haladás: {completedStages.length}/7 szakasz
+          </div>
         </div>
       </div>
 
@@ -538,6 +558,27 @@ export const FinalGuardianCouncilPanel: React.FC = () => {
           <span className="text-emerald-300 font-bold">Szövetséges / Áldozat: {alliesCount}/9</span>
           <span className="text-slate-600">|</span>
           <span className="text-rose-300 font-bold">Kételkedő: {challengersCount}</span>
+          <button
+            type="button"
+            onClick={() => {
+              const summaryText = `A Kilenc Őrző Tanácskozásán ${alliesCount} őrző állt melléd, és ${challengersCount} kételkedik még. ${evaluations
+                .slice(0, 3)
+                .map((e) => e.reasonText)
+                .join(' ')}`;
+              void aiVoiceService.playLine({
+                lineId: `guardian_council_${alliesCount}_${challengersCount}`,
+                speakerLabel: 'A KILENC ŐRZŐ TANÁCSA',
+                persona: 'infinite',
+                channel: 'dialogue',
+                fxMode: 'infinite_resonance',
+                text: summaryText,
+              });
+            }}
+            className="px-3 py-1.5 min-h-[34px] rounded-lg bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-200 inline-flex items-center gap-1.5 cursor-pointer"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+            <span>Tanács összegzése (AI Hang)</span>
+          </button>
         </div>
       </div>
 

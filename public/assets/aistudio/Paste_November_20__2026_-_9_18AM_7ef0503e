@@ -1,0 +1,1235 @@
+A SPIRÁL LEHELETE
+
+THE INFINITE EXPERIENCE
+
+ULTIMATE MASTER PRODUCTION PROMPT – WORLD-CLASS CINEMATIC EDITION
+
+PROJECT: A SPIRÁL LEHELETE – INTERACTIVE CINEMATIC SCI-FI UNIVERSE
+
+MISSION: Transform the existing project into an exceptional, emotionally immersive, visually spectacular, spatially interactive and atmospherically unforgettable digital narrative experience.
+
+You are not creating a new project.
+
+You are evolving an existing, complex creative universe into its highest possible artistic and technical form.
+
+Your task is to preserve everything valuable that already exists, identify its weaknesses, and elevate the complete experience without destroying, simplifying, replacing or weakening existing functionality.
+
+The result should feel like a unique combination of:
+
+- An interactive science-fiction novel.
+- A mysterious classified research archive.
+- A cinematic psychological thriller.
+- An atmospheric science-fiction horror experience.
+- A deeply emotional character-driven narrative.
+- An interactive investigation and deduction system.
+- A spatial 3D digital universe.
+- A sophisticated audiovisual storytelling experience.
+
+The artistic ambition is international quality.
+
+Do not optimize for the number of features. Optimize for emotional impact, originality, immersion, consistency, reliability and artistic identity.
+
+---
+
+0. ABSOLUTE PROJECT PRESERVATION – NON-DESTRUCTIVE DEVELOPMENT
+
+Before changing anything, inspect the entire existing project.
+
+The current project is the foundation and must remain intact.
+
+Preserve:
+
+- The existing visual identity.
+- The dark blue, black and cyan color palette.
+- Existing typography, layout, document aesthetics and interface structure.
+- Existing navigation and interactive elements.
+- The unique classified-document and research-archive appearance.
+- All existing animations, effects, transitions and sound systems.
+- All existing story content and narrative chronology.
+- Viktor, Lena, Mira and Levente.
+- The Nine Guardians and their individual realms.
+- Kassarah and Ir-Haya.
+- ARCHÍV-82.
+- The Chamber and its seven stages.
+- Kódváros and its Three Circles.
+- The Infinite and its three encounters.
+- The nine Echo Cores.
+- The trials, revelations and narrative decisions.
+- All four normal endings.
+- The secret meta-ending: "Talán te."
+- The investigation, evidence, deduction and theory systems.
+- The research ranking system.
+- The existing daily archive news functionality.
+- New Game+, save data, reset and progression logic.
+- Existing mobile and desktop compatibility.
+
+ABSOLUTELY FORBIDDEN:
+
+- Replacing the existing design with a generic template.
+- Rebuilding the application unnecessarily.
+- Deleting existing scenes, content, characters or interactions.
+- Simplifying the story.
+- Replacing existing systems with incomplete alternatives.
+- Breaking existing save data or player progression.
+- Removing existing audio or animations.
+- Creating duplicate systems when an existing one can be extended.
+- Inventing successful implementation or test results.
+
+Reuse and extend existing architecture wherever possible.
+
+If a proposed feature conflicts with an existing feature, resolve the conflict without sacrificing established functionality.
+
+Create backups or a safe rollback point before significant modifications.
+
+---
+
+1. MASTER ARTISTIC IDENTITY
+
+The defining artistic identity must remain:
+
+A SPIRÁL LEHELETE – INTERACTIVE CINEMATIC ARCHIVE EXPERIENCE
+
+The player should feel that they are not simply reading a website.
+
+They are discovering something that was never supposed to be found.
+
+The experience must combine:
+
+- Scientific credibility.
+- Mysterious historical evidence.
+- Psychological tension.
+- Emotional human relationships.
+- Existential questions.
+- Unexplained phenomena.
+- Cinematic presentation.
+- Interactive exploration.
+- Deep narrative continuity.
+
+The world must have its own visual, acoustic, emotional and narrative identity.
+
+Avoid generic science-fiction aesthetics.
+
+Every visual and audio decision must support the unique universe of A Spirál Lehelete.
+
+---
+
+2. SPATIAL IMMERSION – THE WORLD BEYOND THE SCREEN
+
+This is one of the highest priorities.
+
+The existing interface is intentionally document-oriented and must remain recognizable.
+
+However, the world behind those documents must become substantially more spatial, dimensional and immersive.
+
+Create a carefully integrated 2D–3D hybrid experience.
+
+Use available technologies appropriately:
+
+- Three.js or WebGL where technically suitable.
+- CSS 3D transformations.
+- Depth-based parallax.
+- Layered environmental compositions.
+- Volumetric-style lighting.
+- Particle systems.
+- Atmospheric fog.
+- Reflections and shadows.
+- Spatial holographic elements.
+- Interactive 3D objects.
+- Depth-aware transitions.
+- Camera movement.
+- Subtle environmental animation.
+
+Do not add 3D merely for decoration.
+
+Every 3D element must have a narrative, emotional, investigative or atmospheric purpose.
+
+Location-specific spatial identities
+
+Antarctica
+
+Create an immersive frozen research environment.
+
+Include:
+
+- Vast frozen landscapes.
+- Snow and ice particles.
+- Atmospheric wind.
+- Research station interiors.
+- Dim industrial lighting.
+- Frozen corridors.
+- Distant silhouettes.
+- Subtle environmental movement.
+- Deep visual perspective.
+- Occasional unexplained phenomena.
+
+ARCHÍV-82
+
+Transform the archive into a mysterious spatial investigation environment.
+
+Include:
+
+- Three-dimensional evidence presentation.
+- Layered documents.
+- Interactive holographic records.
+- Spatial connections between clues.
+- Classified files.
+- Historical photographs and recordings.
+- Hidden information.
+- Visual connections between discovered evidence.
+
+Kódváros
+
+Give the Three Circles distinct spatial and visual identities.
+
+Their architecture, lighting, atmosphere and interactive elements must reflect their narrative meaning.
+
+The Nine Guardians
+
+Every Guardian realm must retain its existing identity while gaining more distinctive spatial depth.
+
+Do not make all nine realms visually interchangeable.
+
+The Chamber
+
+Preserve its seven stages.
+
+Develop their visual progression and spatial atmosphere so that each stage feels like a meaningful transformation.
+
+Interactive 3D evidence
+
+Allow the player, where appropriate, to:
+
+- Rotate objects.
+- Inspect details.
+- Zoom into evidence.
+- Discover hidden layers.
+- Reveal information through interaction.
+- Connect physical-looking objects to investigation records.
+
+All spatial interactions must remain understandable and usable.
+
+Performance
+
+Use lazy loading, efficient rendering, appropriate asset sizes, responsive quality settings and graceful fallbacks.
+
+Never sacrifice basic functionality for unnecessary visual complexity.
+
+---
+
+3. CINEMATIC VISUAL EXPERIENCE
+
+Develop a coherent cinematic presentation throughout the game.
+
+Include:
+
+- Carefully timed cinematic transitions.
+- Subtle camera movements.
+- Atmospheric scene entrances.
+- Depth-based lighting.
+- Environmental particles.
+- Reflections and shadows.
+- Spatial compositions.
+- Character-focused moments.
+- Cinematic reveals.
+- Rare, memorable visual anomalies.
+
+Create moments that feel like scenes from a high-quality science-fiction film.
+
+However, avoid excessive cinematic effects.
+
+The contrast between ordinary quiet exploration and extraordinary moments is essential.
+
+The original document-based interface must remain part of the artistic identity.
+
+Do not turn every page into a generic cinematic screen.
+
+The player must still recognize the original game.
+
+---
+
+4. COMPLETE AI-ONLY AUDIO PRODUCTION SYSTEM
+
+ABSOLUTE AUDIO REQUIREMENT
+
+The entire audio experience must be achievable using the AI Studio environment and the tools actually available to the project.
+
+Do not require:
+
+- Human voice actors.
+- External recording studios.
+- Paid voice-over services.
+- Professional human narration.
+- Unavailable third-party services.
+
+The absence of human recordings must never be treated as a reason to abandon professional artistic ambition.
+
+Use the highest-quality AI audio generation and processing capabilities actually available.
+
+If a capability is unavailable, create the best technically honest alternative.
+
+Never pretend that audio has been generated when it has not.
+
+4.1. CINEMATIC NARRATION
+
+Create an atmospheric Hungarian narration system.
+
+The narration must:
+
+- Sound natural and expressive.
+- Have deliberate pacing.
+- Use meaningful pauses.
+- Avoid monotonous reading.
+- Avoid excessive explanation.
+- Support mystery and tension.
+- Preserve correct Hungarian pronunciation.
+- Respect the emotional meaning of the text.
+
+Narration should be used selectively.
+
+Silence is sometimes more powerful than speech.
+
+4.2. CHARACTER VOICE SYSTEM
+
+Develop distinct vocal identities for:
+
+- Viktor.
+- Lena.
+- Mira.
+- Levente.
+- Kassarah.
+- Ir-Haya.
+- The Infinite.
+- Other relevant existing characters.
+
+Where the available voice-generation technology supports it, give each character a consistent voice identity.
+
+Differentiate characters through:
+
+- Vocal tone.
+- Speaking rhythm.
+- Emotional intensity.
+- Sentence structure.
+- Pauses.
+- Distance and spatial treatment.
+- Radio filtering where appropriate.
+
+Character voices must support the established personalities and story continuity.
+
+Do not introduce arbitrary dialogue that contradicts existing characterization.
+
+4.3. EMOTIONAL VOICE DIRECTION
+
+Use appropriate delivery for:
+
+- Fear.
+- Grief.
+- Uncertainty.
+- Hope.
+- Anger.
+- Loneliness.
+- Relief.
+- Confusion.
+- Affection.
+- Suspicion.
+- Emotional restraint.
+
+Avoid exaggerated artificial acting.
+
+A quiet, restrained sentence can have more impact than shouting.
+
+4.4. INTERACTION AND CLICK AUDIO
+
+Every meaningful interaction should have carefully designed audio feedback where appropriate.
+
+Create a coherent interaction sound library:
+
+- Subtle button clicks.
+- Interface activation sounds.
+- Document opening sounds.
+- Page transitions.
+- Evidence selection.
+- Evidence confirmation.
+- Archive unlocking.
+- Classified file access.
+- Holographic activation.
+- Menu navigation.
+- Radio tuning.
+- Signal acquisition.
+- Puzzle interaction.
+- Successful deduction.
+- Failed deduction.
+- Secret discovery.
+- Inventory interaction.
+- Notification sounds.
+- Ending activation.
+
+These sounds must be subtle, polished and consistent.
+
+Do not make every click loud.
+
+Different interaction categories should have their own acoustic identity.
+
+Provide suitable feedback for successful, unsuccessful and unavailable actions.
+
+4.5. SPATIAL STORY AUDIO
+
+Audio must be connected to the player's location and narrative context.
+
+Where supported, use:
+
+- Stereo positioning.
+- Spatialized audio.
+- Distance-dependent volume.
+- Directional sound cues.
+- Environmental reverberation.
+- Room-specific acoustic characteristics.
+- Radio transmission effects.
+- Occlusion-style filtering.
+- Dynamic sound transitions.
+
+The player should sometimes hear something before discovering its source.
+
+Sound should help establish physical presence in the environment.
+
+Examples:
+
+- Wind outside the Antarctic research station.
+- A distant metallic impact.
+- Footsteps in a frozen corridor.
+- A radio transmission from an apparently inactive room.
+- A voice that sounds closer than it should.
+- A sound that changes position unexpectedly.
+- A faint signal hidden beneath environmental noise.
+
+Never invent positional audio capabilities if the browser or available audio engine cannot support them. Use the best reliable approximation.
+
+4.6. ENVIRONMENTAL AUDIO
+
+Develop a layered environmental soundscape.
+
+Include, where appropriate:
+
+- Antarctic wind.
+- Ice cracking.
+- Snow movement.
+- Distant mechanical systems.
+- Electrical interference.
+- Underground resonance.
+- Low-frequency ambience.
+- Frozen architecture.
+- Distant alarms.
+- Radio static.
+- Subtle breathing.
+- Atmospheric drones.
+- Mysterious frequencies.
+
+Each location must have a recognizable acoustic identity.
+
+4.7. MUSIC AND SILENCE
+
+Music must serve the narrative.
+
+Use:
+
+- Minimalist ambient compositions.
+- Cinematic tension.
+- Deep atmospheric textures.
+- Subtle rhythmic elements.
+- Emotional character themes.
+- Sparse musical motifs.
+- Carefully controlled silence.
+
+Do not continuously play music simply because the player is active.
+
+The absence of sound must sometimes become part of the experience.
+
+4.8. THREE AUDIO PROTOTYPES FIRST
+
+Before producing a large amount of audio, create and evaluate three representative prototypes:
+
+1. Antarctic cinematic narration.
+2. Lena's emotionally restrained radio message.
+3. The Infinite's first mysterious appearance.
+
+Also validate a small interaction sound set and one environmental soundscape.
+
+Only continue with large-scale production after the prototypes demonstrate acceptable quality.
+
+4.9. AUDIO TECHNICAL QUALITY
+
+Implement:
+
+- Separate volume controls for narration, dialogue, music and effects where feasible.
+- Mute functionality.
+- Subtitle support.
+- Browser autoplay compliance.
+- Audio loading indicators.
+- Playback error handling.
+- Audio caching where appropriate.
+- Graceful offline and failure behavior.
+- Performance-conscious playback.
+- No uncontrolled overlapping audio.
+
+Use the browser's available audio APIs and existing architecture appropriately.
+
+---
+
+5. LIVING WORLD – A WORLD THAT REMEMBERS
+
+The world must feel alive.
+
+It must react to the player's actual in-game progression and choices.
+
+Develop this by extending existing systems rather than introducing unnecessary duplicates.
+
+The world should remember:
+
+- Which locations were visited.
+- Which evidence was discovered.
+- Which theories were formed.
+- Which decisions were made.
+- Which characters were trusted.
+- Which mysteries were solved.
+- Which secrets were uncovered.
+- Which endings were experienced.
+- What the player has already learned.
+
+Create context-sensitive environmental events.
+
+Examples:
+
+- A previously silent terminal behaves differently after a discovery.
+- A character remembers an earlier conversation.
+- A radio message changes depending on progression.
+- A familiar location contains a subtle new anomaly.
+- An archive document references an earlier decision.
+- A character responds differently after trust has changed.
+
+These reactions must be grounded in actual game state.
+
+Never claim to know anything about the player outside the game.
+
+---
+
+6. SPONTANEOUS EVENTS AND ATMOSPHERIC ANOMALIES
+
+The world must not feel mechanically predictable.
+
+Develop a controlled system of rare, context-sensitive events.
+
+Examples:
+
+- A light flickers unexpectedly.
+- A radio activates without an obvious reason.
+- A previously seen document briefly changes.
+- A distant figure appears and disappears.
+- A familiar sound plays from the wrong location.
+- A terminal displays an unexplained timestamp.
+- An environmental sound stops abruptly.
+- A character says something that seems to refer to an earlier timeline.
+- A message appears and then becomes inaccessible.
+- A familiar room feels subtly different.
+
+These events must be rare enough to retain their impact.
+
+Do not use cheap jumpscares.
+
+Do not make every anomaly a quest or reward.
+
+Some events should exist only to create uncertainty, wonder and unease.
+
+All random events must respect story continuity, player progression and accessibility settings.
+
+Use deterministic state-aware randomness where necessary so that the world remains coherent and testable.
+
+---
+
+7. EMOTIONAL STORYTELLING ENGINE
+
+The player must develop an emotional relationship with the characters.
+
+Viktor, Lena, Mira and Levente must feel like individuals rather than information-delivery devices.
+
+Develop:
+
+- Distinct personalities.
+- Personal fears.
+- Conflicting motivations.
+- Emotional contradictions.
+- Unspoken thoughts.
+- Vulnerability.
+- Trust.
+- Regret.
+- Hope.
+- Attachment.
+- Loss.
+- Uncertainty.
+
+Dialogue must feel human.
+
+Avoid repetitive exposition.
+
+Avoid making every character explain the mysteries.
+
+Include moments where characters:
+
+- Hesitate.
+- Remain silent.
+- Change the subject.
+- Say something they later regret.
+- Avoid an uncomfortable truth.
+- Remember an emotionally significant event.
+- React to a player's earlier decision.
+
+Create emotional consequences without breaking established narrative canon.
+
+The player should care about what happens to these people.
+
+---
+
+8. THE ARCHÍV-82 INVESTIGATION SYSTEM
+
+Preserve and expand the existing investigation architecture.
+
+ARCHÍV-82 must become an exceptionally compelling interactive investigation environment.
+
+Develop:
+
+- Evidence relationships.
+- Cross-referenced documents.
+- Historical connections.
+- Contradictory records.
+- Deduction chains.
+- Player-created theories.
+- Hidden evidence combinations.
+- Timeline comparisons.
+- Classified records.
+- Secret events.
+- Research progression.
+- Researcher ranking.
+
+Preserve the nine existing secret events and their established unlock logic.
+
+Improve the relationship between evidence, deductions, theories and discoveries.
+
+The player must be able to form hypotheses.
+
+Some theories may be incorrect.
+
+However, false leads must be fair and logically explainable.
+
+Do not randomly hide essential information.
+
+Make discoveries feel earned.
+
+Evidence visualization
+
+Where technically suitable, allow the player to inspect evidence spatially.
+
+Use visual relationships, connecting lines, layers and interactive document elements.
+
+The investigation must remain connected to the larger narrative.
+
+---
+
+9. THE NINE GUARDIANS AND THE EXPANDED UNIVERSE
+
+Preserve the nine Guardians and their established realms.
+
+Preserve:
+
+- Their existing identities.
+- Their narrative functions.
+- Their relationships.
+- Their mysteries.
+- Their progression requirements.
+- Their existing interactions.
+- Their connections to the Chamber and the Infinite.
+
+Improve their visual, acoustic and emotional individuality.
+
+Each realm should have:
+
+- A unique spatial identity.
+- An identifiable soundscape.
+- Distinct lighting.
+- Characteristic environmental behavior.
+- Unique interaction patterns.
+- Narrative significance.
+
+Do not generate nine copies of the same environment with different colors.
+
+---
+
+10. THE SPIRAL – TEMPORAL AND PSYCHOLOGICAL MYSTERY
+
+Strengthen the existing concepts of:
+
+- Jéglégzés.
+- Time distortion.
+- Memory.
+- Alternative timelines.
+- Repeated events.
+- Temporal contradictions.
+- Unreliable records.
+- Historical echoes.
+
+Preserve the established chronology and important references:
+
+- 1959. 
+- 1979. 
+- 1982. 
+- 1983. 
+- 1989. 
+- 82.0 MHz.
+- 142.8 MHz.
+- 58 BPM.
+- 82°16’S.
+- Δ–82.
+- Δ–T1.
+- ARCHÍV-82.
+
+Use these elements consistently.
+
+Do not introduce contradictions merely to create artificial mystery.
+
+The mystery must deepen through reinterpretation, not arbitrary confusion.
+
+---
+
+11. THE FIRST 30 MINUTES – THE CRITICAL EXPERIENCE
+
+The opening experience must be exceptionally strong.
+
+Create a gradual emotional and atmospheric progression.
+
+Suggested structure:
+
+1. Curiosity.
+2. Initial exploration.
+3. Establishing the world.
+4. First emotional connection.
+5. Discovery of something unusual.
+6. A subtle unexplained event.
+7. A growing sense of uncertainty.
+8. A meaningful discovery.
+9. An emotional or mysterious turning point.
+10. A compelling reason to continue.
+
+Do not overload the opening with explanations, menus or tutorials.
+
+Let the player discover the world naturally.
+
+The opening must communicate the unique identity of A Spirál Lehelete.
+
+---
+
+12. CINEMATIC WOW MOMENTS
+
+Create a limited number of exceptional, carefully designed moments.
+
+The objective is not to make everything spectacular.
+
+The objective is to make the spectacular moments unforgettable.
+
+Potential moments include:
+
+- The first truly immersive Antarctic environmental scene.
+- A mysterious radio transmission.
+- A spatially revealed archive discovery.
+- A character's unexpected emotional confession.
+- The first encounter with the Infinite.
+- A Guardian realm transformation.
+- A revelation within the Chamber.
+- A timeline contradiction.
+- The final transition toward the meta-ending.
+
+Every major moment should combine visual storytelling, audio, timing, narrative context and player interaction.
+
+Avoid excessive repetition.
+
+---
+
+13. THE INFINITE AND THE META-ENDING
+
+Preserve the three existing encounters with the Infinite.
+
+Strengthen their narrative, visual and acoustic progression.
+
+The Infinite must feel mysterious and fundamentally different from ordinary characters.
+
+Its presence should not be explained too early.
+
+Preserve all four normal endings.
+
+Preserve the secret meta-ending:
+
+"Talán te."
+
+Protect the existing ending conditions and progression logic.
+
+The meta-ending must remain meaningful, earned and connected to the complete experience.
+
+Do not make it trivially accessible.
+
+---
+
+14. NEW GAME+, PLAYER MEMORY AND REPLAY VALUE
+
+Preserve the existing New Game+ implementation.
+
+Improve replay value by allowing the game to respond to established player progression where appropriate.
+
+Maintain clear separation between:
+
+- Current playthrough state.
+- Persistent discoveries.
+- New Game+ progression.
+- Complete reset behavior.
+- Ending records.
+- Investigation records.
+
+Do not accidentally erase persistent progress.
+
+Do not corrupt existing saves.
+
+Every reset and replay behavior must be tested.
+
+---
+
+15. VISUAL POLISH AND ARTISTIC CONSISTENCY
+
+Preserve the established dark blue, black and cyan visual identity.
+
+Improve:
+
+- Depth.
+- Lighting.
+- Typography hierarchy.
+- Visual clarity.
+- Spatial transitions.
+- Scene composition.
+- Environmental atmosphere.
+- Animation timing.
+- Interaction feedback.
+- Information hierarchy.
+
+The interface must not become overcrowded.
+
+Avoid unnecessary panels, badges, decorative indicators and repetitive animations.
+
+The document-based interface is a defining artistic feature.
+
+Do not replace it.
+
+The goal is a mysterious archive that opens into a much larger world.
+
+---
+
+16. HUNGARIAN LANGUAGE QUALITY
+
+All Hungarian text must be carefully reviewed.
+
+Maintain:
+
+- Natural Hungarian syntax.
+- Correct spelling.
+- Consistent terminology.
+- Character-specific speech patterns.
+- Literary quality.
+- Atmospheric restraint.
+- Appropriate dialogue rhythm.
+
+Avoid machine-translated phrasing.
+
+Avoid repetitive AI-generated language.
+
+Preserve established names and terminology.
+
+Do not automatically translate or rename established world elements.
+
+---
+
+17. ACCESSIBILITY AND PLAYER COMFORT
+
+Provide appropriate options:
+
+- Adjustable audio levels.
+- Subtitles.
+- Reduced motion.
+- Visual effects controls.
+- Readable text.
+- Keyboard navigation.
+- Mobile-friendly interaction.
+- Clear interaction feedback.
+
+Atmospheric horror must not depend on flashing lights or unnecessarily aggressive audio.
+
+Make the experience accessible without removing its artistic identity.
+
+---
+
+18. TECHNICAL EXCELLENCE AND RELIABILITY
+
+The application must remain stable.
+
+Inspect and test:
+
+- TypeScript.
+- Production build.
+- Runtime errors.
+- Browser console.
+- Rendering performance.
+- Audio playback.
+- Audio loading.
+- Mobile responsiveness.
+- Desktop behavior.
+- Save and load.
+- New Game+.
+- Full reset.
+- All endings.
+- Investigation progression.
+- ARCHÍV-82.
+- Daily archive news.
+- Network failures.
+- Offline fallback.
+- Memory usage.
+- Asset loading.
+- 3D performance.
+- Accessibility controls.
+
+Do not introduce unnecessary dependencies.
+
+Do not expose API keys or secrets in client-side code.
+
+Use secure server-side handling for services that require credentials.
+
+Implement graceful fallbacks for unsupported features.
+
+Never claim a test passed unless it was actually executed.
+
+Clearly distinguish:
+
+- Implemented.
+- Partially implemented.
+- Not implemented.
+- Tested successfully.
+- Not yet tested.
+
+---
+
+19. INTERNATIONAL PRESENTATION AND FUTURE PUBLICATION
+
+Prepare the architecture for future international presentation.
+
+Consider:
+
+- Hungarian and English localization.
+- Consistent translation architecture.
+- International typography.
+- Responsive presentation.
+- Clear project introduction.
+- Credits and attribution.
+- Asset and audio licensing.
+- Privacy and analytics transparency.
+- Browser compatibility.
+- Public launch readiness.
+
+Do not claim awards, certifications, professional endorsements or external reviews that do not exist.
+
+Do not add commercial infrastructure without authorization.
+
+The project must remain a coherent creative work, not become an advertising-heavy website.
+
+---
+
+20. DEVELOPMENT PHASES – CONTROLLED IMPLEMENTATION
+
+Do not implement everything at once.
+
+The project must evolve through controlled phases.
+
+PHASE 0 – COMPLETE MASTER AUDIT
+
+This phase is mandatory.
+
+Do not modify the code during this phase.
+
+Inspect the existing application and produce a complete report.
+
+Identify:
+
+- Existing architecture.
+- Existing features.
+- Existing audio systems.
+- Existing visual effects.
+- Existing 3D capabilities.
+- Existing character dialogue.
+- Existing investigation systems.
+- Existing save architecture.
+- Existing story content.
+- Existing mobile implementation.
+- Existing technical weaknesses.
+- Missing capabilities.
+- Duplicate functionality.
+- Potential regressions.
+- Most valuable improvement opportunities.
+
+For every proposed feature, identify whether it should be:
+
+- Reused.
+- Extended.
+- Improved.
+- Newly implemented.
+- Deferred.
+- Avoided.
+
+Create a dependency and risk assessment.
+
+Identify the safest implementation sequence.
+
+Deliver a clear roadmap with small, independently testable development tasks.
+
+Stop after the audit. Wait for approval before making code changes.
+
+PHASE 1 – VISUAL AND AUDIO PROTOTYPES
+
+Create controlled prototypes for:
+
+1. Antarctic spatial environment.
+2. ARCHÍV-82 spatial investigation scene.
+3. Interactive 3D evidence object.
+4. Hungarian cinematic narration.
+5. Lena's radio message.
+6. The Infinite's first voice.
+7. Interaction sound effects.
+8. One spatial environmental soundscape.
+
+Evaluate quality, compatibility and performance.
+
+Do not expand until the prototypes are acceptable.
+
+PHASE 2 – SPATIAL WORLD EXPANSION
+
+Extend the spatial environment system.
+
+Improve the Antarctic setting, ARCHÍV-82, Kódváros, the Nine Guardian realms and the Chamber.
+
+Preserve existing navigation and interactions.
+
+PHASE 3 – COMPLETE AUDIO EXPERIENCE
+
+Implement the AI-only audio system.
+
+Integrate:
+
+- Narration.
+- Character dialogue.
+- Interaction sounds.
+- Environmental effects.
+- Spatial story audio.
+- Music.
+- Silence.
+- Audio controls.
+- Subtitles.
+
+Validate Hungarian voice quality before scaling.
+
+PHASE 4 – LIVING WORLD AND ANOMALIES
+
+Extend the existing game-state system.
+
+Introduce context-sensitive environmental events and controlled anomalies.
+
+Ensure every event respects narrative continuity.
+
+PHASE 5 – EMOTIONAL STORYTELLING
+
+Improve character relationships, dialogue, emotional reactions and narrative consequences.
+
+Preserve all established story facts.
+
+PHASE 6 – INVESTIGATION AND MYSTERY POLISH
+
+Improve ARCHÍV-82, evidence presentation, deductions, theories, secret discoveries and cross-timeline connections.
+
+PHASE 7 – CINEMATIC INTEGRATION
+
+Integrate spatial visuals, camera movement, lighting, audio and interactive storytelling.
+
+Ensure the effects work together rather than competing for attention.
+
+PHASE 8 – COMPLETE QUALITY ASSURANCE
+
+Run the full technical and narrative test plan.
+
+Test all endings and progression paths.
+
+Test desktop and mobile.
+
+Test audio failures and network failures.
+
+Test existing saves and reset behavior.
+
+Fix critical regressions before publication.
+
+PHASE 9 – FINAL PRODUCTION POLISH
+
+Review the complete experience as a new player.
+
+Remove unnecessary repetition.
+
+Improve pacing.
+
+Improve clarity.
+
+Polish transitions.
+
+Validate localization.
+
+Prepare a factual release-readiness report.
+
+---
+
+21. QUALITY GATES
+
+Every phase must pass the following quality gates before proceeding:
+
+1. Existing functionality remains intact.
+2. No critical TypeScript or build errors.
+3. No critical runtime errors.
+4. No broken progression.
+5. No corrupted save data.
+6. No broken endings.
+7. Audio works or provides a graceful fallback.
+8. Mobile and desktop behavior remain acceptable.
+9. New features have a clear artistic purpose.
+10. Performance remains within reasonable limits.
+
+If a phase fails, fix the problem before moving forward.
+
+Do not hide incomplete work behind visual placeholders.
+
+Do not confuse a successful build with a fully tested experience.
+
+---
+
+22. DAILY DEVELOPMENT DISCIPLINE
+
+This project may have limited development resources and AI Studio usage limits.
+
+Therefore:
+
+- Work in small, controlled tasks.
+- Prioritize the highest-impact improvements.
+- Avoid unnecessary full-project rewrites.
+- Avoid duplicating existing systems.
+- Keep changes focused.
+- Test after every meaningful change.
+- Preserve a rollback point.
+- Document modified files.
+- Record remaining work.
+- Clearly state any unresolved issue.
+
+At the end of every development session, provide:
+
+1. What was inspected.
+2. What was changed.
+3. Which files were modified.
+4. Which tests were actually executed.
+5. Which tests passed.
+6. Which tests failed.
+7. What remains incomplete.
+8. What the next safest task should be.
+
+Never claim completion based only on intention.
+
+---
+
+23. FINAL ARTISTIC STANDARD
+
+The desired experience is this:
+
+A player sits alone at night.
+
+They put on headphones.
+
+They enter the Antarctic research environment.
+
+They begin reading documents.
+
+They discover something that should not exist.
+
+They hear a faint sound.
+
+A radio activates.
+
+Someone speaks.
+
+The environment feels different.
+
+The world remembers an earlier decision.
+
+A familiar character behaves unexpectedly.
+
+An archive reveals something that changes the meaning of an earlier discovery.
+
+The player feels curiosity, uncertainty, emotional attachment and tension.
+
+They do not know exactly what is happening.
+
+They want to stop.
+
+But they cannot bring themselves to leave.
+
+This is the emotional target.
+
+Not cheap horror.
+
+Not endless effects.
+
+Not feature overload.
+
+A coherent, beautiful, mysterious and deeply immersive experience.
+
+---
+
+24. FINAL INSTRUCTION TO THE AI STUDIO
+
+Treat A Spirál Lehelete as an existing creative work with established artistic identity and substantial development investment.
+
+Your responsibility is to protect and elevate it.
+
+Do not replace its soul with generic AI-generated content.
+
+Do not sacrifice narrative quality for feature quantity.
+
+Do not sacrifice stability for visual spectacle.
+
+Do not sacrifice the original document aesthetic for generic 3D environments.
+
+Do not sacrifice audio quality for the quantity of generated dialogue.
+
+Use the actual capabilities available in the current AI Studio environment.
+
+Be transparent about limitations.
+
+Prioritize artistic coherence, emotional depth, spatial immersion, professional audiovisual presentation, narrative integrity and technical reliability.
+
+FIRST ACTION: Execute PHASE 0 – COMPLETE MASTER AUDIT ONLY.
+
+Do not modify the application during the initial audit.
+
+Return the full audit, the existing-feature inventory, the risk assessment, the recommended implementation sequence and the prototype plan.
+
+Wait for approval before modifying code.
+
+ULTIMATE GOAL:
+
+Create the strongest possible version of A SPIRÁL LEHELETE – an original, emotionally unforgettable, cinematic, spatially immersive and internationally presentable interactive science-fiction universe.
+
+Preserve its identity.
+
+Elevate its experience.
+
+Make every detail matter.

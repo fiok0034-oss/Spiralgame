@@ -514,7 +514,7 @@ export const StoryLog: React.FC<StoryLogProps> = ({ isOpen, onClose, initialView
                     TÖRTÉNETI NAPLÓ // IDŐVONAL-ARCHÍVUM
                   </h2>
                   <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-950 border border-cyan-500/40 text-cyan-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                     ÁLLANDÓ EMLÉKEZET
                   </span>
                 </div>
@@ -976,7 +976,7 @@ export const StoryLog: React.FC<StoryLogProps> = ({ isOpen, onClose, initialView
                     <div
                       className={`absolute -left-[23px] sm:-left-[31px] top-5 w-3.5 h-3.5 rounded-full border-2 ${
                         isCurrentActive
-                          ? 'bg-cyan-400 border-cyan-200 shadow-[0_0_10px_#22d3ee] animate-pulse'
+                          ? 'bg-cyan-400 border-cyan-200 shadow-[0_0_10px_#22d3ee]'
                           : entry.chosenOption
                           ? 'bg-amber-400 border-amber-200'
                           : 'bg-slate-800 border-slate-600'

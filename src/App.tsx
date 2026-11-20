@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { GameProvider, useGame } from './game/GameContext';
 import { CanvasAtmosphere } from './effects/CanvasAtmosphere';
 import { RealityFractureOverlay } from './effects/RealityFractureOverlay';
@@ -21,6 +21,15 @@ import { GUARDIANS_LIST } from './data/storyData';
 import { MiniGameId } from './types/game';
 import { CheckCircle2, X } from 'lucide-react';
 import { soundEngine } from './audio/SoundEngine';
+import { SubtitleOverlay } from './components/SubtitleOverlay';
+import { aiVoiceService, SubtitleState } from './audio/aiVoiceService';
+import { getAudioPreferences } from './audio/audioPreferences';
+
+const Phase1PrototypeLabModal = lazy(() =>
+  import('./prototypes/Phase1PrototypeLabModal').then((m) => ({
+    default: m.Phase1PrototypeLabModal,
+  }))
+);
 
 const GameContainer: React.FC = () => {
   const {
@@ -55,6 +64,14 @@ const GameContainer: React.FC = () => {
   const [isKodvarosOpen, setIsKodvarosOpen] = useState(false);
   const [isMiniGamesHubOpen, setIsMiniGamesHubOpen] = useState(false);
   const [hubSelectedMiniGame, setHubSelectedMiniGame] = useState<MiniGameId>('georadar');
+  const [isPrototypeLabOpen, setIsPrototypeLabOpen] = useState(false);
+  const [activeSubtitle, setActiveSubtitle] = useState<SubtitleState | null>(null);
+
+  useEffect(() => {
+    return aiVoiceService.subscribe((sub) => {
+      setActiveSubtitle(sub);
+    });
+  }, []);
 
   // Auto-open Artifact Inspector when inspecting an artifact hotspot in a scene
   useEffect(() => {
@@ -77,6 +94,7 @@ const GameContainer: React.FC = () => {
         setIsRealityEditorOpen(false);
         setIsKodvarosOpen(false);
         setIsMiniGamesHubOpen(false);
+        setIsPrototypeLabOpen(false);
         setActiveMiniGameId(null);
       } else if (
         (e.key === 'l' || e.key === 'L') &&
@@ -90,6 +108,17 @@ const GameContainer: React.FC = () => {
   }, [setActiveMiniGameId]);
 
   const unlockedMemories = memories.filter((m) => m.isUnlocked).length;
+  const isNgPlus = spiralState.loopState > 1;
+  const showRadioNav =
+    isNgPlus ||
+    activeChapter !== 'chapter1_viktor' ||
+    spiralState.worldState.radioFrequencyUnlocked ||
+    radioChannels.some((c) => c.frequency === 82.0 && c.discovered);
+  const showProfileNav =
+    isNgPlus ||
+    activeChapter !== 'chapter1_viktor' ||
+    unlockedMemories >= 2 ||
+    spiralState.spiralAwareness >= 25;
 
   return (
     <div className="min-h-screen bg-[#050811] text-slate-100 flex flex-col relative selection:bg-cyan-500/30 selection:text-cyan-200">
@@ -112,6 +141,8 @@ const GameContainer: React.FC = () => {
         unlockedMemoriesCount={unlockedMemories}
         totalMemoriesCount={memories.length}
         storyLogCount={storyLog.length}
+        showRadioNav={showRadioNav}
+        showProfileNav={showProfileNav}
       />
 
       <main className="flex-1 relative z-10">
@@ -120,6 +151,7 @@ const GameContainer: React.FC = () => {
             onOpenArchive={() => setIsArchiveOpen(true)}
             onOpenProfile={() => setIsProfileOpen(true)}
             onOpenSettings={() => setIsSettingsOpen(true)}
+            onOpenPrototypeLab={() => setIsPrototypeLabOpen(true)}
           />
         ) : (
           <InteractiveStoryScene
@@ -135,9 +167,21 @@ const GameContainer: React.FC = () => {
             onOpenRealityEditor={() => setIsRealityEditorOpen(true)}
             onOpenKodvaros={() => setIsKodvarosOpen(true)}
             onOpenMiniGamesHub={() => setIsMiniGamesHubOpen(true)}
+            onSubtitleChange={setActiveSubtitle}
           />
         )}
       </main>
+
+      {!isPrototypeLabOpen && (
+        <SubtitleOverlay
+          subtitle={activeSubtitle}
+          enabled={getAudioPreferences().subtitlesEnabled}
+          onStop={() => {
+            aiVoiceService.stop();
+            setActiveSubtitle(null);
+          }}
+        />
+      )}
 
       {/* Modals & Overlays */}
       <CinematicEventOverlay />
@@ -275,7 +319,27 @@ const GameContainer: React.FC = () => {
         reducedMotion={reducedMotion}
         onToggleReducedMotion={setReducedMotion}
         onResetGame={resetAllProgress}
+        onOpenPrototypeLab={() => {
+          setIsSettingsOpen(false);
+          setIsPrototypeLabOpen(true);
+        }}
       />
+
+      {isPrototypeLabOpen && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040710] text-xs font-mono text-cyan-300">
+              3D és AI Hang Labor betöltése...
+            </div>
+          }
+        >
+          <Phase1PrototypeLabModal
+            isOpen={isPrototypeLabOpen}
+            onClose={() => setIsPrototypeLabOpen(false)}
+            reducedMotion={reducedMotion}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

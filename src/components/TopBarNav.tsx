@@ -11,6 +11,8 @@ interface TopBarNavProps {
   unlockedMemoriesCount: number;
   totalMemoriesCount: number;
   storyLogCount?: number;
+  showRadioNav?: boolean;
+  showProfileNav?: boolean;
 }
 
 export const TopBarNav: React.FC<TopBarNavProps> = ({
@@ -22,6 +24,8 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
   unlockedMemoriesCount,
   totalMemoriesCount,
   storyLogCount,
+  showRadioNav = true,
+  showProfileNav = true,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-slate-950/85 backdrop-blur-md border-b border-cyan-500/20 px-4 md:px-8 py-3 flex items-center justify-between gap-3 transition-colors">
@@ -51,27 +55,31 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
           </span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            soundEngine.playUiClick();
-            onOpenRadio();
-          }}
-          className="text-slate-300 hover:text-cyan-300 transition-colors cursor-pointer whitespace-nowrap"
-        >
-          RÁDIÓEGYSÉG
-        </button>
+        {showRadioNav && (
+          <button
+            type="button"
+            onClick={() => {
+              soundEngine.playUiClick();
+              onOpenRadio();
+            }}
+            className="text-slate-300 hover:text-cyan-300 transition-colors cursor-pointer whitespace-nowrap"
+          >
+            RÁDIÓEGYSÉG
+          </button>
+        )}
 
-        <button
-          type="button"
-          onClick={() => {
-            soundEngine.playUiClick();
-            onOpenProfile();
-          }}
-          className="text-slate-300 hover:text-cyan-300 transition-colors cursor-pointer whitespace-nowrap"
-        >
-          SPIRÁLPROFIL
-        </button>
+        {showProfileNav && (
+          <button
+            type="button"
+            onClick={() => {
+              soundEngine.playUiClick();
+              onOpenProfile();
+            }}
+            className="text-slate-300 hover:text-cyan-300 transition-colors cursor-pointer whitespace-nowrap"
+          >
+            SPIRÁLPROFIL
+          </button>
+        )}
 
         {onOpenStoryLog && (
           <button
@@ -114,22 +122,26 @@ export const TopBarNav: React.FC<TopBarNavProps> = ({
           >
             ARCHÍV
           </button>
-          <button
-            type="button"
-            onClick={onOpenRadio}
-            className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
-            title="Rádió"
-          >
-            RÁDIÓ
-          </button>
-          <button
-            type="button"
-            onClick={onOpenProfile}
-            className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
-            title="Profil"
-          >
-            PROFIL
-          </button>
+          {showRadioNav && (
+            <button
+              type="button"
+              onClick={onOpenRadio}
+              className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
+              title="Rádió"
+            >
+              RÁDIÓ
+            </button>
+          )}
+          {showProfileNav && (
+            <button
+              type="button"
+              onClick={onOpenProfile}
+              className="px-2.5 py-2 min-h-[40px] text-slate-300 hover:text-cyan-300 text-[11px] font-mono border border-slate-800 rounded cursor-pointer"
+              title="Profil"
+            >
+              PROFIL
+            </button>
+          )}
         </div>
 
         <button

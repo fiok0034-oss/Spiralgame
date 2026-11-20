@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import {
   Search,
   Sparkles,
@@ -13,6 +13,7 @@ import {
   FileText,
   DoorOpen,
   Globe,
+  Box,
 } from 'lucide-react';
 import { useGame } from '../game/GameContext';
 import { STORY_NODES } from '../data/storyData';
@@ -31,6 +32,17 @@ import {
 import { evaluateMetaEndingEligibility } from '../data/finalRevelationData';
 import { PersonalityProfile, SceneHotspot, SpiralState } from '../types/game';
 import { soundEngine } from '../audio/SoundEngine';
+import { spatialSoundscapeEngine } from '../audio/SpatialSoundscapeEngine';
+import { aiVoiceService, SubtitleState } from '../audio/aiVoiceService';
+import { resolveSceneVoiceMapping } from '../audio/voicePersonaMapper';
+import { getAudioPreferences } from '../audio/audioPreferences';
+import { LivingAnomalyWhisper } from '../components/LivingAnomalyWhisper';
+
+const SceneSpatialViewport = lazy(() =>
+  import('../components/SceneSpatialViewport').then((m) => ({
+    default: m.SceneSpatialViewport,
+  }))
+);
 
 const PERSONALITY_LABELS: Record<keyof PersonalityProfile, string> = {
   analytical: 'Elemző',
@@ -51,6 +63,7 @@ interface InteractiveStorySceneProps {
   onOpenRealityEditor?: () => void;
   onOpenMiniGamesHub?: () => void;
   onOpenKodvaros?: () => void;
+  onSubtitleChange?: (sub: SubtitleState | null) => void;
 }
 
 export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
@@ -63,8 +76,10 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
   onOpenRealityEditor,
   onOpenMiniGamesHub,
   onOpenKodvaros,
+  onSubtitleChange,
 }) => {
   const {
+    activeChapter,
     activeSceneId,
     makeChoice,
     jumpToChapter,
@@ -77,12 +92,18 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
     guardianProgress,
     evidence,
     secrets,
+    reducedMotion,
   } = useGame();
 
   const [imgLoadError, setImgLoadError] = useState(false);
   const [isLocalStoryLogOpen, setIsLocalStoryLogOpen] = useState(false);
   const [initialLogView, setInitialLogView] = useState<'log' | 'tree'>('log');
   const [hotspotFeedback, setHotspotFeedback] = useState<{ id: string; text: string; ok: boolean } | null>(null);
+  const [voicePlaying, setVoicePlaying] = useState(false);
+  const [voiceLoading, setVoiceLoading] = useState(false);
+  const [use3DSceneView, setUse3DSceneView] = useState(false);
+  const [spatialDeskToast, setSpatialDeskToast] = useState<string | null>(null);
+  const [showAllSystems, setShowAllSystems] = useState(false);
 
   const handleOpenLog = (mode: 'log' | 'tree' = 'log') => {
     soundEngine.playUiClick();
@@ -113,9 +134,53 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
   const fallbackIllustrationSrc = illustrationKey ? FALLBACK_IMAGES[illustrationKey] : null;
   const currentImgSrc = imgLoadError ? fallbackIllustrationSrc : (rawIllustrationSrc || fallbackIllustrationSrc);
 
+  const triggerSceneVoice = (nodeId: string, speaker: string, text: string) => {
+    const mapping = resolveSceneVoiceMapping(nodeId, speaker);
+    setVoiceLoading(true);
+    setVoicePlaying(true);
+    void aiVoiceService.playLine({
+      lineId: `scene_${nodeId}`,
+      speakerLabel: mapping.speakerLabel,
+      persona: mapping.persona,
+      channel: mapping.channel,
+      fxMode: mapping.fxMode,
+      text: text.slice(0, 1450),
+      onSubtitle: (sub) => {
+        setVoiceLoading(false);
+        onSubtitleChange?.(sub);
+        if (!sub.isActive && !sub.errorNote) {
+          setVoicePlaying(false);
+        }
+      },
+      onComplete: () => {
+        setVoiceLoading(false);
+        setVoicePlaying(false);
+      },
+    });
+  };
+
+  const stopSceneVoice = () => {
+    aiVoiceService.stop();
+    setVoiceLoading(false);
+    setVoicePlaying(false);
+    onSubtitleChange?.(null);
+  };
+
   useEffect(() => {
     setImgLoadError(false);
     setHotspotFeedback(null);
+    setSpatialDeskToast(null);
+    stopSceneVoice();
+    soundEngine.setAtmosphereProfile(currentNode.atmosphere);
+    if (currentNode.atmosphere === 'silence') {
+      soundEngine.playSilenceDrop();
+    }
+    if (getAudioPreferences().autoNarrateScenes) {
+      triggerSceneVoice(currentNode.id, currentNode.speaker, currentNode.text);
+    }
+    return () => {
+      aiVoiceService.stop();
+    };
   }, [activeSceneId]);
 
   const sceneEchoes = echoes.filter((e) => e.targetScenes.includes(activeSceneId));
@@ -146,7 +211,56 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
   const unlockedArtifactsCount = artifacts.filter((a) => a.isUnlocked).length;
   const completedGuardiansCount = Object.values(guardianProgress).filter((g) => g.realmCompleted).length;
 
+  const isNgPlus = spiralState.loopState > 1;
+  const revealAll = showAllSystems || isNgPlus;
+  const showArtifactsBtn =
+    revealAll || unlockedArtifactsCount > 0 || activeChapter !== 'chapter1_viktor';
+  const showAbilitiesBtn =
+    revealAll || unlockedAbilitiesCount > 0 || activeChapter !== 'chapter1_viktor';
+  const showGuardiansBtn =
+    revealAll ||
+    completedGuardiansCount > 0 ||
+    spiralState.guardianAwareness > 0 ||
+    activeChapter === 'chapter5_kodvaros' ||
+    activeChapter === 'chapter6_guardians' ||
+    activeChapter === 'chapter_final';
+  const showKodvarosBtn =
+    revealAll ||
+    spiralState.worldState.leventeChapterCompleted ||
+    spiralState.worldState.kodvarosRingsCompleted > 0 ||
+    activeChapter === 'chapter5_kodvaros' ||
+    activeChapter === 'chapter6_guardians' ||
+    activeChapter === 'chapter_final';
+  const showRealityBtn =
+    revealAll ||
+    spiralState.realityIntegrity < 90 ||
+    activeChapter === 'chapter3_mira' ||
+    activeChapter === 'chapter4_levente' ||
+    activeChapter === 'chapter5_kodvaros' ||
+    activeChapter === 'chapter6_guardians' ||
+    activeChapter === 'chapter_final';
+  const showMiniGamesBtn =
+    revealAll ||
+    spiralState.worldState.completedMiniGames.length > 0 ||
+    activeSceneId !== 'v1_intro';
+  const hasHiddenSystems =
+    !showArtifactsBtn ||
+    !showAbilitiesBtn ||
+    !showGuardiansBtn ||
+    !showKodvarosBtn ||
+    !showRealityBtn ||
+    !showMiniGamesBtn;
+
   const handleHotspotClick = (hs: SceneHotspot) => {
+    if (hs.kind === 'document') {
+      spatialSoundscapeEngine.playPaperRustle(0.2);
+    } else if (hs.kind === 'mechanism') {
+      spatialSoundscapeEngine.playCrtSwitchClick(-0.2);
+    } else if (hs.kind === 'secret_door') {
+      spatialSoundscapeEngine.playIceFracture(0);
+    } else if (hs.kind === 'audio') {
+      spatialSoundscapeEngine.playCrystalChime(528, 0.15);
+    }
     const res = inspectHotspot(hs);
     setHotspotFeedback({ id: hs.id, text: res.message, ok: res.unlocked });
   };
@@ -211,10 +325,10 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         </div>
       </div>
 
-      {/* Tactical Explorer Strip (All Expansion Systems in Reach) */}
+      {/* Tactical Explorer Strip (Progressively disclosed in early Chapter 1, expandable anytime) */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-6 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-mono">
         <div className="flex flex-wrap items-center gap-1.5">
-          {onOpenArtifacts && (
+          {onOpenArtifacts && showArtifactsBtn && (
             <button
               type="button"
               onClick={() => { soundEngine.playUiClick(); onOpenArtifacts(); }}
@@ -224,7 +338,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
               <span>Tárgyak ({unlockedArtifactsCount})</span>
             </button>
           )}
-          {onOpenAbilities && (
+          {onOpenAbilities && showAbilitiesBtn && (
             <button
               type="button"
               onClick={() => { soundEngine.playUiClick(); onOpenAbilities(); }}
@@ -234,7 +348,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
               <span>Képességek ({unlockedAbilitiesCount}/12)</span>
             </button>
           )}
-          {onOpenGuardians && (
+          {onOpenGuardians && showGuardiansBtn && (
             <button
               type="button"
               onClick={() => { soundEngine.playUiClick(); onOpenGuardians(); }}
@@ -244,7 +358,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
               <span>9 Őrző ({completedGuardiansCount}/9)</span>
             </button>
           )}
-          {onOpenKodvaros && (
+          {onOpenKodvaros && showKodvarosBtn && (
             <button
               type="button"
               onClick={() => { soundEngine.playUiClick(); onOpenKodvaros(); }}
@@ -254,7 +368,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
               <span>Három Kör ({spiralState.worldState.kodvarosRingsCompleted}/3)</span>
             </button>
           )}
-          {onOpenRealityEditor && (
+          {onOpenRealityEditor && showRealityBtn && (
             <button
               type="button"
               onClick={() => { soundEngine.playUiClick(); onOpenRealityEditor(); }}
@@ -264,7 +378,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
               <span>Valóság-szerkesztő</span>
             </button>
           )}
-          {onOpenMiniGamesHub && (
+          {onOpenMiniGamesHub && showMiniGamesBtn && (
             <button
               type="button"
               onClick={() => { soundEngine.playUiClick(); onOpenMiniGamesHub(); }}
@@ -272,6 +386,19 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
             >
               <Gamepad2 className="w-3.5 h-3.5 text-cyan-300" />
               <span>Próbák ({spiralState.worldState.completedMiniGames.length}/{MINI_GAME_CATALOG.length})</span>
+            </button>
+          )}
+          {(hasHiddenSystems || showAllSystems) && !isNgPlus && activeChapter === 'chapter1_viktor' && (
+            <button
+              type="button"
+              onClick={() => {
+                soundEngine.playUiClick();
+                setShowAllSystems((v) => !v);
+              }}
+              className="px-2.5 py-2 min-h-[38px] rounded-lg bg-slate-950/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-cyan-300 cursor-pointer whitespace-nowrap"
+              title="Fejezetszintű modulok mutatása vagy elrejtése"
+            >
+              {showAllSystems ? 'Kezdő nézet' : 'Összes modul (+)'}
             </button>
           )}
         </div>
@@ -292,22 +419,65 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         </div>
       )}
 
-      {/* Scene Artwork */}
-      {currentImgSrc && (
-        <div className="relative w-full h-56 md:h-80 rounded-2xl overflow-hidden mb-6 border border-cyan-500/30 bg-slate-950">
-          <img
-            src={currentImgSrc}
-            alt={currentNode.speaker}
-            onError={() => {
-              if (!imgLoadError && fallbackIllustrationSrc) setImgLoadError(true);
-            }}
-            className={`w-full h-full object-cover object-center filter brightness-90 contrast-110 transition-transform duration-700 ${
-              spiralState.realityWarp.gravityInverted ? 'rotate-180' : ''
-            }`}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-transparent to-black/30 pointer-events-none" />
-          <div className="absolute bottom-4 left-4 md:left-6">
-            <div className="bg-slate-950/85 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-xl inline-block">
+      {/* Scene Visual Stage (2D Illustration + Interactive 3D Spatial Hybrid) */}
+      {(currentImgSrc || use3DSceneView) && (
+        <div className="relative w-full h-60 md:h-80 rounded-2xl overflow-hidden mb-6 border border-cyan-500/30 bg-[#050914]">
+          {use3DSceneView ? (
+            <Suspense
+              fallback={
+                <div className="w-full h-full flex items-center justify-center text-xs font-mono text-cyan-300">
+                  3D térbeli környezet betöltése...
+                </div>
+              }
+            >
+              <SceneSpatialViewport
+                sceneId={currentNode.id}
+                atmosphere={currentNode.atmosphere}
+                reducedMotion={reducedMotion}
+                onDeskInteract={(label) => setSpatialDeskToast(label)}
+              />
+            </Suspense>
+          ) : (
+            currentImgSrc && (
+              <>
+                <img
+                  src={currentImgSrc}
+                  alt={currentNode.speaker}
+                  onError={() => {
+                    if (!imgLoadError && fallbackIllustrationSrc) setImgLoadError(true);
+                  }}
+                  className={`w-full h-full object-cover object-center filter brightness-90 contrast-110 transition-transform duration-700 ${
+                    spiralState.realityWarp.gravityInverted ? 'rotate-180' : ''
+                  }`}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050811] via-transparent to-black/30 pointer-events-none" />
+              </>
+            )
+          )}
+
+          {/* Top-Right 2D / 3D Spatial Switch */}
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            {spatialDeskToast && use3DSceneView && (
+              <span className="hidden sm:inline px-2.5 py-1 rounded-md bg-[#060c19]/90 border border-amber-400/40 text-[11px] font-mono text-amber-200">
+                {spatialDeskToast}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                soundEngine.playUiClick();
+                setSpatialDeskToast(null);
+                setUse3DSceneView((v) => !v);
+              }}
+              className="px-3 py-1.5 rounded-lg bg-[#050914]/90 hover:bg-slate-800 border border-cyan-500/40 text-[11px] font-mono text-cyan-300 inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <Box className="w-3.5 h-3.5" />
+              <span>{use3DSceneView ? '2D Illusztráció' : '3D Térbeli Nézet'}</span>
+            </button>
+          </div>
+
+          <div className="absolute bottom-4 left-4 md:left-6 pointer-events-none">
+            <div className="bg-[#050811]/90 border border-cyan-500/30 px-4 py-2 rounded-xl inline-block">
               <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest">
                 {currentNode.speakerRole || 'NARRÁCIÓ'}
               </div>
@@ -319,16 +489,56 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
         </div>
       )}
 
+      <LivingAnomalyWhisper
+        sceneId={currentNode.id}
+        atmosphere={currentNode.atmosphere}
+        spiralState={spiralState}
+        reducedMotion={reducedMotion}
+      />
+
       {/* Main Narrative Box */}
       <div className="bg-slate-900/75 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-sm mb-6 shadow-xl">
-        {!currentImgSrc && (
-          <div className="mb-4">
-            <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
-              {currentNode.speakerRole || 'SZEREP'}
-            </span>
-            <h2 className="text-xl font-cinzel font-bold text-slate-100 mt-0.5">{currentNode.speaker}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800/80">
+          <div>
+            {!currentImgSrc && (
+              <>
+                <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
+                  {currentNode.speakerRole || 'SZEREP'}
+                </span>
+                <h2 className="text-xl font-cinzel font-bold text-slate-100 mt-0.5">{currentNode.speaker}</h2>
+              </>
+            )}
+            {currentImgSrc && (
+              <span className="text-xs font-mono text-slate-400">
+                Hangmód: {resolveSceneVoiceMapping(currentNode.id, currentNode.speaker).persona.toUpperCase()}
+              </span>
+            )}
           </div>
-        )}
+          <button
+            type="button"
+            onClick={() => {
+              if (voicePlaying || voiceLoading) {
+                stopSceneVoice();
+              } else {
+                triggerSceneVoice(currentNode.id, currentNode.speaker, currentNode.text);
+              }
+            }}
+            className={`px-3 py-1.5 min-h-[36px] rounded-lg border text-xs font-mono inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap ${
+              voicePlaying
+                ? 'bg-amber-500/20 border-amber-400/60 text-amber-200 hover:bg-amber-500/30'
+                : 'bg-slate-950 hover:bg-slate-800 border-cyan-500/35 text-cyan-300'
+            }`}
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+            <span>
+              {voiceLoading
+                ? 'AI hang betöltése...'
+                : voicePlaying
+                ? 'Felolvasás leállítása'
+                : 'Jelenet felolvasása (AI Hang)'}
+            </span>
+          </button>
+        </div>
 
         <div className="text-base md:text-lg leading-relaxed text-slate-200 font-sans whitespace-pre-line">
           {currentNode.text}

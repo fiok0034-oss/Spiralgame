@@ -8,12 +8,14 @@ interface MainMenuSceneProps {
   onOpenArchive: () => void;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
+  onOpenPrototypeLab?: () => void;
 }
 
 export const MainMenuScene: React.FC<MainMenuSceneProps> = ({
   onOpenArchive,
   onOpenProfile,
   onOpenSettings,
+  onOpenPrototypeLab,
 }) => {
   const { startNewGame, continueGame, jumpToChapter, spiralState, memories, storyLog } = useGame();
   const [isEntering, setIsEntering] = useState(false);
@@ -225,6 +227,22 @@ export const MainMenuScene: React.FC<MainMenuSceneProps> = ({
           >
             BEÁLLÍTÁSOK
           </button>
+
+          {onOpenPrototypeLab && (
+            <>
+              <span aria-hidden="true" className="text-slate-700">·</span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundEngine.playUiClick();
+                  onOpenPrototypeLab();
+                }}
+                className="hover:text-cyan-300 text-cyan-400/90 transition-colors cursor-pointer"
+              >
+                3D &amp; AI HANG LABOR
+              </button>
+            </>
+          )}
         </div>
 
         <div className="mt-10 text-[11px] font-mono text-slate-500 max-w-lg">

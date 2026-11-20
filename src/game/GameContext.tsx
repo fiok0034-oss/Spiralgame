@@ -23,6 +23,8 @@ import {
   RealityWarpState,
   PersonalityProfile,
   RealmZoneNode,
+  PlayerTheory,
+  SecretArchiveEvent,
 } from '../types/game';
 import {
   INITIAL_MEMORIES,
@@ -42,6 +44,8 @@ import {
   EXPEDITION_DB,
   GUARDIAN_DIMENSIONS,
   INITIAL_SECRETS,
+  SECRET_ARCHIVE_EVENTS,
+  INVESTIGATOR_RANKS,
 } from '../data/expansionData';
 import {
   KODVAROS_INHABITANTS,
@@ -129,8 +133,22 @@ interface GameContextType {
   solveDeduction: (evA: string, evB: string) => {
     success: boolean;
     deduction?: EvidenceDeduction;
+    unlockedEvents?: SecretArchiveEvent[];
     message: string;
   };
+  createPlayerTheory: (payload: {
+    title: string;
+    connectedEvidenceIds: string[];
+    supportingNotes: string;
+    contradictingNotes: string;
+    confidence: PlayerTheory['confidence'];
+  }) => PlayerTheory;
+  updatePlayerTheoryConfidence: (id: string, confidence: PlayerTheory['confidence']) => void;
+  deletePlayerTheory: (id: string) => void;
+  investigatorRank: (typeof INVESTIGATOR_RANKS)[number];
+  nextInvestigatorRank: (typeof INVESTIGATOR_RANKS)[number] | null;
+  investigatorScore: number;
+  unlockedSecretArchiveEvents: SecretArchiveEvent[];
   unlockSecret: (id: string) => void;
   unlockPersonnel: (id: string) => void;
   completeGuardianQuest: (guardianId: number, questId: string) => void;
@@ -379,6 +397,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           echoAudioListenedIds: Array.isArray(parsed.spiralState.worldState?.echoAudioListenedIds)
             ? parsed.spiralState.worldState.echoAudioListenedIds
             : [],
+          playerTheories: Array.isArray(parsed.spiralState.worldState?.playerTheories)
+            ? parsed.spiralState.worldState.playerTheories
+            : [],
+          unlockedSecretEvents: Array.isArray(parsed.spiralState.worldState?.unlockedSecretEvents)
+            ? parsed.spiralState.worldState.unlockedSecretEvents
+            : [],
           kodvarosRing1Done:
             typeof parsed.spiralState.worldState?.kodvarosRing1Done === 'boolean'
               ? parsed.spiralState.worldState.kodvarosRing1Done
@@ -556,7 +580,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeMiniGameId, setActiveMiniGameId] = useState<MiniGameId | null>(null);
   const [activeArtifactId, setActiveArtifactId] = useState<string | null>(null);
   const [isFractured, setIsFractured] = useState<boolean>(false);
-  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+  const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('spiral_reduced_motion');
+      if (saved === 'true') return true;
+      if (saved === 'false') return false;
+      return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('spiral_reduced_motion', String(reducedMotion));
+      document.documentElement.classList.toggle('reduced-motion', reducedMotion);
+    } catch {
+      // safe fallback
+    }
+  }, [reducedMotion]);
 
   // Autosave everything deterministically
   useEffect(() => {
@@ -886,18 +928,78 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   };
 
+  const solvedDeductionsCount = deductions.filter((d) => d.isSolved).length;
+  const analyzedEvidenceCount = evidence.filter((e) => e.isAnalyzed).length;
+  const playerTheoriesCount = (spiralState.worldState.playerTheories || []).length;
+  const investigatorScore =
+    solvedDeductionsCount * 2 + Math.floor(analyzedEvidenceCount / 2) + playerTheoriesCount;
+
+  const investigatorRank =
+    [...INVESTIGATOR_RANKS].reverse().find((r) => investigatorScore >= r.minSolved) ||
+    INVESTIGATOR_RANKS[0];
+  const nextInvestigatorRank =
+    INVESTIGATOR_RANKS.find((r) => r.level === investigatorRank.level + 1) || null;
+
+  const unlockedSecretArchiveEvents: SecretArchiveEvent[] = SECRET_ARCHIVE_EVENTS.map((evt) => ({
+    ...evt,
+    isUnlocked: (spiralState.worldState.unlockedSecretEvents || []).includes(evt.id),
+  }));
+
+  const triggerMatchingSecretEvents = (
+    solvedDeductionId?: string,
+    unlockedEvId?: string
+  ): SecretArchiveEvent[] => {
+    const unlockedIds = new Set(spiralState.worldState.unlockedSecretEvents || []);
+    const unlockedEvidenceIds = new Set(evidence.filter((e) => e.isUnlocked).map((e) => e.id));
+    if (unlockedEvId) unlockedEvidenceIds.add(unlockedEvId);
+    const solvedDedIds = new Set(deductions.filter((d) => d.isSolved).map((d) => d.id));
+    if (solvedDeductionId) solvedDedIds.add(solvedDeductionId);
+
+    const newlyTriggered = SECRET_ARCHIVE_EVENTS.filter((evt) => {
+      if (unlockedIds.has(evt.id)) return false;
+      const byDed = Boolean(evt.triggerDeductionId && solvedDedIds.has(evt.triggerDeductionId));
+      const byEv = Boolean(
+        evt.triggerEvidenceIds &&
+          evt.triggerEvidenceIds.length > 0 &&
+          evt.triggerEvidenceIds.every((id) => unlockedEvidenceIds.has(id))
+      );
+      return byDed || byEv;
+    });
+
+    if (newlyTriggered.length > 0) {
+      soundEngine.playObserverAnomaly();
+      setSpiralState((prev) => {
+        const merged = Array.from(
+          new Set([...(prev.worldState.unlockedSecretEvents || []), ...newlyTriggered.map((e) => e.id)])
+        );
+        return {
+          ...prev,
+          resonancePoints: prev.resonancePoints + newlyTriggered.length * 10,
+          worldState: {
+            ...prev.worldState,
+            unlockedSecretEvents: merged,
+          },
+        };
+      });
+    }
+
+    return newlyTriggered.map((e) => ({ ...e, isUnlocked: true }));
+  };
+
   const unlockEvidence = (id: string) => {
     setEvidence((prev) => {
       const target = prev.find((e) => e.id === id);
       if (target && !target.isUnlocked) soundEngine.playDiscovery();
       return prev.map((e) => (e.id === id ? { ...e, isUnlocked: true } : e));
     });
+    triggerMatchingSecretEvents(undefined, id);
   };
 
   const analyzeEvidence = (id: string) => {
     const target = evidence.find((e) => e.id === id);
     if (target && !target.isAnalyzed) {
-      addResonance(10);
+      const rankBonus = investigatorRank.level >= 3 ? 15 : 0;
+      addResonance(10 + rankBonus);
       soundEngine.playCrystalResonance(528);
     }
     setEvidence((prev) =>
@@ -908,7 +1010,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const solveDeduction = (
     evA: string,
     evB: string
-  ): { success: boolean; deduction?: EvidenceDeduction; message: string } => {
+  ): {
+    success: boolean;
+    deduction?: EvidenceDeduction;
+    unlockedEvents?: SecretArchiveEvent[];
+    message: string;
+  } => {
     const match = deductions.find(
       (d) =>
         (d.evidenceA === evA && d.evidenceB === evB) ||
@@ -930,19 +1037,84 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (match.unlockMemoryId) unlockMemory(match.unlockMemoryId);
       if (match.unlockSecretId) unlockSecret(match.unlockSecretId);
       if (match.id === 'ded_1959_connection') unlockPersonnel('per_kovacs');
+      const triggered = triggerMatchingSecretEvents(match.id);
       soundEngine.playHarmonicChord([396, 528, 639]);
       return {
         success: true,
         deduction: { ...match, isSolved: true },
-        message: `Új következtetés rögzítve: ${match.title} (+${match.rewardResonance} Rezonancia)`,
+        unlockedEvents: triggered,
+        message:
+          triggered.length > 0
+            ? `Új következtetés rögzítve: ${match.title} (+${match.rewardResonance} Rezonancia) · ✦ Titkos Archív Esemény aktiválódott: ${triggered[0].title}!`
+            : `Új következtetés rögzítve: ${match.title} (+${match.rewardResonance} Rezonancia)`,
       };
     }
 
+    const retroactive = triggerMatchingSecretEvents(match.id);
     return {
       success: true,
       deduction: match,
+      unlockedEvents: retroactive,
       message: `Ez az összefüggés már az Archívum része: ${match.title}`,
     };
+  };
+
+  const createPlayerTheory = (payload: {
+    title: string;
+    connectedEvidenceIds: string[];
+    supportingNotes: string;
+    contradictingNotes: string;
+    confidence: PlayerTheory['confidence'];
+  }): PlayerTheory => {
+    const newTheory: PlayerTheory = {
+      id: `theory_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      title: payload.title.trim() || 'Névtelen Hipotézis',
+      connectedEvidenceIds: payload.connectedEvidenceIds,
+      supportingNotes: payload.supportingNotes.trim(),
+      contradictingNotes: payload.contradictingNotes.trim(),
+      confidence: payload.confidence,
+      isSolved: payload.confidence === 'fact',
+      createdAt: Date.now(),
+    };
+    const isFirstTheory = (spiralState.worldState.playerTheories || []).length === 0;
+    setSpiralState((prev) => ({
+      ...prev,
+      resonancePoints: prev.resonancePoints + (isFirstTheory ? 15 : 5),
+      personality: {
+        ...prev.personality,
+        analytical: prev.personality.analytical + 1,
+      },
+      worldState: {
+        ...prev.worldState,
+        playerTheories: [newTheory, ...(prev.worldState.playerTheories || [])],
+      },
+    }));
+    soundEngine.playDiscovery();
+    return newTheory;
+  };
+
+  const updatePlayerTheoryConfidence = (id: string, confidence: PlayerTheory['confidence']) => {
+    soundEngine.playUiClick();
+    setSpiralState((prev) => ({
+      ...prev,
+      worldState: {
+        ...prev.worldState,
+        playerTheories: (prev.worldState.playerTheories || []).map((t) =>
+          t.id === id ? { ...t, confidence, isSolved: confidence === 'fact' } : t
+        ),
+      },
+    }));
+  };
+
+  const deletePlayerTheory = (id: string) => {
+    soundEngine.playUiClick();
+    setSpiralState((prev) => ({
+      ...prev,
+      worldState: {
+        ...prev.worldState,
+        playerTheories: (prev.worldState.playerTheories || []).filter((t) => t.id !== id),
+      },
+    }));
   };
 
   const unlockSecret = (id: string) => {
@@ -1908,10 +2080,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
+  const resetRunScopedCollections = (preserveSecondBreathSecrets: boolean, savedSecretIds: string[]) => {
+    setMemories(INITIAL_MEMORIES);
+    setRelics(INITIAL_RELICS);
+    setRadioChannels(INITIAL_RADIO_CHANNELS);
+    setAbilities(INITIAL_ABILITIES);
+    setArtifacts(INITIAL_ARTIFACTS);
+    setEvidence(INITIAL_EVIDENCE);
+    setDeductions(INITIAL_DEDUCTIONS);
+    setPersonnel(PERSONNEL_DB);
+    setExpeditions(EXPEDITION_DB);
+    setSecrets(
+      preserveSecondBreathSecrets
+        ? INITIAL_SECRETS.map((s) =>
+            savedSecretIds.includes(s.id) ? { ...s, isUnlocked: true } : s
+          )
+        : INITIAL_SECRETS
+    );
+    setGuardianProgress(createInitialGuardianProgress());
+    setEchoes([]);
+  };
+
   const triggerNgPlusLoop = (endingId?: string) => {
     soundEngine.startAmbientDrone();
     soundEngine.startIceBreathing();
     soundEngine.playTimelineShift();
+
+    const preservedSecrets = spiralState.worldState.discoveredSecrets;
 
     setSpiralState((prev) => {
       const endings =
@@ -1929,11 +2124,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...DEFAULT_SPIRAL_STATE.worldState,
           discoveredSecrets: prev.worldState.discoveredSecrets,
           unlockedSynergies: prev.worldState.unlockedSynergies,
+          playerTheories: prev.worldState.playerTheories || [],
+          unlockedSecretEvents: prev.worldState.unlockedSecretEvents || [],
         },
       };
     });
-    setGuardianProgress(createInitialGuardianProgress());
-    setEchoes([]);
+    resetRunScopedCollections(true, preservedSecrets);
     setActiveCinematicId(null);
     setActiveMiniGameId(null);
     setActiveArtifactId(null);
@@ -1946,29 +2142,27 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const startNewGame = () => {
     soundEngine.startAmbientDrone();
     soundEngine.startIceBreathing();
-    setSpiralState((prev) => ({
-      ...DEFAULT_SPIRAL_STATE,
-      loopState: prev.loopState > 1 || prev.completedEndings.length > 0 ? prev.loopState + 1 : 1,
-      completedEndings: prev.completedEndings,
-      personality:
-        prev.loopState > 1 || prev.completedEndings.length > 0
-          ? prev.personality
-          : DEFAULT_PERSONALITY,
-      resonancePoints: 30 + prev.completedEndings.length * 25,
-      worldState: {
-        ...DEFAULT_SPIRAL_STATE.worldState,
-        discoveredSecrets:
-          prev.loopState > 1 || prev.completedEndings.length > 0
-            ? prev.worldState.discoveredSecrets
-            : [],
-        unlockedSynergies:
-          prev.loopState > 1 || prev.completedEndings.length > 0
-            ? prev.worldState.unlockedSynergies
-            : [],
-      },
-    }));
-    setGuardianProgress(createInitialGuardianProgress());
-    setEchoes([]);
+    const isSecondBreath = spiralState.loopState > 1 || spiralState.completedEndings.length > 0;
+    const preservedSecrets = isSecondBreath ? spiralState.worldState.discoveredSecrets : [];
+
+    setSpiralState((prev) => {
+      const ng = prev.loopState > 1 || prev.completedEndings.length > 0;
+      return {
+        ...DEFAULT_SPIRAL_STATE,
+        loopState: ng ? prev.loopState + 1 : 1,
+        completedEndings: prev.completedEndings,
+        personality: ng ? prev.personality : DEFAULT_PERSONALITY,
+        resonancePoints: 30 + prev.completedEndings.length * 25,
+        worldState: {
+          ...DEFAULT_SPIRAL_STATE.worldState,
+          discoveredSecrets: ng ? prev.worldState.discoveredSecrets : [],
+          unlockedSynergies: ng ? prev.worldState.unlockedSynergies : [],
+          playerTheories: ng ? prev.worldState.playerTheories || [] : [],
+          unlockedSecretEvents: ng ? prev.worldState.unlockedSecretEvents || [] : [],
+        },
+      };
+    });
+    resetRunScopedCollections(isSecondBreath, preservedSecrets);
     setActiveCinematicId(null);
     setActiveMiniGameId(null);
     setActiveArtifactId(null);
@@ -2275,6 +2469,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unlockEvidence,
         analyzeEvidence,
         solveDeduction,
+        createPlayerTheory,
+        updatePlayerTheoryConfidence,
+        deletePlayerTheory,
+        investigatorRank,
+        nextInvestigatorRank,
+        investigatorScore,
+        unlockedSecretArchiveEvents,
         unlockSecret,
         unlockPersonnel,
         completeGuardianQuest,

@@ -22,6 +22,7 @@ import { ECHO_CORE_SECRETS } from '../data/finalRevelationData';
 import { ChamberBeyondNinthExperience } from './FinalRevelationPanels';
 import { MiniGameRouter } from './MiniGameSuite';
 import { soundEngine } from '../audio/SoundEngine';
+import { aiVoiceService } from '../audio/aiVoiceService';
 import { SceneHotspot } from '../types/game';
 
 export const GuardianRealmExplorer: React.FC = () => {
@@ -723,13 +724,21 @@ export const GuardianRealmExplorer: React.FC = () => {
                           </span>
                           <button
                             type="button"
-                            onClick={() =>
-                              markEchoAudioListened(coreSecret.echoCoreId, coreSecret.audioFreqHz)
-                            }
+                            onClick={() => {
+                              markEchoAudioListened(coreSecret.echoCoreId, coreSecret.audioFreqHz);
+                              void aiVoiceService.playLine({
+                                lineId: `echo_core_${coreSecret.echoCoreId}`,
+                                speakerLabel: `${coreSecret.title} · ${coreSecret.audioFreqHz} Hz`,
+                                persona: 'infinite',
+                                channel: 'dialogue',
+                                fxMode: 'infinite_resonance',
+                                text: coreSecret.audioMessageText,
+                              });
+                            }}
                             className="px-2.5 py-1 min-h-[32px] rounded bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-mono inline-flex items-center gap-1 cursor-pointer"
                           >
                             <Volume2 className="w-3.5 h-3.5" />
-                            <span>Lejátszás</span>
+                            <span>Lejátszás (AI Hang)</span>
                           </button>
                         </div>
                         <p className="text-slate-200 italic">{coreSecret.audioMessageText}</p>

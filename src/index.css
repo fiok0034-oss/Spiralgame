@@ -46,7 +46,14 @@
 }
 
 .archive-ticker-track:hover,
-.archive-ticker-paused {
+.archive-ticker-paused,
+.reduced-motion .archive-ticker-track {
   animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-ticker-track {
+    animation-play-state: paused;
+  }
 }
 

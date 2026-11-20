@@ -309,7 +309,7 @@ export const KodvarosExplorerModal: React.FC<KodvarosExplorerModalProps> = ({ is
                         {rItem.name}
                       </div>
                       {thermal.isCurrentSceneInRing && (
-                        <span className="text-[10px] font-mono text-amber-300 animate-pulse">
+                        <span className="text-[10px] font-mono text-amber-300 font-semibold">
                           ● Aktív helyszín
                         </span>
                       )}
