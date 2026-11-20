@@ -378,7 +378,16 @@ async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
 
-  app.post('/api/audio/tts', async (req: Request, res: Response) => {
+  app.get('/api/audio/health', (_req: Request, res: Response) => {
+    res.json({
+      ok: true,
+      endpoint: '/api/audio/tts',
+      hasGeminiKey: Boolean(process.env.GEMINI_API_KEY?.trim()),
+      mode: process.env.NODE_ENV || 'development',
+    });
+  });
+
+  app.post(['/api/audio/tts', '/api/audio/tts/'], async (req: Request, res: Response) => {
     const rawText = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
     const rawPersona = String(req.body?.persona || 'narrator');
     const persona: VoicePersonaId =
@@ -506,7 +515,16 @@ async function startServer() {
     });
   }
 
-  const port = Number(process.env.PORT) || 3000;
+  let cliPort = 0;
+  for (let i = 0; i < process.argv.length; i++) {
+    const arg = process.argv[i];
+    if (arg === '--port' && process.argv[i + 1]) {
+      cliPort = Number(process.argv[i + 1]) || 0;
+    } else if (arg.startsWith('--port=')) {
+      cliPort = Number(arg.slice('--port='.length)) || 0;
+    }
+  }
+  const port = cliPort || Number(process.env.PORT) || 3000;
   app.listen(port, '0.0.0.0', () => {
     console.log(`A Spirál Lehelete szerver elindult: http://0.0.0.0:${port}`);
   });

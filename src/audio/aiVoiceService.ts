@@ -108,14 +108,43 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
   return bytes.buffer;
 }
 
-async function parseTtsApiResponse(response: Response): Promise<TtsApiResponsePayload> {
+function sanitizeUrlForDiagnostics(rawUrl: string): string {
+  try {
+    const u = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    return `${u.origin}${u.pathname}`;
+  } catch {
+    return rawUrl.split('?')[0] || '/api/audio/tts';
+  }
+}
+
+async function parseTtsApiResponse(
+  response: Response,
+  requestedUrl: string
+): Promise<TtsApiResponsePayload> {
+  const calledUrl = sanitizeUrlForDiagnostics(response.url || requestedUrl);
   const contentType = response.headers.get('content-type') || '';
+
+  if (
+    calledUrl.includes('__cookie_check.html') ||
+    calledUrl.includes('applet-auth-bridge') ||
+    response.type === 'opaqueredirect'
+  ) {
+    throw new Error(
+      `A munkamenet hitelesítése lejárt (${calledUrl}, HTTP ${response.status}). Frissítsd az oldalt a hangszolgáltatáshoz.`
+    );
+  }
+
   const rawBody = await response.text();
   const trimmed = rawBody.trim();
 
   if (!trimmed) {
+    if (response.status === 404) {
+      throw new Error(
+        `A TTS végpont nem érhető el (${calledUrl}, HTTP 404 – üres válasz). Ellenőrizd, hogy a backend szerver (server.ts) fut-e.`
+      );
+    }
     throw new Error(
-      `A hangszolgáltatás üres választ küldött (HTTP ${response.status}).`
+      `A hangszolgáltatás üres választ küldött (${calledUrl}, HTTP ${response.status}).`
     );
   }
 
@@ -125,25 +154,25 @@ async function parseTtsApiResponse(response: Response): Promise<TtsApiResponsePa
   } catch {
     const preview = trimmed.slice(0, 120).replace(/\s+/g, ' ');
     throw new Error(
-      `Nem JSON válasz érkezett a hangszolgáltatástól (HTTP ${response.status}, ${contentType || 'ismeretlen típus'}): ${preview}`
+      `Nem JSON válasz érkezett (${calledUrl}, HTTP ${response.status}, ${contentType || 'ismeretlen típus'}): ${preview}`
     );
   }
 
   if (!parsed || typeof parsed !== 'object') {
     throw new Error(
-      `Érvénytelen JSON szerkezet érkezett a hangszolgáltatástól (HTTP ${response.status}).`
+      `Érvénytelen JSON szerkezet (${calledUrl}, HTTP ${response.status}).`
     );
   }
 
   if (!response.ok) {
     throw new Error(
-      parsed.error || `Hanggenerálási szerverhiba (HTTP ${response.status}).`
+      `${parsed.error || 'Hanggenerálási szerverhiba'} (${calledUrl}, HTTP ${response.status})`
     );
   }
 
   if (typeof parsed.audioBase64 !== 'string' || parsed.audioBase64.trim().length < 32) {
     throw new Error(
-      parsed.error || 'A szerver válasza nem tartalmazott dekódolható hangadatot.'
+      `${parsed.error || 'A szerver válasza nem tartalmazott dekódolható hangadatot.'} (${calledUrl}, HTTP ${response.status})`
     );
   }
 
@@ -271,8 +300,14 @@ class AiVoiceService {
       if (record) {
         cachedHit = true;
       } else {
-        const response = await fetch('/api/audio/tts', {
+        const ttsUrl =
+          typeof window !== 'undefined'
+            ? new URL('/api/audio/tts', window.location.origin).toString()
+            : '/api/audio/tts';
+
+        const response = await fetch(ttsUrl, {
           method: 'POST',
+          credentials: 'same-origin',
           headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
@@ -284,7 +319,7 @@ class AiVoiceService {
           signal: controller.signal,
         });
 
-        const payload = await parseTtsApiResponse(response);
+        const payload = await parseTtsApiResponse(response, ttsUrl);
 
         cachedHit = Boolean(payload.cached);
         record = {
