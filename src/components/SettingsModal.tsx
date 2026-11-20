@@ -4,6 +4,7 @@ import {
   updateAudioPreferences,
 } from '../audio/audioPreferences';
 import { soundEngine } from '../audio/SoundEngine';
+import { TTS_ENABLED } from '../config/featureFlags';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -108,39 +109,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             />
           </div>
 
-          {/* Channel 2: AI Narration */}
-          <div>
-            <div className="flex justify-between text-slate-400 mb-1">
-              <span>2. AI Narráció</span>
-              <span className="text-cyan-300 tabular-nums">{Math.round(prefs.narrationVolume * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={prefs.narrationVolume}
-              onChange={(e) => setField('narrationVolume', Number(e.target.value))}
-              className="w-full accent-cyan-400 cursor-pointer"
-            />
-          </div>
+          {TTS_ENABLED && (
+            <>
+              {/* Channel 2: AI Narration */}
+              <div>
+                <div className="flex justify-between text-slate-400 mb-1">
+                  <span>2. AI Narráció</span>
+                  <span className="text-cyan-300 tabular-nums">{Math.round(prefs.narrationVolume * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={prefs.narrationVolume}
+                  onChange={(e) => setField('narrationVolume', Number(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+              </div>
 
-          {/* Channel 3: Character Dialogue */}
-          <div>
-            <div className="flex justify-between text-slate-400 mb-1">
-              <span>3. Karakter Párbeszédek</span>
-              <span className="text-cyan-300 tabular-nums">{Math.round(prefs.dialogueVolume * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={prefs.dialogueVolume}
-              onChange={(e) => setField('dialogueVolume', Number(e.target.value))}
-              className="w-full accent-cyan-400 cursor-pointer"
-            />
-          </div>
+              {/* Channel 3: Character Dialogue */}
+              <div>
+                <div className="flex justify-between text-slate-400 mb-1">
+                  <span>3. Karakter Párbeszédek</span>
+                  <span className="text-cyan-300 tabular-nums">{Math.round(prefs.dialogueVolume * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={prefs.dialogueVolume}
+                  onChange={(e) => setField('dialogueVolume', Number(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+              </div>
+            </>
+          )}
 
           {/* Channel 4: SFX */}
           <div>
@@ -159,43 +164,47 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             />
           </div>
 
-          {/* Subtitles Toggle */}
-          <div className="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-slate-800">
-            <div>
-              <div>Magyar feliratok</div>
-              <div className="text-[10px] text-slate-500">Időzített felirat narrációhoz és párbeszédekhez</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setField('subtitlesEnabled', !prefs.subtitlesEnabled)}
-              className={`px-3 py-1.5 min-h-[38px] rounded transition-colors font-bold cursor-pointer ${
-                prefs.subtitlesEnabled
-                  ? 'bg-cyan-500 text-slate-950'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              {prefs.subtitlesEnabled ? 'BEKAPCSOLVA' : 'KIKAPCSOLVA'}
-            </button>
-          </div>
+          {TTS_ENABLED && (
+            <>
+              {/* Subtitles Toggle */}
+              <div className="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div>
+                  <div>Magyar feliratok</div>
+                  <div className="text-[10px] text-slate-500">Időzített felirat narrációhoz és párbeszédekhez</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setField('subtitlesEnabled', !prefs.subtitlesEnabled)}
+                  className={`px-3 py-1.5 min-h-[38px] rounded transition-colors font-bold cursor-pointer ${
+                    prefs.subtitlesEnabled
+                      ? 'bg-cyan-500 text-slate-950'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {prefs.subtitlesEnabled ? 'BEKAPCSOLVA' : 'KIKAPCSOLVA'}
+                </button>
+              </div>
 
-          {/* Auto-Narrate Scenes Toggle */}
-          <div className="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-slate-800">
-            <div>
-              <div>Automatikus jelenet-hang</div>
-              <div className="text-[10px] text-slate-500">AI felolvasás indítása jelenetváltáskor</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setField('autoNarrateScenes', !prefs.autoNarrateScenes)}
-              className={`px-3 py-1.5 min-h-[38px] rounded transition-colors font-bold cursor-pointer ${
-                prefs.autoNarrateScenes
-                  ? 'bg-cyan-500 text-slate-950'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              {prefs.autoNarrateScenes ? 'BEKAPCSOLVA' : 'KIKAPCSOLVA'}
-            </button>
-          </div>
+              {/* Auto-Narrate Scenes Toggle */}
+              <div className="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div>
+                  <div>Automatikus jelenet-hang</div>
+                  <div className="text-[10px] text-slate-500">AI felolvasás indítása jelenetváltáskor</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setField('autoNarrateScenes', !prefs.autoNarrateScenes)}
+                  className={`px-3 py-1.5 min-h-[38px] rounded transition-colors font-bold cursor-pointer ${
+                    prefs.autoNarrateScenes
+                      ? 'bg-cyan-500 text-slate-950'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {prefs.autoNarrateScenes ? 'BEKAPCSOLVA' : 'KIKAPCSOLVA'}
+                </button>
+              </div>
+            </>
+          )}
 
           {/* Reduced Motion Toggle */}
           <div className="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -219,8 +228,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {onOpenPrototypeLab && (
             <div className="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-cyan-500/30">
               <div>
-                <div className="text-cyan-300">Térbeli &amp; AI hang prototípusok</div>
-                <div className="text-[10px] text-slate-400">Phase 1 Labor (8 tesztmodul)</div>
+                <div className="text-cyan-300">
+                  {TTS_ENABLED ? 'Térbeli & AI hang prototípusok' : 'Térbeli hang & 3D prototípusok'}
+                </div>
+                <div className="text-[10px] text-slate-400">
+                  {TTS_ENABLED ? 'Phase 1 Labor (8 tesztmodul)' : 'Phase 1 Labor (5 tesztmodul)'}
+                </div>
               </div>
               <button
                 type="button"

@@ -5,6 +5,7 @@ import { RadioChannel } from '../types/game';
 import { useGame } from '../game/GameContext';
 import { ECHO_CORE_SECRETS } from '../data/finalRevelationData';
 import { aiVoiceService } from '../audio/aiVoiceService';
+import { TTS_ENABLED } from '../config/featureFlags';
 
 interface RadioScannerModalProps {
   isOpen: boolean;
@@ -212,44 +213,46 @@ export const RadioScannerModal: React.FC<RadioScannerModalProps> = ({
                   <div className="text-xs font-mono text-cyan-400 font-semibold">
                     [BEJÖVŐ ADÁS] {activeChannel.label}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const vid = `ch_${activeChannel.frequency}`;
-                      if (playingVoiceId === vid) {
-                        aiVoiceService.stop();
-                        setPlayingVoiceId(null);
-                        return;
-                      }
-                      setPlayingVoiceId(vid);
-                      void aiVoiceService.playLine({
-                        lineId: `radio_modal_${activeChannel.frequency}`,
-                        speakerLabel: `${activeChannel.frequency.toFixed(1)} MHz · ${activeChannel.label}`,
-                        persona:
-                          activeChannel.type === 'voice'
-                            ? 'lena'
-                            : activeChannel.type === 'echo'
-                            ? 'infinite'
-                            : 'narrator',
-                        channel: 'dialogue',
-                        fxMode: activeChannel.type === 'echo' ? 'infinite_resonance' : 'radio1983',
-                        text: activeChannel.content,
-                        onComplete: () => setPlayingVoiceId(null),
-                      });
-                    }}
-                    className={`px-2.5 py-1 min-h-[32px] rounded border text-[11px] font-mono inline-flex items-center gap-1 cursor-pointer ${
-                      playingVoiceId === `ch_${activeChannel.frequency}`
-                        ? 'bg-amber-500/20 border-amber-400 text-amber-200'
-                        : 'bg-slate-900 border-cyan-500/35 text-cyan-200 hover:border-cyan-400'
-                    }`}
-                  >
-                    <Volume2 className="w-3.5 h-3.5" />
-                    <span>
-                      {playingVoiceId === `ch_${activeChannel.frequency}`
-                        ? 'Leállítás'
-                        : 'Adás (AI Hang)'}
-                    </span>
-                  </button>
+                  {TTS_ENABLED && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const vid = `ch_${activeChannel.frequency}`;
+                        if (playingVoiceId === vid) {
+                          aiVoiceService.stop();
+                          setPlayingVoiceId(null);
+                          return;
+                        }
+                        setPlayingVoiceId(vid);
+                        void aiVoiceService.playLine({
+                          lineId: `radio_modal_${activeChannel.frequency}`,
+                          speakerLabel: `${activeChannel.frequency.toFixed(1)} MHz · ${activeChannel.label}`,
+                          persona:
+                            activeChannel.type === 'voice'
+                              ? 'lena'
+                              : activeChannel.type === 'echo'
+                              ? 'infinite'
+                              : 'narrator',
+                          channel: 'dialogue',
+                          fxMode: activeChannel.type === 'echo' ? 'infinite_resonance' : 'radio1983',
+                          text: activeChannel.content,
+                          onComplete: () => setPlayingVoiceId(null),
+                        });
+                      }}
+                      className={`px-2.5 py-1 min-h-[32px] rounded border text-[11px] font-mono inline-flex items-center gap-1 cursor-pointer ${
+                        playingVoiceId === `ch_${activeChannel.frequency}`
+                          ? 'bg-amber-500/20 border-amber-400 text-amber-200'
+                          : 'bg-slate-900 border-cyan-500/35 text-cyan-200 hover:border-cyan-400'
+                      }`}
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>
+                        {playingVoiceId === `ch_${activeChannel.frequency}`
+                          ? 'Leállítás'
+                          : 'Adás (AI Hang)'}
+                      </span>
+                    </button>
+                  )}
                 </div>
                 <div className="text-sm text-slate-200 leading-relaxed font-sans italic bg-slate-900/60 p-3 rounded border border-cyan-500/20">
                   {activeChannel.content}
@@ -272,26 +275,28 @@ export const RadioScannerModal: React.FC<RadioScannerModalProps> = ({
                             <span className="text-amber-300 font-bold uppercase">
                               Visszhang-mag Suttogás · {s.title}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                markEchoAudioListened(s.echoCoreId, s.audioFreqHz);
-                                setPlayingVoiceId(s.echoCoreId);
-                                void aiVoiceService.playLine({
-                                  lineId: `radio_whisper_${s.echoCoreId}`,
-                                  speakerLabel: `Visszhang-mag · ${s.title}`,
-                                  persona: 'infinite',
-                                  channel: 'dialogue',
-                                  fxMode: 'infinite_resonance',
-                                  text: `${s.worldMutation.radioWhisper} ${s.audioMessageText}`,
-                                  onComplete: () => setPlayingVoiceId(null),
-                                });
-                              }}
-                              className="px-2.5 py-1 min-h-[32px] rounded bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <Volume2 className="w-3.5 h-3.5" />
-                              <span>{s.audioFreqHz} Hz (AI Hang)</span>
-                            </button>
+                            {TTS_ENABLED && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  markEchoAudioListened(s.echoCoreId, s.audioFreqHz);
+                                  setPlayingVoiceId(s.echoCoreId);
+                                  void aiVoiceService.playLine({
+                                    lineId: `radio_whisper_${s.echoCoreId}`,
+                                    speakerLabel: `Visszhang-mag · ${s.title}`,
+                                    persona: 'infinite',
+                                    channel: 'dialogue',
+                                    fxMode: 'infinite_resonance',
+                                    text: `${s.worldMutation.radioWhisper} ${s.audioMessageText}`,
+                                    onComplete: () => setPlayingVoiceId(null),
+                                  });
+                                }}
+                                className="px-2.5 py-1 min-h-[32px] rounded bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span>{s.audioFreqHz} Hz (AI Hang)</span>
+                              </button>
+                            )}
                           </div>
                           <p className="text-xs text-slate-100 leading-relaxed">
                             {s.worldMutation.radioWhisper}

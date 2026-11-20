@@ -24,6 +24,7 @@ import { soundEngine } from './audio/SoundEngine';
 import { SubtitleOverlay } from './components/SubtitleOverlay';
 import { aiVoiceService, SubtitleState } from './audio/aiVoiceService';
 import { getAudioPreferences } from './audio/audioPreferences';
+import { TTS_ENABLED } from './config/featureFlags';
 
 const Phase1PrototypeLabModal = lazy(() =>
   import('./prototypes/Phase1PrototypeLabModal').then((m) => ({
@@ -68,6 +69,7 @@ const GameContainer: React.FC = () => {
   const [activeSubtitle, setActiveSubtitle] = useState<SubtitleState | null>(null);
 
   useEffect(() => {
+    if (!TTS_ENABLED) return;
     return aiVoiceService.subscribe((sub) => {
       setActiveSubtitle(sub);
     });
@@ -167,12 +169,12 @@ const GameContainer: React.FC = () => {
             onOpenRealityEditor={() => setIsRealityEditorOpen(true)}
             onOpenKodvaros={() => setIsKodvarosOpen(true)}
             onOpenMiniGamesHub={() => setIsMiniGamesHubOpen(true)}
-            onSubtitleChange={setActiveSubtitle}
+            onSubtitleChange={TTS_ENABLED ? setActiveSubtitle : undefined}
           />
         )}
       </main>
 
-      {!isPrototypeLabOpen && (
+      {TTS_ENABLED && !isPrototypeLabOpen && (
         <SubtitleOverlay
           subtitle={activeSubtitle}
           enabled={getAudioPreferences().subtitlesEnabled}
@@ -329,7 +331,7 @@ const GameContainer: React.FC = () => {
         <Suspense
           fallback={
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040710] text-xs font-mono text-cyan-300">
-              3D és AI Hang Labor betöltése...
+              {TTS_ENABLED ? '3D és AI Hang Labor betöltése...' : '3D és Hang Labor betöltése...'}
             </div>
           }
         >

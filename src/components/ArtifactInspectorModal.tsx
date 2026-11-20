@@ -4,6 +4,7 @@ import { useGame } from '../game/GameContext';
 import { soundEngine } from '../audio/SoundEngine';
 import { aiVoiceService } from '../audio/aiVoiceService';
 import { ECHO_CORE_SECRETS } from '../data/finalRevelationData';
+import { TTS_ENABLED } from '../config/featureFlags';
 
 const Artifact3DViewport = lazy(() =>
   import('./Artifact3DViewport').then((m) => ({ default: m.Artifact3DViewport }))
@@ -241,24 +242,26 @@ export const ArtifactInspectorModal: React.FC<ArtifactInspectorModalProps> = ({ 
                             <span className="text-amber-300 font-bold uppercase">
                               [Visszhang-mag Rezonancia] · {s.title}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                markEchoAudioListened(s.echoCoreId, s.audioFreqHz);
-                                void aiVoiceService.playLine({
-                                  lineId: `art_echo_${s.echoCoreId}`,
-                                  speakerLabel: `${selected.name} · ${s.audioFreqHz} Hz`,
-                                  persona: 'infinite',
-                                  channel: 'dialogue',
-                                  fxMode: 'infinite_resonance',
-                                  text: `${s.worldMutation.artifactAwakenedNote} ${s.audioMessageText}`,
-                                });
-                              }}
-                              className="px-3 py-1.5 min-h-[36px] rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 inline-flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Volume2 className="w-3.5 h-3.5" />
-                              <span>{s.audioMessageTitle} (AI)</span>
-                            </button>
+                            {TTS_ENABLED && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  markEchoAudioListened(s.echoCoreId, s.audioFreqHz);
+                                  void aiVoiceService.playLine({
+                                    lineId: `art_echo_${s.echoCoreId}`,
+                                    speakerLabel: `${selected.name} · ${s.audioFreqHz} Hz`,
+                                    persona: 'infinite',
+                                    channel: 'dialogue',
+                                    fxMode: 'infinite_resonance',
+                                    text: `${s.worldMutation.artifactAwakenedNote} ${s.audioMessageText}`,
+                                  });
+                                }}
+                                className="px-3 py-1.5 min-h-[36px] rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-200 inline-flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span>{s.audioMessageTitle} (AI)</span>
+                              </button>
+                            )}
                           </div>
                           <p className="text-xs text-slate-100 leading-relaxed">
                             {s.worldMutation.artifactAwakenedNote}

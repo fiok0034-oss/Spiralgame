@@ -37,6 +37,7 @@ import { aiVoiceService, SubtitleState } from '../audio/aiVoiceService';
 import { resolveSceneVoiceMapping } from '../audio/voicePersonaMapper';
 import { getAudioPreferences } from '../audio/audioPreferences';
 import { LivingAnomalyWhisper } from '../components/LivingAnomalyWhisper';
+import { TTS_ENABLED } from '../config/featureFlags';
 
 const SceneSpatialViewport = lazy(() =>
   import('../components/SceneSpatialViewport').then((m) => ({
@@ -135,6 +136,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
   const currentImgSrc = imgLoadError ? fallbackIllustrationSrc : (rawIllustrationSrc || fallbackIllustrationSrc);
 
   const triggerSceneVoice = (nodeId: string, speaker: string, text: string) => {
+    if (!TTS_ENABLED) return;
     const mapping = resolveSceneVoiceMapping(nodeId, speaker);
     setVoiceLoading(true);
     setVoicePlaying(true);
@@ -175,7 +177,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
     if (currentNode.atmosphere === 'silence') {
       soundEngine.playSilenceDrop();
     }
-    if (getAudioPreferences().autoNarrateScenes) {
+    if (TTS_ENABLED && getAudioPreferences().autoNarrateScenes) {
       triggerSceneVoice(currentNode.id, currentNode.speaker, currentNode.text);
     }
     return () => {
@@ -498,47 +500,51 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
 
       {/* Main Narrative Box */}
       <div className="bg-slate-900/75 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-sm mb-6 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800/80">
-          <div>
-            {!currentImgSrc && (
-              <>
-                <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
-                  {currentNode.speakerRole || 'SZEREP'}
+        {(!currentImgSrc || TTS_ENABLED) && (
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800/80">
+            <div>
+              {!currentImgSrc && (
+                <>
+                  <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">
+                    {currentNode.speakerRole || 'SZEREP'}
+                  </span>
+                  <h2 className="text-xl font-cinzel font-bold text-slate-100 mt-0.5">{currentNode.speaker}</h2>
+                </>
+              )}
+              {TTS_ENABLED && currentImgSrc && (
+                <span className="text-xs font-mono text-slate-400">
+                  Hangmód: {resolveSceneVoiceMapping(currentNode.id, currentNode.speaker).persona.toUpperCase()}
                 </span>
-                <h2 className="text-xl font-cinzel font-bold text-slate-100 mt-0.5">{currentNode.speaker}</h2>
-              </>
-            )}
-            {currentImgSrc && (
-              <span className="text-xs font-mono text-slate-400">
-                Hangmód: {resolveSceneVoiceMapping(currentNode.id, currentNode.speaker).persona.toUpperCase()}
-              </span>
+              )}
+            </div>
+            {TTS_ENABLED && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (voicePlaying || voiceLoading) {
+                    stopSceneVoice();
+                  } else {
+                    triggerSceneVoice(currentNode.id, currentNode.speaker, currentNode.text);
+                  }
+                }}
+                className={`px-3 py-1.5 min-h-[36px] rounded-lg border text-xs font-mono inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap ${
+                  voicePlaying
+                    ? 'bg-amber-500/20 border-amber-400/60 text-amber-200 hover:bg-amber-500/30'
+                    : 'bg-slate-950 hover:bg-slate-800 border-cyan-500/35 text-cyan-300'
+                }`}
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>
+                  {voiceLoading
+                    ? 'AI hang betöltése...'
+                    : voicePlaying
+                    ? 'Felolvasás leállítása'
+                    : 'Jelenet felolvasása (AI Hang)'}
+                </span>
+              </button>
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (voicePlaying || voiceLoading) {
-                stopSceneVoice();
-              } else {
-                triggerSceneVoice(currentNode.id, currentNode.speaker, currentNode.text);
-              }
-            }}
-            className={`px-3 py-1.5 min-h-[36px] rounded-lg border text-xs font-mono inline-flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap ${
-              voicePlaying
-                ? 'bg-amber-500/20 border-amber-400/60 text-amber-200 hover:bg-amber-500/30'
-                : 'bg-slate-950 hover:bg-slate-800 border-cyan-500/35 text-cyan-300'
-            }`}
-          >
-            <Volume2 className="w-3.5 h-3.5" />
-            <span>
-              {voiceLoading
-                ? 'AI hang betöltése...'
-                : voicePlaying
-                ? 'Felolvasás leállítása'
-                : 'Jelenet felolvasása (AI Hang)'}
-            </span>
-          </button>
-        </div>
+        )}
 
         <div className="text-base md:text-lg leading-relaxed text-slate-200 font-sans whitespace-pre-line">
           {currentNode.text}

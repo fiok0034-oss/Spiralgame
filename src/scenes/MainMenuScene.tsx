@@ -3,6 +3,7 @@ import { SpiralPulseCanvas } from '../effects/SpiralPulseCanvas';
 import { useGame } from '../game/GameContext';
 import { soundEngine } from '../audio/SoundEngine';
 import { GameChapterId } from '../types/game';
+import { TTS_ENABLED } from '../config/featureFlags';
 
 interface MainMenuSceneProps {
   onOpenArchive: () => void;
@@ -239,7 +240,7 @@ export const MainMenuScene: React.FC<MainMenuSceneProps> = ({
                 }}
                 className="hover:text-cyan-300 text-cyan-400/90 transition-colors cursor-pointer"
               >
-                3D &amp; AI HANG LABOR
+                {TTS_ENABLED ? '3D & AI HANG LABOR' : '3D & HANG LABOR'}
               </button>
             </>
           )}

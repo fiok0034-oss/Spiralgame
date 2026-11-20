@@ -17,6 +17,7 @@ import {
 import { isWebGLAvailable } from './three/threeUtils';
 import { aiVoiceService, SubtitleState } from '../audio/aiVoiceService';
 import { spatialSoundscapeEngine } from '../audio/SpatialSoundscapeEngine';
+import { TTS_ENABLED } from '../config/featureFlags';
 
 export type PrototypeId =
   | 'proto1_antarctica_3d'
@@ -167,7 +168,16 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
     AntarcticStageController | ArchiveDeskStageController | Artifact3DStageController | null
   >(null);
 
-  const activeMeta = PROTOTYPES.find((p) => p.id === activeProtoId) || PROTOTYPES[0];
+  const visiblePrototypes = TTS_ENABLED
+    ? PROTOTYPES
+    : PROTOTYPES.filter(
+        (p) =>
+          p.id !== 'proto4_ai_narration' &&
+          p.id !== 'proto5_lena_radio' &&
+          p.id !== 'proto6_infinite_voice'
+      );
+
+  const activeMeta = visiblePrototypes.find((p) => p.id === activeProtoId) || visiblePrototypes[0];
 
   // Mount & switch Three.js stage ONLY when stageKind changes or modal opens
   useEffect(() => {
@@ -282,6 +292,7 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
   if (!isOpen) return null;
 
   const handlePlayAiVoice = async (key: keyof typeof AI_SCRIPTS) => {
+    if (!TTS_ENABLED) return;
     const script = AI_SCRIPTS[key];
     setVoiceLoading(true);
     await aiVoiceService.playLine({
@@ -321,7 +332,7 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
       className="fixed inset-0 z-50 bg-[#040710] text-slate-100 flex flex-col overflow-hidden"
       role="dialog"
       aria-modal="true"
-      aria-label="Phase 1 Térbeli és AI Hang Labor"
+      aria-label={TTS_ENABLED ? 'Phase 1 Térbeli és AI Hang Labor' : 'Phase 1 Térbeli és Hang Labor'}
     >
       {/* Dedicated WebGL Container (Zero backdrop-filter overlays over canvas) */}
       <div className="relative flex-1 w-full h-full overflow-hidden">
@@ -338,7 +349,9 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
                 2D Fallback Nézet Aktív
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                A böngészőben jelenleg nem érhető el WebGL gyorsítás. Az AI hangrendszer, feliratozás és térbeli audio-szintézis teljes funkcionalitással tesztelhető.
+                {TTS_ENABLED
+                  ? 'A böngészőben jelenleg nem érhető el WebGL gyorsítás. Az AI hangrendszer, feliratozás és térbeli audio-szintézis teljes funkcionalitással tesztelhető.'
+                  : 'A böngészőben jelenleg nem érhető el WebGL gyorsítás. A térbeli audio-szintézis és procedurális hangeffektek teljes funkcionalitással tesztelhetők.'}
               </p>
             </div>
           </div>
@@ -355,9 +368,9 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
             </span>
           </div>
 
-          {/* Prototype 1..8 Selector Strip */}
+          {/* Prototype Selector Strip */}
           <div className="flex items-center gap-1 overflow-x-auto max-w-full py-0.5">
-            {PROTOTYPES.map((p) => {
+            {visiblePrototypes.map((p) => {
               const active = p.id === activeProtoId;
               return (
                 <button
@@ -416,7 +429,7 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
         </header>
 
         {/* Live Hungarian Subtitle Overlay */}
-        {subtitle && (
+        {TTS_ENABLED && subtitle && (
           <div
             aria-live="polite"
             className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-[210px] sm:bottom-[190px] z-20 w-[min(740px,92vw)] text-center"
@@ -556,38 +569,39 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
                 </div>
               )}
 
-              {(activeProtoId === 'proto4_ai_narration' ||
-                activeProtoId === 'proto5_lena_radio' ||
-                activeProtoId === 'proto6_infinite_voice') && (
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                    „{AI_SCRIPTS[activeProtoId].text.replace(/<[^>]+>/g, '')}”
-                  </p>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      disabled={voiceLoading}
-                      onClick={() => handlePlayAiVoice(activeProtoId)}
-                      className="px-4 py-2 text-xs font-mono font-semibold bg-cyan-500 hover:bg-cyan-400 disabled:opacity-60 text-slate-950 rounded-lg inline-flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Play className="w-3.5 h-3.5" />
-                      <span>{voiceLoading ? 'Generálás...' : 'Magyar AI Hang Lejátszása'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        aiVoiceService.stop();
-                        setSubtitle(null);
-                        setVoiceLoading(false);
-                      }}
-                      className="px-3 py-2 text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg inline-flex items-center gap-1 cursor-pointer"
-                    >
-                      <Square className="w-3 h-3" />
-                      <span>Állj</span>
-                    </button>
+              {TTS_ENABLED &&
+                (activeProtoId === 'proto4_ai_narration' ||
+                  activeProtoId === 'proto5_lena_radio' ||
+                  activeProtoId === 'proto6_infinite_voice') && (
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                      „{AI_SCRIPTS[activeProtoId].text.replace(/<[^>]+>/g, '')}”
+                    </p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        disabled={voiceLoading}
+                        onClick={() => handlePlayAiVoice(activeProtoId)}
+                        className="px-4 py-2 text-xs font-mono font-semibold bg-cyan-500 hover:bg-cyan-400 disabled:opacity-60 text-slate-950 rounded-lg inline-flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                        <span>{voiceLoading ? 'Generálás...' : 'Magyar AI Hang Lejátszása'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          aiVoiceService.stop();
+                          setSubtitle(null);
+                          setVoiceLoading(false);
+                        }}
+                        className="px-3 py-2 text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <Square className="w-3 h-3" />
+                        <span>Állj</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {activeProtoId === 'proto7_tactile_sfx' && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
@@ -674,8 +688,12 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
                 </div>
               )}
 
-              {/* Compact 4-Channel Audio Mixer Footer */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-800/80 text-[11px] font-mono">
+              {/* Compact Audio Mixer Footer */}
+              <div
+                className={`grid grid-cols-2 ${
+                  TTS_ENABLED ? 'sm:grid-cols-4' : ''
+                } gap-3 pt-2 border-t border-slate-800/80 text-[11px] font-mono`}
+              >
                 <label className="flex items-center gap-2">
                   <span className="text-slate-400 shrink-0">Környezet:</span>
                   <input
@@ -688,30 +706,34 @@ export const Phase1PrototypeLabModal: React.FC<Phase1PrototypeLabModalProps> = (
                     className="w-full accent-cyan-400 cursor-pointer"
                   />
                 </label>
-                <label className="flex items-center gap-2">
-                  <span className="text-slate-400 shrink-0">Narráció:</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={narrationVol}
-                    onChange={(e) => setNarrationVol(Number(e.target.value))}
-                    className="w-full accent-cyan-400 cursor-pointer"
-                  />
-                </label>
-                <label className="flex items-center gap-2">
-                  <span className="text-slate-400 shrink-0">Dialógus:</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={dialogueVol}
-                    onChange={(e) => setDialogueVol(Number(e.target.value))}
-                    className="w-full accent-cyan-400 cursor-pointer"
-                  />
-                </label>
+                {TTS_ENABLED && (
+                  <>
+                    <label className="flex items-center gap-2">
+                      <span className="text-slate-400 shrink-0">Narráció:</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={narrationVol}
+                        onChange={(e) => setNarrationVol(Number(e.target.value))}
+                        className="w-full accent-cyan-400 cursor-pointer"
+                      />
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <span className="text-slate-400 shrink-0">Dialógus:</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={dialogueVol}
+                        onChange={(e) => setDialogueVol(Number(e.target.value))}
+                        className="w-full accent-cyan-400 cursor-pointer"
+                      />
+                    </label>
+                  </>
+                )}
                 <label className="flex items-center gap-2">
                   <span className="text-slate-400 shrink-0">SFX:</span>
                   <input
