@@ -41,14 +41,47 @@ class SpatialSoundscapeEngine {
   private creakIntervalId: number | null = null;
   private activeVoiceSource: AudioBufferSourceNode | null = null;
   private activeVoiceCleanup: (() => void) | null = null;
+  private activeFallbackAudio: HTMLAudioElement | null = null;
+  private activeFallbackUrl: string | null = null;
+  private gestureListenerAttached = false;
   private currentOptions: SpatialSoundscapeOptions = {
     windIntensity: 0.65,
     obeliskProximity: 0.45,
     stereoPan: 0,
   };
 
+  constructor() {
+    this.attachGestureUnlock();
+  }
+
+  private attachGestureUnlock(): void {
+    if (typeof window === 'undefined' || this.gestureListenerAttached) return;
+    this.gestureListenerAttached = true;
+
+    const unlock = () => {
+      if (this.ctx && this.ctx.state === 'suspended') {
+        void this.ctx.resume();
+      }
+      soundEngine.unlockFromUserGesture?.();
+    };
+
+    window.addEventListener('pointerdown', unlock, { passive: true });
+    window.addEventListener('touchstart', unlock, { passive: true });
+    window.addEventListener('keydown', unlock, { passive: true });
+  }
+
+  public unlockFromUserGesture(): void {
+    const ctx = this.ensureContext();
+    if (ctx && ctx.state === 'suspended') {
+      void ctx.resume();
+    }
+    soundEngine.unlockFromUserGesture?.();
+  }
+
   private ensureContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
+    this.attachGestureUnlock();
+
     if (!this.ctx) {
       const AudioCtx =
         window.AudioContext ||
@@ -101,9 +134,16 @@ class SpatialSoundscapeEngine {
   }
 
   private applyVolumes(): void {
+    const effectiveMaster = this.isMuted ? 0 : this.masterVolume;
+    if (this.activeFallbackAudio) {
+      const chVol =
+        this.activeFallbackAudio.dataset.channel === 'narration'
+          ? this.narrationVolume
+          : this.dialogueVolume;
+      this.activeFallbackAudio.volume = Math.max(0, Math.min(1, effectiveMaster * chVol));
+    }
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
-    const effectiveMaster = this.isMuted ? 0 : this.masterVolume;
     this.masterGain?.gain.setTargetAtTime(effectiveMaster, t, 0.06);
     this.ambientGain?.gain.setTargetAtTime(this.ambientVolume, t, 0.08);
     this.narrationGain?.gain.setTargetAtTime(this.narrationVolume, t, 0.05);
@@ -344,164 +384,277 @@ class SpatialSoundscapeEngine {
     wavArrayBuffer: ArrayBuffer,
     channel: 'narration' | 'dialogue',
     fxMode: VoiceFxMode,
-    onEnded?: () => void
+    onEnded?: () => void,
+    mimeType = 'audio/wav'
   ): Promise<number> {
-    const ctx = this.ensureContext();
-    if (!ctx) return 0;
-
     this.stopActiveVoice();
 
-    const targetBus = channel === 'narration' ? this.narrationGain : this.dialogueGain;
-    if (!targetBus) return 0;
-
-    const decoded = await ctx.decodeAudioData(wavArrayBuffer.slice(0));
-    const source = ctx.createBufferSource();
-    source.buffer = decoded;
-
-    const cleanupNodes: AudioNode[] = [source];
-    let radioStaticSource: AudioBufferSourceNode | null = null;
-    let driftLfo: OscillatorNode | null = null;
-
-    this.setDucking(true);
-
-    if (fxMode === 'radio1983') {
-      // Prototype 5: 1983 shortwave radio bandpass + subtle warm saturation + faint hiss + stereo drift
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 340;
-
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.value = 1380;
-      bp.Q.value = 1.1;
-
-      const shaper = ctx.createWaveShaper();
-      const samples = 256;
-      const curve = new Float32Array(new ArrayBuffer(samples * 4));
-      for (let i = 0; i < samples; i++) {
-        const x = (i * 2) / samples - 1;
-        curve[i] = ((3 + 12) * x * 20 * (Math.PI / 180)) / (Math.PI + 12 * Math.abs(x));
+    const ctx = this.ensureContext();
+    if (ctx && ctx.state === 'suspended') {
+      try {
+        await Promise.race([
+          ctx.resume(),
+          new Promise((resolve) => window.setTimeout(resolve, 350)),
+        ]);
+      } catch {
+        // Fallback to HTML5 Audio below if AudioContext stays suspended
       }
-      shaper.curve = curve;
-
-      const panner = ctx.createStereoPanner();
-      driftLfo = ctx.createOscillator();
-      driftLfo.frequency.value = 0.22;
-      const driftDepth = ctx.createGain();
-      driftDepth.gain.value = 0.35;
-      driftLfo.connect(driftDepth);
-      driftDepth.connect(panner.pan);
-      driftLfo.start();
-
-      source.connect(hp);
-      hp.connect(bp);
-      bp.connect(shaper);
-      shaper.connect(panner);
-      panner.connect(targetBus);
-
-      // Subtle 1983 carrier hiss layer beneath Lena's transmission
-      radioStaticSource = ctx.createBufferSource();
-      radioStaticSource.buffer = this.createNoiseBuffer(ctx, 2, false);
-      radioStaticSource.loop = true;
-      const hissFilter = ctx.createBiquadFilter();
-      hissFilter.type = 'bandpass';
-      hissFilter.frequency.value = 2600;
-      hissFilter.Q.value = 1.6;
-      const hissGain = ctx.createGain();
-      hissGain.gain.value = 0.035;
-      radioStaticSource.connect(hissFilter);
-      hissFilter.connect(hissGain);
-      hissGain.connect(panner);
-      radioStaticSource.start();
-
-      cleanupNodes.push(hp, bp, shaper, panner, driftDepth, hissFilter, hissGain);
-    } else if (fxMode === 'infinite_resonance') {
-      // Prototype 6: Ethereal dual-delay + subtle shimmer cathedral tail for The Infinite
-      const dryGain = ctx.createGain();
-      dryGain.gain.value = 0.92;
-      source.connect(dryGain);
-      dryGain.connect(targetBus);
-
-      const delayL = ctx.createDelay(1.0);
-      delayL.delayTime.value = 0.24;
-      const delayR = ctx.createDelay(1.0);
-      delayR.delayTime.value = 0.37;
-
-      const fbL = ctx.createGain();
-      fbL.gain.value = 0.42;
-      const fbR = ctx.createGain();
-      fbR.gain.value = 0.38;
-
-      const wetFilter = ctx.createBiquadFilter();
-      wetFilter.type = 'lowpass';
-      wetFilter.frequency.value = 1850;
-
-      const wetPanL = ctx.createStereoPanner();
-      wetPanL.pan.value = -0.65;
-      const wetPanR = ctx.createStereoPanner();
-      wetPanR.pan.value = 0.65;
-
-      const wetGain = ctx.createGain();
-      wetGain.gain.value = 0.44;
-
-      source.connect(wetFilter);
-      wetFilter.connect(delayL);
-      wetFilter.connect(delayR);
-
-      delayL.connect(fbL);
-      fbL.connect(delayR);
-      delayR.connect(fbR);
-      fbR.connect(delayL);
-
-      delayL.connect(wetPanL);
-      delayR.connect(wetPanR);
-      wetPanL.connect(wetGain);
-      wetPanR.connect(wetGain);
-      wetGain.connect(targetBus);
-
-      cleanupNodes.push(dryGain, delayL, delayR, fbL, fbR, wetFilter, wetPanL, wetPanR, wetGain);
-    } else {
-      // Prototype 4: Clean intimate narrator warmth
-      const warmShelf = ctx.createBiquadFilter();
-      warmShelf.type = 'lowshelf';
-      warmShelf.frequency.value = 180;
-      warmShelf.gain.value = 2.5;
-      source.connect(warmShelf);
-      warmShelf.connect(targetBus);
-      cleanupNodes.push(warmShelf);
     }
+
+    const targetBus = channel === 'narration' ? this.narrationGain : this.dialogueGain;
+    if (ctx && targetBus && ctx.state === 'running') {
+      try {
+        const decoded = await ctx.decodeAudioData(wavArrayBuffer.slice(0));
+        const source = ctx.createBufferSource();
+        source.buffer = decoded;
+
+        const cleanupNodes: AudioNode[] = [source];
+        let radioStaticSource: AudioBufferSourceNode | null = null;
+        let driftLfo: OscillatorNode | null = null;
+
+        this.setDucking(true);
+
+        if (fxMode === 'radio1983') {
+          // 1983 shortwave radio profile: trimmed lows & crisp presence peak so Hungarian speech stays clear
+          const hp = ctx.createBiquadFilter();
+          hp.type = 'highpass';
+          hp.frequency.value = 260;
+
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 3600;
+
+          const presenceEq = ctx.createBiquadFilter();
+          presenceEq.type = 'peaking';
+          presenceEq.frequency.value = 1650;
+          presenceEq.Q.value = 0.9;
+          presenceEq.gain.value = 4.5;
+
+          const shaper = ctx.createWaveShaper();
+          const samples = 256;
+          const curve = new Float32Array(new ArrayBuffer(samples * 4));
+          const k = 4;
+          for (let i = 0; i < samples; i++) {
+            const x = (i * 2) / samples - 1;
+            curve[i] = ((3 + k) * x * 20 * (Math.PI / 180)) / (Math.PI + k * Math.abs(x));
+          }
+          shaper.curve = curve;
+
+          const makeupGain = ctx.createGain();
+          makeupGain.gain.value = 1.22;
+
+          const panner = ctx.createStereoPanner();
+          driftLfo = ctx.createOscillator();
+          driftLfo.frequency.value = 0.22;
+          const driftDepth = ctx.createGain();
+          driftDepth.gain.value = 0.22;
+          driftLfo.connect(driftDepth);
+          driftDepth.connect(panner.pan);
+          driftLfo.start();
+
+          source.connect(hp);
+          hp.connect(lp);
+          lp.connect(presenceEq);
+          presenceEq.connect(shaper);
+          shaper.connect(makeupGain);
+          makeupGain.connect(panner);
+          panner.connect(targetBus);
+
+          // Faint 1983 carrier hiss beneath Lena's transmission
+          radioStaticSource = ctx.createBufferSource();
+          radioStaticSource.buffer = this.createNoiseBuffer(ctx, 2, false);
+          radioStaticSource.loop = true;
+          const hissFilter = ctx.createBiquadFilter();
+          hissFilter.type = 'bandpass';
+          hissFilter.frequency.value = 2400;
+          hissFilter.Q.value = 1.4;
+          const hissGain = ctx.createGain();
+          hissGain.gain.value = 0.018;
+          radioStaticSource.connect(hissFilter);
+          hissFilter.connect(hissGain);
+          hissGain.connect(panner);
+          radioStaticSource.start();
+
+          cleanupNodes.push(
+            hp,
+            lp,
+            presenceEq,
+            shaper,
+            makeupGain,
+            panner,
+            driftDepth,
+            hissFilter,
+            hissGain
+          );
+        } else if (fxMode === 'infinite_resonance') {
+          // Ethereal dual-delay + subtle shimmer cathedral tail for The Infinite
+          const dryGain = ctx.createGain();
+          dryGain.gain.value = 0.94;
+          source.connect(dryGain);
+          dryGain.connect(targetBus);
+
+          const delayL = ctx.createDelay(1.0);
+          delayL.delayTime.value = 0.24;
+          const delayR = ctx.createDelay(1.0);
+          delayR.delayTime.value = 0.37;
+
+          const fbL = ctx.createGain();
+          fbL.gain.value = 0.38;
+          const fbR = ctx.createGain();
+          fbR.gain.value = 0.34;
+
+          const wetFilter = ctx.createBiquadFilter();
+          wetFilter.type = 'lowpass';
+          wetFilter.frequency.value = 1850;
+
+          const wetPanL = ctx.createStereoPanner();
+          wetPanL.pan.value = -0.6;
+          const wetPanR = ctx.createStereoPanner();
+          wetPanR.pan.value = 0.6;
+
+          const wetGain = ctx.createGain();
+          wetGain.gain.value = 0.4;
+
+          source.connect(wetFilter);
+          wetFilter.connect(delayL);
+          wetFilter.connect(delayR);
+
+          delayL.connect(fbL);
+          fbL.connect(delayR);
+          delayR.connect(fbR);
+          fbR.connect(delayL);
+
+          delayL.connect(wetPanL);
+          delayR.connect(wetPanR);
+          wetPanL.connect(wetGain);
+          wetPanR.connect(wetGain);
+          wetGain.connect(targetBus);
+
+          cleanupNodes.push(
+            dryGain,
+            delayL,
+            delayR,
+            fbL,
+            fbR,
+            wetFilter,
+            wetPanL,
+            wetPanR,
+            wetGain
+          );
+        } else {
+          // Clean intimate narrator / character warmth
+          const warmShelf = ctx.createBiquadFilter();
+          warmShelf.type = 'lowshelf';
+          warmShelf.frequency.value = 180;
+          warmShelf.gain.value = 2.0;
+          source.connect(warmShelf);
+          warmShelf.connect(targetBus);
+          cleanupNodes.push(warmShelf);
+        }
+
+        const cleanup = () => {
+          this.setDucking(false);
+          try {
+            radioStaticSource?.stop();
+            driftLfo?.stop();
+          } catch {
+            // already stopped
+          }
+          cleanupNodes.forEach((n) => {
+            try {
+              n.disconnect();
+            } catch {
+              // ignore
+            }
+          });
+        };
+
+        this.activeVoiceSource = source;
+        this.activeVoiceCleanup = cleanup;
+
+        source.onended = () => {
+          if (this.activeVoiceSource === source) {
+            this.activeVoiceSource = null;
+            this.activeVoiceCleanup = null;
+          }
+          cleanup();
+          onEnded?.();
+        };
+
+        source.start(0);
+        return decoded.duration;
+      } catch (err) {
+        this.setDucking(false);
+        console.warn('[SpatialSoundscapeEngine] Web Audio decode/play fallback triggered:', err);
+      }
+    }
+
+    // HTML5 <audio> fallback for mobile/suspended AudioContext edge cases
+    return this.playViaHtmlAudioFallback(wavArrayBuffer, mimeType, channel, onEnded);
+  }
+
+  private async playViaHtmlAudioFallback(
+    wavArrayBuffer: ArrayBuffer,
+    mimeType: string,
+    channel: 'narration' | 'dialogue',
+    onEnded?: () => void
+  ): Promise<number> {
+    if (typeof Audio === 'undefined' || typeof URL === 'undefined') {
+      throw new Error('A böngésző nem támogatja a hanglejátszást.');
+    }
+
+    const blob = new Blob([wavArrayBuffer], { type: mimeType || 'audio/wav' });
+    const objectUrl = URL.createObjectURL(blob);
+    const audio = new Audio(objectUrl);
+    audio.dataset.channel = channel;
+
+    const effectiveMaster = this.isMuted ? 0 : this.masterVolume;
+    const chVol = channel === 'narration' ? this.narrationVolume : this.dialogueVolume;
+    audio.volume = Math.max(0, Math.min(1, effectiveMaster * chVol));
+
+    this.activeFallbackAudio = audio;
+    this.activeFallbackUrl = objectUrl;
+    this.setDucking(true);
 
     const cleanup = () => {
       this.setDucking(false);
-      try {
-        radioStaticSource?.stop();
-        driftLfo?.stop();
-      } catch {
-        // already stopped
+      if (this.activeFallbackAudio === audio) {
+        this.activeFallbackAudio = null;
       }
-      cleanupNodes.forEach((n) => {
-        try {
-          n.disconnect();
-        } catch {
-          // ignore
-        }
-      });
+      if (this.activeFallbackUrl === objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        this.activeFallbackUrl = null;
+      }
     };
 
-    this.activeVoiceSource = source;
-    this.activeVoiceCleanup = cleanup;
-
-    source.onended = () => {
-      if (this.activeVoiceSource === source) {
-        this.activeVoiceSource = null;
-        this.activeVoiceCleanup = null;
-      }
+    audio.onended = () => {
+      cleanup();
+      onEnded?.();
+    };
+    audio.onerror = () => {
       cleanup();
       onEnded?.();
     };
 
-    source.start();
-    return decoded.duration;
+    try {
+      await audio.play();
+      const duration =
+        Number.isFinite(audio.duration) && audio.duration > 0
+          ? audio.duration
+          : Math.max(2, wavArrayBuffer.byteLength / 48000);
+      return duration;
+    } catch (err) {
+      cleanup();
+      const name = err instanceof Error ? err.name : '';
+      if (name === 'NotAllowedError') {
+        throw new Error(
+          'A böngésző hangengedélyre vár. Kattints újra a Felolvasás gombra a hang indításához.'
+        );
+      }
+      throw new Error(
+        `A hanglejátszás nem indult el (${err instanceof Error ? err.message : 'ismeretlen hiba'}).`
+      );
+    }
   }
 
   public stopActiveVoice(): void {
@@ -517,6 +670,25 @@ class SpatialSoundscapeEngine {
     if (this.activeVoiceCleanup) {
       this.activeVoiceCleanup();
       this.activeVoiceCleanup = null;
+    }
+    if (this.activeFallbackAudio) {
+      try {
+        this.activeFallbackAudio.onended = null;
+        this.activeFallbackAudio.onerror = null;
+        this.activeFallbackAudio.pause();
+        this.activeFallbackAudio.currentTime = 0;
+      } catch {
+        // ignore
+      }
+      this.activeFallbackAudio = null;
+    }
+    if (this.activeFallbackUrl) {
+      try {
+        URL.revokeObjectURL(this.activeFallbackUrl);
+      } catch {
+        // ignore
+      }
+      this.activeFallbackUrl = null;
     }
     this.setDucking(false);
   }

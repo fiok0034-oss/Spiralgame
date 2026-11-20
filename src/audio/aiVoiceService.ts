@@ -26,8 +26,18 @@ export interface PlayVoiceLineOptions {
 interface CachedWavRecord {
   key: string;
   wavBase64: string;
+  mimeType: string;
   model: string;
   persona: AiVoicePersona;
+}
+
+interface TtsApiResponsePayload {
+  audioBase64?: string;
+  mimeType?: string;
+  model?: string;
+  persona?: AiVoicePersona;
+  cached?: boolean;
+  error?: string;
 }
 
 const memoryWavCache = new Map<string, CachedWavRecord>();
@@ -88,13 +98,56 @@ async function writePersistentCache(record: CachedWavRecord): Promise<void> {
 }
 
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binary = atob(base64);
+  const normalized = base64.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+  const binary = atob(normalized);
   const len = binary.length;
   const bytes = new Uint8Array(new ArrayBuffer(len));
   for (let i = 0; i < len; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes.buffer;
+}
+
+async function parseTtsApiResponse(response: Response): Promise<TtsApiResponsePayload> {
+  const contentType = response.headers.get('content-type') || '';
+  const rawBody = await response.text();
+  const trimmed = rawBody.trim();
+
+  if (!trimmed) {
+    throw new Error(
+      `A hangszolgáltatás üres választ küldött (HTTP ${response.status}).`
+    );
+  }
+
+  let parsed: TtsApiResponsePayload | null = null;
+  try {
+    parsed = JSON.parse(trimmed) as TtsApiResponsePayload;
+  } catch {
+    const preview = trimmed.slice(0, 120).replace(/\s+/g, ' ');
+    throw new Error(
+      `Nem JSON válasz érkezett a hangszolgáltatástól (HTTP ${response.status}, ${contentType || 'ismeretlen típus'}): ${preview}`
+    );
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error(
+      `Érvénytelen JSON szerkezet érkezett a hangszolgáltatástól (HTTP ${response.status}).`
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      parsed.error || `Hanggenerálási szerverhiba (HTTP ${response.status}).`
+    );
+  }
+
+  if (typeof parsed.audioBase64 !== 'string' || parsed.audioBase64.trim().length < 32) {
+    throw new Error(
+      parsed.error || 'A szerver válasza nem tartalmazott dekódolható hangadatot.'
+    );
+  }
+
+  return parsed;
 }
 
 function splitIntoSubtitleSegments(text: string): string[] {
@@ -193,10 +246,13 @@ class AiVoiceService {
 
   public async playLine(options: PlayVoiceLineOptions): Promise<void> {
     this.stop();
+    // Unlock audio synchronously while still inside the user's interaction gesture
+    spatialSoundscapeEngine.unlockFromUserGesture();
 
     const cleanDisplayText = options.text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    const segments = splitIntoSubtitleSegments(options.text);
-    const cacheKey = `${options.lineId}:${options.persona}:${cleanDisplayText.length}`;
+    const requestText = options.text.replace(/\s+/g, ' ').trim().slice(0, 1450);
+    const segments = splitIntoSubtitleSegments(cleanDisplayText);
+    const cacheKey = `${options.lineId}:${options.persona}:${requestText.length}`;
 
     this.emitSubtitle(options.onSubtitle, {
       speakerLabel: options.speakerLabel,
@@ -217,23 +273,24 @@ class AiVoiceService {
       } else {
         const response = await fetch('/api/audio/tts', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
           body: JSON.stringify({
-            text: options.text,
+            text: requestText,
             persona: options.persona,
           }),
           signal: controller.signal,
         });
 
-        const payload = await response.json();
-        if (!response.ok || !payload?.audioBase64) {
-          throw new Error(payload?.error || 'Nem sikerült AI hangot generálni.');
-        }
+        const payload = await parseTtsApiResponse(response);
 
         cachedHit = Boolean(payload.cached);
         record = {
           key: cacheKey,
-          wavBase64: payload.audioBase64,
+          wavBase64: payload.audioBase64 as string,
+          mimeType: String(payload.mimeType || 'audio/wav'),
           model: String(payload.model || 'gemini-3.8-flash-tts'),
           persona: options.persona,
         };
@@ -243,18 +300,27 @@ class AiVoiceService {
       if (controller.signal.aborted) return;
 
       const wavBuffer = base64ToArrayBuffer(record.wavBase64);
+      if (wavBuffer.byteLength < 44) {
+        throw new Error('A visszakapott hangfájl túl rövid vagy sérült.');
+      }
+
       const durationSec = await spatialSoundscapeEngine.playDecodedVoiceBuffer(
         wavBuffer,
         options.channel,
         options.fxMode,
         () => {
           options.onComplete?.();
-        }
+        },
+        record.mimeType || 'audio/wav'
       );
+
+      if (!Number.isFinite(durationSec) || durationSec <= 0) {
+        throw new Error('A böngésző nem tudta elindítani a hanglejátszást.');
+      }
 
       this.scheduleTimedSubtitles(
         segments,
-        durationSec || Math.max(4, cleanDisplayText.length / 13),
+        durationSec,
         options.speakerLabel,
         cleanDisplayText,
         'ai-audio',

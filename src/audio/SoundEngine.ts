@@ -57,7 +57,14 @@ class SoundEngine {
     }
 
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      void this.ctx.resume();
+    }
+  }
+
+  public unlockFromUserGesture() {
+    if (typeof window === 'undefined') return;
+    if (this.ctx && this.ctx.state === 'suspended') {
+      void this.ctx.resume();
     }
   }
 

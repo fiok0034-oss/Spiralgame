@@ -43,7 +43,7 @@ function getTodayDateString(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function getGeminiClient(): GoogleGenAI {
+function getGeminiClient(apiVersion?: string): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     throw Object.assign(
@@ -53,6 +53,7 @@ function getGeminiClient(): GoogleGenAI {
   }
   return new GoogleGenAI({
     apiKey,
+    ...(apiVersion ? { apiVersion } : {}),
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
@@ -292,7 +293,7 @@ async function generateHungarianTtsAudio(
     return { ...cached, cached: true };
   }
 
-  const ai = getGeminiClient();
+  const ai = getGeminiClient('v1beta');
   const response = await ai.models.generateContent({
     model,
     contents: [
@@ -302,7 +303,6 @@ async function generateHungarianTtsAudio(
           {
             text,
             speechMetadata: {
-              speaker: persona,
               style: profile.style,
             },
           },
@@ -321,8 +321,11 @@ async function generateHungarianTtsAudio(
     },
   });
 
-  const inlineAudio = response.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data)?.inlineData;
-  const base64Audio = inlineAudio?.data;
+  const parts = response.candidates?.[0]?.content?.parts ?? [];
+  const inlineAudio = parts.find((p) => p.inlineData?.data)?.inlineData;
+  let base64Audio = inlineAudio?.data;
+  let mimeType = inlineAudio?.mimeType || 'audio/wav';
+
   if (!base64Audio) {
     throw Object.assign(
       new Error('A Gemini hanggeneráló szolgáltatás nem adott vissza hangadatot.'),
@@ -330,9 +333,33 @@ async function generateHungarianTtsAudio(
     );
   }
 
+  // Verify container: unary Gemini TTS returns a complete RIFF WAV; only wrap if upstream ever returns raw L16/PCM without RIFF header
+  const rawBytes = Buffer.from(base64Audio, 'base64');
+  const isRiffWav = rawBytes.length >= 12 && rawBytes.toString('ascii', 0, 4) === 'RIFF';
+  if (!isRiffWav && /l16|pcm/i.test(mimeType)) {
+    const rateMatch = mimeType.match(/rate=(\d+)/i);
+    const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
+    const wavHeader = Buffer.alloc(44);
+    wavHeader.write('RIFF', 0);
+    wavHeader.writeUInt32LE(36 + rawBytes.length, 4);
+    wavHeader.write('WAVE', 8);
+    wavHeader.write('fmt ', 12);
+    wavHeader.writeUInt32LE(16, 16); // PCM chunk size
+    wavHeader.writeUInt16LE(1, 20); // PCM format
+    wavHeader.writeUInt16LE(1, 22); // mono
+    wavHeader.writeUInt32LE(sampleRate, 24);
+    wavHeader.writeUInt32LE(sampleRate * 2, 28); // byte rate
+    wavHeader.writeUInt16LE(2, 32); // block align
+    wavHeader.writeUInt16LE(16, 34); // bits per sample
+    wavHeader.write('data', 36);
+    wavHeader.writeUInt32LE(rawBytes.length, 40);
+    base64Audio = Buffer.concat([wavHeader, rawBytes]).toString('base64');
+    mimeType = 'audio/wav';
+  }
+
   const entry: TtsCacheEntry = {
     audioBase64: base64Audio,
-    mimeType: inlineAudio?.mimeType || 'audio/wav',
+    mimeType,
     model,
     persona,
     createdAt: new Date().toISOString(),
@@ -379,25 +406,31 @@ async function startServer() {
       const status = err.statusCode || err.status || 500;
       const rawMessage = err.message || '';
 
+      console.error('[api/audio/tts] Error:', status, rawMessage);
+
       let friendlyMessage = rawMessage || 'Ismeretlen hiba történt az AI hanggenerálás közben.';
       if (status === 429 || rawMessage.includes('RESOURCE_EXHAUSTED')) {
         friendlyMessage =
           'A Gemini TTS kvóta átmenetileg kimerült (429). A rendszer feliratos módban folytatja.';
       } else if (
         status === 403 ||
-        status === 400 ||
         rawMessage.includes('PERMISSION_DENIED') ||
-        rawMessage.includes('API_KEY_INVALID')
+        rawMessage.includes('API_KEY_INVALID') ||
+        rawMessage.includes('API key not valid') ||
+        rawMessage.includes('API key should be set')
       ) {
         friendlyMessage =
           'A Gemini API-kulcs érvénytelen vagy hiányzik. Ellenőrizd a Settings > Secrets panelt.';
       } else if (status === 404 || rawMessage.includes('NOT_FOUND')) {
-        friendlyMessage = 'A kért Gemini TTS modell jelenleg nem érhető el (404).';
+        friendlyMessage = `A kért Gemini TTS modell jelenleg nem érhető el (404): ${rawMessage}`;
+      } else if (status === 400 || rawMessage.includes('INVALID_ARGUMENT')) {
+        friendlyMessage = `Érvénytelen TTS kérés (400): ${rawMessage}`;
       }
 
-      console.error('[api/audio/tts] Error:', status, rawMessage);
-      res.status(status >= 400 && status < 600 ? status : 500).json({
+      const httpStatus = status >= 400 && status < 600 ? status : 500;
+      res.status(httpStatus).json({
         error: friendlyMessage,
+        status: httpStatus,
       });
     }
   });
@@ -440,6 +473,22 @@ async function startServer() {
         error: friendlyMessage,
       });
     }
+  });
+
+  app.use('/api', (_req: Request, res: Response) => {
+    res.status(404).json({ error: 'A kért API-végpont nem található.' });
+  });
+
+  app.use((err: unknown, req: Request, res: Response, next: express.NextFunction) => {
+    if (req.path.startsWith('/api')) {
+      const e = err as { status?: number; statusCode?: number; message?: string };
+      const status = e.statusCode || e.status || 400;
+      res.status(status >= 400 && status < 600 ? status : 500).json({
+        error: e.message || 'Érvénytelen API kérés vagy belső szerverhiba.',
+      });
+      return;
+    }
+    next(err);
   });
 
   if (process.env.NODE_ENV !== 'production') {
