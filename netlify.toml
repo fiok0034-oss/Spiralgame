@@ -1,0 +1,25 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/audio/tts"
+  to = "/.netlify/functions/audio-tts"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/audio/tts/"
+  to = "/.netlify/functions/audio-tts"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/audio/health"
+  to = "/.netlify/functions/audio-health"
+  status = 200
+  force = true

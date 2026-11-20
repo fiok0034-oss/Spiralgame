@@ -4,6 +4,12 @@ import type { Request, Response } from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GoogleGenAI } from '@google/genai';
+import {
+  classifyTtsError,
+  generateHungarianTtsAudio,
+  getTtsHealthPayload,
+  normalizePersona,
+} from './server/ttsCore.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -212,192 +218,17 @@ async function fetchDailyArchiveNews(
   return payload;
 }
 
-type VoicePersonaId = 'narrator' | 'lena' | 'infinite' | 'viktor' | 'mira' | 'levente';
-
-interface TtsCacheEntry {
-  audioBase64: string;
-  mimeType: string;
-  model: string;
-  persona: VoicePersonaId;
-  createdAt: string;
-}
-
-const ttsAudioCache = new Map<string, TtsCacheEntry>();
-const MAX_TTS_CACHE_ENTRIES = 64;
-
-const VOICE_PERSONA_CONFIG: Record<
-  VoicePersonaId,
-  { voiceName: 'Puck' | 'Charon' | 'Kore' | 'Fenrir' | 'Zephyr'; style: string; preferredModel: string }
-> = {
-  narrator: {
-    voiceName: 'Charon',
-    style:
-      'Mély, visszafogott, feszült magyar irodalmi narrátor. Lassú, filmszerű tempó, tiszta magyar kiejtés, lélegzetvételnyi szünetekkel a súlyos mondatok között.',
-    preferredModel: 'gemini-3.8-flash-tts',
-  },
-  lena: {
-    voiceName: 'Kore',
-    style:
-      'Tiszta, érzelmes, kissé kimerült és sürgető magyar kutatónői hang egy 1983-as sarkvidéki expedíciós mikrofonon keresztül. Valódi aggodalom és melegség.',
-    preferredModel: 'gemini-3.8-flash-tts',
-  },
-  infinite: {
-    voiceName: 'Fenrir',
-    style:
-      'Mélyről zengő, időtlen, rendkívül nyugodt és hipnotikus magyar hang. Nem emberi sietséggel beszél, hanem végtelen türelemmel és súllyal.',
-    preferredModel: 'gemini-3.8-flash-tts',
-  },
-  viktor: {
-    voiceName: 'Charon',
-    style:
-      'Határozott, tapasztalt magyar geofizikus kutató hangja a hidegben, enyhe feszültséggel és koncentrációval.',
-    preferredModel: 'gemini-3.8-flash-lite-tts',
-  },
-  mira: {
-    voiceName: 'Zephyr',
-    style:
-      'Kifinomult, tiszta, építészi pontosságú és kissé rejtélyes magyar női hang.',
-    preferredModel: 'gemini-3.8-flash-lite-tts',
-  },
-  levente: {
-    voiceName: 'Puck',
-    style:
-      'Álomszerű, töprengő, fiatalabb magyar férfihang, mintha éber álomból emlékezne.',
-    preferredModel: 'gemini-3.8-flash-lite-tts',
-  },
-};
-
-function makeTtsCacheKey(persona: VoicePersonaId, model: string, text: string): string {
-  let hash = 2166136261;
-  for (let i = 0; i < text.length; i++) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return `${persona}:${model}:${(hash >>> 0).toString(16)}:${text.length}`;
-}
-
-async function generateHungarianTtsAudio(
-  text: string,
-  persona: VoicePersonaId,
-  modelOverride?: string
-): Promise<TtsCacheEntry & { cached: boolean }> {
-  const profile = VOICE_PERSONA_CONFIG[persona] || VOICE_PERSONA_CONFIG.narrator;
-  const model =
-    modelOverride === 'gemini-3.8-flash-lite-tts' || modelOverride === 'gemini-3.8-flash-tts'
-      ? modelOverride
-      : profile.preferredModel;
-
-  const cacheKey = makeTtsCacheKey(persona, model, text);
-  const cached = ttsAudioCache.get(cacheKey);
-  if (cached) {
-    return { ...cached, cached: true };
-  }
-
-  const ai = getGeminiClient('v1beta');
-  const response = await ai.models.generateContent({
-    model,
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          {
-            text,
-            speechMetadata: {
-              style: profile.style,
-            },
-          },
-        ],
-      },
-    ],
-    config: {
-      responseModalities: ['AUDIO'],
-      speechConfig: {
-        voiceConfig: {
-          prebuiltVoiceConfig: {
-            voiceName: profile.voiceName,
-          },
-        },
-      },
-    },
-  });
-
-  const parts = response.candidates?.[0]?.content?.parts ?? [];
-  const inlineAudio = parts.find((p) => p.inlineData?.data)?.inlineData;
-  let base64Audio = inlineAudio?.data;
-  let mimeType = inlineAudio?.mimeType || 'audio/wav';
-
-  if (!base64Audio) {
-    throw Object.assign(
-      new Error('A Gemini hanggeneráló szolgáltatás nem adott vissza hangadatot.'),
-      { statusCode: 502 }
-    );
-  }
-
-  // Verify container: unary Gemini TTS returns a complete RIFF WAV; only wrap if upstream ever returns raw L16/PCM without RIFF header
-  const rawBytes = Buffer.from(base64Audio, 'base64');
-  const isRiffWav = rawBytes.length >= 12 && rawBytes.toString('ascii', 0, 4) === 'RIFF';
-  if (!isRiffWav && /l16|pcm/i.test(mimeType)) {
-    const rateMatch = mimeType.match(/rate=(\d+)/i);
-    const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
-    const wavHeader = Buffer.alloc(44);
-    wavHeader.write('RIFF', 0);
-    wavHeader.writeUInt32LE(36 + rawBytes.length, 4);
-    wavHeader.write('WAVE', 8);
-    wavHeader.write('fmt ', 12);
-    wavHeader.writeUInt32LE(16, 16); // PCM chunk size
-    wavHeader.writeUInt16LE(1, 20); // PCM format
-    wavHeader.writeUInt16LE(1, 22); // mono
-    wavHeader.writeUInt32LE(sampleRate, 24);
-    wavHeader.writeUInt32LE(sampleRate * 2, 28); // byte rate
-    wavHeader.writeUInt16LE(2, 32); // block align
-    wavHeader.writeUInt16LE(16, 34); // bits per sample
-    wavHeader.write('data', 36);
-    wavHeader.writeUInt32LE(rawBytes.length, 40);
-    base64Audio = Buffer.concat([wavHeader, rawBytes]).toString('base64');
-    mimeType = 'audio/wav';
-  }
-
-  const entry: TtsCacheEntry = {
-    audioBase64: base64Audio,
-    mimeType,
-    model,
-    persona,
-    createdAt: new Date().toISOString(),
-  };
-
-  if (ttsAudioCache.size >= MAX_TTS_CACHE_ENTRIES) {
-    const oldestKey = ttsAudioCache.keys().next().value;
-    if (oldestKey) ttsAudioCache.delete(oldestKey);
-  }
-  ttsAudioCache.set(cacheKey, entry);
-
-  return { ...entry, cached: false };
-}
-
 async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
 
   app.get('/api/audio/health', (_req: Request, res: Response) => {
-    res.json({
-      ok: true,
-      endpoint: '/api/audio/tts',
-      hasGeminiKey: Boolean(process.env.GEMINI_API_KEY?.trim()),
-      mode: process.env.NODE_ENV || 'development',
-    });
+    res.json(getTtsHealthPayload('express'));
   });
 
   app.post(['/api/audio/tts', '/api/audio/tts/'], async (req: Request, res: Response) => {
     const rawText = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
-    const rawPersona = String(req.body?.persona || 'narrator');
-    const persona: VoicePersonaId =
-      rawPersona === 'lena' ||
-      rawPersona === 'infinite' ||
-      rawPersona === 'viktor' ||
-      rawPersona === 'mira' ||
-      rawPersona === 'levente'
-        ? rawPersona
-        : 'narrator';
+    const persona = normalizePersona(req.body?.persona);
     const modelOverride = typeof req.body?.model === 'string' ? req.body.model : undefined;
 
     if (!rawText || rawText.length > 1500) {
@@ -411,35 +242,11 @@ async function startServer() {
       const result = await generateHungarianTtsAudio(rawText, persona, modelOverride);
       res.json(result);
     } catch (error: unknown) {
-      const err = error as { statusCode?: number; status?: number; message?: string };
-      const status = err.statusCode || err.status || 500;
-      const rawMessage = err.message || '';
-
-      console.error('[api/audio/tts] Error:', status, rawMessage);
-
-      let friendlyMessage = rawMessage || 'Ismeretlen hiba történt az AI hanggenerálás közben.';
-      if (status === 429 || rawMessage.includes('RESOURCE_EXHAUSTED')) {
-        friendlyMessage =
-          'A Gemini TTS kvóta átmenetileg kimerült (429). A rendszer feliratos módban folytatja.';
-      } else if (
-        status === 403 ||
-        rawMessage.includes('PERMISSION_DENIED') ||
-        rawMessage.includes('API_KEY_INVALID') ||
-        rawMessage.includes('API key not valid') ||
-        rawMessage.includes('API key should be set')
-      ) {
-        friendlyMessage =
-          'A Gemini API-kulcs érvénytelen vagy hiányzik. Ellenőrizd a Settings > Secrets panelt.';
-      } else if (status === 404 || rawMessage.includes('NOT_FOUND')) {
-        friendlyMessage = `A kért Gemini TTS modell jelenleg nem érhető el (404): ${rawMessage}`;
-      } else if (status === 400 || rawMessage.includes('INVALID_ARGUMENT')) {
-        friendlyMessage = `Érvénytelen TTS kérés (400): ${rawMessage}`;
-      }
-
-      const httpStatus = status >= 400 && status < 600 ? status : 500;
-      res.status(httpStatus).json({
-        error: friendlyMessage,
-        status: httpStatus,
+      const classified = classifyTtsError(error);
+      console.error('[api/audio/tts] Error:', classified.status);
+      res.status(classified.status).json({
+        error: classified.error,
+        status: classified.status,
       });
     }
   });
